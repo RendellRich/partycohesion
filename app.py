@@ -16,7 +16,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Custom CSS for a clean, neutral look
 st.markdown("""
 <style>
     .main-header {
@@ -29,15 +28,6 @@ st.markdown("""
         font-size: 1.1rem;
         color: #4a4a4a;
         margin-bottom: 1.5rem;
-    }
-    .metric-label {
-        font-size: 0.85rem;
-        color: #666;
-    }
-    .stMetric {
-        background-color: #f8f9fa;
-        padding: 10px 15px;
-        border-radius: 8px;
     }
     footer {visibility: hidden;}
 </style>
@@ -57,41 +47,46 @@ def main():
         unsafe_allow_html=True
     )
 
-    df = load_members()
-
-    # Quick stats for current (119th) Congress
-    current = df[df["congress"] == 119]
-    house = current[current["chamber"] == "House"]
-    senate = current[current["chamber"] == "Senate"]
+    try:
+        df = load_members()
+        current = df[df["congress"] == 119]
+        house = current[current["chamber"] == "House"]
+        senate = current[current["chamber"] == "Senate"]
+        house_n = len(house)
+        senate_n = len(senate)
+    except Exception:
+        house_n = "—"
+        senate_n = "—"
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Congress", "119th")
+        st.metric(label="Congress", value="119th")
     with col2:
-        st.metric("House Members (scored)", len(house))
+        st.metric(label="House Members (scored)", value=house_n)
     with col3:
-        st.metric("Senate Members (scored)", len(senate))
+        st.metric(label="Senate Members (scored)", value=senate_n)
     with col4:
-        st.metric("Data Source", "Voteview")
+        st.metric(label="Data Source", value="Voteview")
 
     st.markdown("---")
 
     st.subheader("What this site shows")
     st.markdown("""
-    **PartyCohesion** presents transparent metrics derived from official congressional roll-call data 
-    (via Voteview / UCLA). The focus is on **how often members vote with the majority of their own party** 
-    and where they sit on the primary liberal–conservative dimension of voting behavior.
+**PartyCohesion** presents transparent metrics derived from official congressional roll-call data 
+(via Voteview / UCLA). The focus is on **how often members vote with the majority of their own party** 
+and where they sit on the primary liberal–conservative dimension of voting behavior.
 
-    - **Overview** — Chamber-level and party-level patterns  
-    - **Member Explorer** — Look up any member’s ideology score and cohesion proxy  
-    - **Methodology** — Exact definitions and data sources  
-    - **About** — Project purpose and neutrality statement  
+- **Overview** — Chamber-level and party-level patterns  
+- **Member Explorer** — Look up any member’s ideology score and cohesion proxy  
+- **Key Votes** — Party-unity rates and high-profile vote series framework  
+- **Methodology** — Exact definitions and data sources  
+- **About** — Project purpose and neutrality statement  
 
-    Use the sidebar to navigate.
+Use the sidebar to navigate.
     """)
 
     st.markdown("---")
-    st.caption("Data: Lewis, Poole, Rosenthal, Boche, Rudkin & Sonnet — Voteview: Congressional Roll-Call Votes Database. Last processed for display: recent Congresses 117–119.")
+    st.caption("Data: Lewis, Poole, Rosenthal, Boche, Rudkin & Sonnet — Voteview: Congressional Roll-Call Votes Database. Coverage: Congresses 110–119.")
     st.caption("This is an independent educational project. It does not endorse any party or candidate.")
 
 if __name__ == "__main__":
