@@ -28,6 +28,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 RAW_DIR = DATA_DIR / "raw"
 LABELS_FILE = DATA_DIR / "house_vote_labels.csv"
+AMENDMENTS_FILE = DATA_DIR / "house_amendments.csv"  # purposes from Congress.gov (house_amendment_purposes.py)
 CLERK_URL = "https://clerk.house.gov/evs/{year}/roll{roll:03d}.xml"
 COLUMNS = ["congress", "rollnumber", "year", "clerk_rollnumber", "legis_num", "amendment_author", "clerk_vote_desc"]
 BILL_PREFIX = [("H CON RES", "H.Con.Res."), ("H J RES", "H.J.Res."), ("H RES", "H.Res."), ("H R", "H.R."),
@@ -127,17 +128,33 @@ def fetch_missing(congresses=None, workers: int = 8, pause: float = 0.05) -> int
     return len(rows)
 
 
+def load_purposes() -> pd.DataFrame:
+    """Amendment purposes from Congress.gov, one per (congress, session, clerk roll number)."""
+    if not AMENDMENTS_FILE.exists():
+        return pd.DataFrame(columns=["congress", "session", "clerk_rollnumber", "purpose"])
+    a = pd.read_csv(AMENDMENTS_FILE, dtype={"purpose": str})
+    a = a[a["clerk_rollnumber"].notna() & a["purpose"].fillna("").str.strip().ne("")]
+    a = a.astype({"session": int, "clerk_rollnumber": int})
+    return a.drop_duplicates(["congress", "session", "clerk_rollnumber"])[
+        ["congress", "session", "clerk_rollnumber", "purpose"]]
+
+
 def apply_labels(votes: pd.DataFrame) -> pd.DataFrame:
-    """Fill blank House vote_desc values from the Clerk's records. Other rows are left exactly as they were."""
+    """Fill blank House vote_desc values from the Clerk's records, adding the amendment's purpose from Congress.gov
+    where known. A description this module wrote earlier without a purpose is updated once the purpose arrives.
+    Every other row is left exactly as it was."""
     labels = load_labels()
     if labels.empty:
         return votes
-    text = labels.assign(_desc=labels.apply(describe, axis=1))[["congress", "rollnumber", "_desc"]]
-    text = text[text["_desc"] != ""].assign(chamber="House")
+    labels = labels.assign(session=labels["year"] - (2 * labels["congress"] + 1787) + 1)
+    labels = labels.merge(load_purposes(), on=["congress", "session", "clerk_rollnumber"], how="left")
+    labels["_base"] = labels.apply(describe, axis=1)
+    labels["_desc"] = [f"{b}: {_text(p)}" if b and _text(p) else b for b, p in zip(labels["_base"], labels["purpose"])]
+    text = labels[labels["_desc"] != ""][["congress", "rollnumber", "_base", "_desc"]].assign(chamber="House")
     out = votes.merge(text, on=["congress", "chamber", "rollnumber"], how="left")
-    blank = needs_label(out) & out["_desc"].notna()
-    out.loc[blank, "vote_desc"] = out.loc[blank, "_desc"]
-    return out.drop(columns="_desc")
+    fill = out["_desc"].notna() & (needs_label(out) | (out["vote_desc"] == out["_base"]))
+    out.loc[fill, "vote_desc"] = out.loc[fill, "_desc"]
+    return out.drop(columns=["_base", "_desc"])
 
 
 def main() -> None:
@@ -146,9 +163,9 @@ def main() -> None:
         path = DATA_DIR / name
         before = pd.read_csv(path)
         after = apply_labels(before)
-        filled = int((needs_label(before) & ~needs_label(after)).sum())
+        changed = int((before["vote_desc"].fillna("") != after["vote_desc"].fillna("")).sum())
         after.to_csv(path, index=False)
-        print(f"{name}: filled {filled:,} blank descriptions")
+        print(f"{name}: filled or updated {changed:,} descriptions")
 
 
 if __name__ == "__main__":

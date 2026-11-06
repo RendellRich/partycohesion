@@ -170,6 +170,13 @@ check((known["_merge"] == "both").all(), "house_vote_labels.csv has a roll call 
 amend = house[house["vote_question"] == "On Agreeing to the Amendment"]
 unnamed = amend["vote_desc"].isna().mean()
 check(unnamed < 0.02, f"{unnamed:.1%} of House amendment votes have no description (expected under 2%)")
+if (DATA / "house_amendments.csv").exists():
+    amends = pd.read_csv(DATA / "house_amendments.csv")
+    check(list(amends.columns) == ["congress", "hamdt", "bill", "session", "clerk_rollnumber", "purpose"],
+          "house_amendments.csv has unexpected columns")
+    matched = amends.dropna(subset=["clerk_rollnumber"])
+    check(not matched.duplicated(["congress", "session", "clerk_rollnumber"]).any(),
+          "house_amendments.csv matches one roll call to more than one amendment")
 
 # No sudden shrinkage compared with the last committed data
 for name, df in (("data/members_processed.csv", members), ("data/key_votes.csv", key_votes),
