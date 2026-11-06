@@ -7,9 +7,9 @@ in the sidebar (X or Instagram).
 
 import streamlit as st
 
-BG = "#0e1117"
+BG = "#171614"  # matches the app background set in .streamlit/config.toml
 FG = "#fafafa"
-GRID = "#2b2f3a"
+GRID = "#2e2c29"
 SOURCE = "partycohesion.streamlit.app · Data: Voteview"
 
 EXPORT_SIZES = {
