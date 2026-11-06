@@ -8,7 +8,7 @@ This file is the entry point. It sets the page config once and defines the sideb
 """
 
 import streamlit as st
-from chart_utils import EXPORT_SIZES, DEFAULT_EXPORT
+from chart_utils import EXPORT_SIZES, DEFAULT_EXPORT, clear_cache_if_data_changed
 from site_status import show_refresh_notice
 
 st.set_page_config(
@@ -47,5 +47,6 @@ with st.sidebar:
              index=list(EXPORT_SIZES).index(DEFAULT_EXPORT))
     st.caption("Use the camera icon on any chart to download a PNG at this size.")
 
+clear_cache_if_data_changed()  # new data from the twice-weekly refresh shows up without a restart
 show_refresh_notice()
 nav.run()

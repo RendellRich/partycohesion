@@ -6,3 +6,7 @@ backgroundColor = "#171614"
 secondaryBackgroundColor = "#21201d"
 textColor = "#FAFAFA"
 primaryColor = "#E9C46A"
+
+[server]
+# Watch the app's files by polling, so code pulled in after a merge is picked up without rebooting the app
+fileWatcherType = "poll"

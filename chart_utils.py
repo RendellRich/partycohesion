@@ -5,7 +5,11 @@ matches the app theme, and a camera button that downloads a PNG sized for the pl
 in the sidebar (X or Instagram).
 """
 
+from pathlib import Path
+
 import streamlit as st
+
+DATA_DIR = Path(__file__).parent / "data"
 
 BG = "#171614"  # matches the app background set in .streamlit/config.toml
 FG = "#fafafa"
@@ -61,3 +65,28 @@ def show_chart(fig, title: str, filename: str, key: str | None = None) -> None:
         "toImageButtonOptions": {"format": "png", "filename": filename, "width": width, "height": height, "scale": 2},
     }
     st.plotly_chart(fig, width="stretch", config=config, key=key)
+
+
+# ---------------------------------------------------------------------------
+# Keeping cached data in step with the data files
+# ---------------------------------------------------------------------------
+# Pages cache what they read from data/ (st.cache_data), and that cache lives as long as the server. When the
+# twice-weekly refresh commits new data, Streamlit Cloud pulls the files but the cache would keep serving the old
+# numbers until the app restarted. app.py calls clear_cache_if_data_changed() on every run to prevent that.
+_seen_data_version: float | None = None
+
+
+def data_version(data_dir: Path = DATA_DIR) -> float:
+    """Latest modification time of any file under data/ (changes whenever a refresh or a merge updates the data)."""
+    return max((p.stat().st_mtime for p in data_dir.rglob("*") if p.is_file()), default=0.0)
+
+
+def clear_cache_if_data_changed(data_dir: Path = DATA_DIR) -> bool:
+    """Clear st.cache_data when the data files changed since the last run. Returns True if it cleared."""
+    global _seen_data_version
+    version = data_version(data_dir)
+    changed = _seen_data_version is not None and version != _seen_data_version
+    if changed:
+        st.cache_data.clear()
+    _seen_data_version = version
+    return changed
