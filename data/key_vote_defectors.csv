@@ -18144,6 +18144,52 @@ congress,chamber,rollnumber,icpsr,name,party,state_abbrev,vote,party_position
 118,Senate,691,41901.0,"Hawley, Joshua David",Republican,MO,Nay,Yea
 118,Senate,691,41902.0,"Romney, Willard Mitt (Mitt)",Republican,UT,Nay,Yea
 118,Senate,691,42303.0,"Schmitt, Eric Stephen",Republican,MO,Nay,Yea
+119,House,22,15029.0,"Kaptur, Marcia Carolyn (Marcy)",Democrat,OH,Yea,Nay
+119,House,22,20119.0,"Lynch, Stephen F.",Democrat,MA,Yea,Nay
+119,House,22,20501.0,"Costa, Jim",Democrat,CA,Yea,Nay
+119,House,22,20533.0,"Cuellar, Henry",Democrat,TX,Yea,Nay
+119,House,22,20706.0,"Courtney, Joe",Democrat,CT,Yea,Nay
+119,House,22,20927.0,"Titus, Alice (Dina)",Democrat,NV,Yea,Nay
+119,House,22,21102.0,"Sewell, Terri",Democrat,AL,Yea,Nay
+119,House,22,21339.0,"Horsford, Steven",Democrat,NV,Yea,Nay
+119,House,22,21548.0,"Boyle, Brendan Francis",Democrat,PA,Yea,Nay
+119,House,22,21722.0,"Gonzalez, Vicente, Jr.",Democrat,TX,Yea,Nay
+119,House,22,21723.0,"Gottheimer, Josh S.",Democrat,NJ,Yea,Nay
+119,House,22,21747.0,"Suozzi, Thomas",Democrat,NY,Yea,Nay
+119,House,22,21761.0,"Morelle, Joseph",Democrat,NY,Yea,Nay
+119,House,22,21910.0,"Craig, Angela",Democrat,MN,Yea,Nay
+119,House,22,21914.0,"Davids, Sharice",Democrat,KS,Yea,Nay
+119,House,22,21923.0,"Golden, Jared",Democrat,ME,Yea,Nay
+119,House,22,21930.0,"Harder, Josh",Democrat,CA,Yea,Nay
+119,House,22,21931.0,"Hayes, Jahana",Democrat,CT,Yea,Nay
+119,House,22,21938.0,"Lee, Susie",Democrat,NV,Yea,Nay
+119,House,22,21939.0,"Levin, Mike",Democrat,CA,Yea,Nay
+119,House,22,21944.0,"McBath, Lucy",Democrat,GA,Yea,Nay
+119,House,22,21951.0,"Pappas, Chris",Democrat,NH,Yea,Nay
+119,House,22,21962.0,"Schrier, Kim",Democrat,WA,Yea,Nay
+119,House,22,21968.0,"Stanton, Greg",Democrat,AZ,Yea,Nay
+119,House,22,22154.0,"Torres, Ritchie",Democrat,NY,Yea,Nay
+119,House,22,22304.0,"Budzinski, Nikki",Democrat,IL,Yea,Nay
+119,House,22,22314.0,"Davis, Don",Democrat,NC,Yea,Nay
+119,House,22,22338.0,"Landsman, Greg",Democrat,OH,Yea,Nay
+119,House,22,22353.0,"Moskowitz, Jared",Democrat,FL,Yea,Nay
+119,House,22,22358.0,"Perez, Marie Gluesenkamp",Democrat,WA,Yea,Nay
+119,House,22,22363.0,"Scholten, Hillary",Democrat,MI,Yea,Nay
+119,House,22,22365.0,"Sorensen, Eric",Democrat,IL,Yea,Nay
+119,House,22,22367.0,"Sykes, Emilia",Democrat,OH,Yea,Nay
+119,House,22,22507.0,"Bynum, Janelle S.",Democrat,OR,Yea,Nay
+119,House,22,22515.0,"Figures, Shomari",Democrat,AL,Yea,Nay
+119,House,22,22518.0,"Gillen, Laura",Democrat,NY,Yea,Nay
+119,House,22,22520.0,"Goodlander, Maggie",Democrat,NH,Yea,Nay
+119,House,22,22521.0,"Gray, Adam",Democrat,CA,Yea,Nay
+119,House,22,22534.0,"Mannion, John W.",Democrat,NY,Yea,Nay
+119,House,22,22536.0,"McClain Delaney, April",Democrat,MD,Yea,Nay
+119,House,22,22537.0,"McDonald Rivet, Kristen",Democrat,MI,Yea,Nay
+119,House,22,22541.0,"Min, Dave",Democrat,CA,Yea,Nay
+119,House,22,22554.0,"Subramanyam, Suhas",Democrat,VA,Yea,Nay
+119,House,22,22556.0,"Tran, Derek",Democrat,CA,Yea,Nay
+119,House,22,22558.0,"Vindman, Eugene Simon",Democrat,VA,Yea,Nay
+119,House,22,29339.0,"Bishop, Sanford Dixon, Jr.",Democrat,GA,Yea,Nay
 119,House,32,14873.0,"Hoyer, Steny Hamilton",Democrat,MD,Yea,Nay
 119,House,32,15029.0,"Kaptur, Marcia Carolyn (Marcy)",Democrat,OH,Yea,Nay
 119,House,32,15433.0,"Mfume, Kweisi",Democrat,MD,Yea,Nay
@@ -18404,8 +18450,122 @@ congress,chamber,rollnumber,icpsr,name,party,state_abbrev,vote,party_position
 119,House,70,22559.0,"Whitesides, George",Democrat,CA,Yea,Nay
 119,House,70,29354.0,"Fields, Cleo",Democrat,LA,Yea,Nay
 119,House,70,29776.0,"Meeks, Gregory W.",Democrat,NY,Yea,Nay
+119,House,103,22305.0,"Burlison, Eric",Republican,MO,Nay,Yea
+119,House,103,31102.0,"Massie, Thomas",Republican,KY,Nay,Yea
+119,House,144,21564.0,"Davidson, Warren",Republican,OH,Nay,Yea
+119,House,144,31102.0,"Massie, Thomas",Republican,KY,Nay,Yea
+119,House,165,15454.0,"Pallone, Frank, Jr.",Democrat,NJ,Nay,Yea
+119,House,165,20122.0,"McCollum, Betty",Democrat,MN,Nay,Yea
+119,House,165,20310.0,"Sánchez, Linda T.",Democrat,CA,Nay,Yea
+119,House,165,20517.0,"Cleaver, Emanuel, Ii",Democrat,MO,Nay,Yea
+119,House,165,20529.0,"Green, Al",Democrat,TX,Nay,Yea
+119,House,165,20537.0,"Moore, Gwendolynne S. (Gwen)",Democrat,WI,Nay,Yea
+119,House,165,20538.0,"Matsui, Doris",Democrat,CA,Nay,Yea
+119,House,165,20708.0,"Castor, Kathy",Democrat,FL,Nay,Yea
+119,House,165,20712.0,"Johnson, Hank",Democrat,GA,Nay,Yea
+119,House,165,20733.0,"Clarke, Yvette Diane",Democrat,NY,Nay,Yea
+119,House,165,20757.0,"Carson, André",Democrat,IN,Nay,Yea
+119,House,165,20920.0,"Pingree, Chellie",Democrat,ME,Nay,Yea
+119,House,165,20934.0,"Tonko, Paul",Democrat,NY,Nay,Yea
+119,House,165,20955.0,"Chu, Judy",Democrat,CA,Nay,Yea
+119,House,165,21198.0,"Bonamici, Suzanne",Democrat,OR,Nay,Yea
+119,House,165,21303.0,"Huffman, Jared",Democrat,CA,Nay,Yea
+119,House,165,21304.0,"Bera, Ami",Democrat,CA,Nay,Yea
+119,House,165,21308.0,"Brownley, Julia",Democrat,CA,Nay,Yea
+119,House,165,21314.0,"Vargas, Juan",Democrat,CA,Nay,Yea
+119,House,165,21321.0,"Frankel, Lois",Democrat,FL,Nay,Yea
+119,House,165,21343.0,"Jeffries, Hakeem",Democrat,NY,Nay,Yea
+119,House,165,21362.0,"Castro, Joaquin",Democrat,TX,Nay,Yea
+119,House,165,21370.0,"Pocan, Mark",Democrat,WI,Nay,Yea
+119,House,165,21371.0,"Kelly, Robin L.",Democrat,IL,Nay,Yea
+119,House,165,21375.0,"Clark, Katherine M.",Democrat,MA,Nay,Yea
+119,House,165,21504.0,"Desaulnier, Mark James",Democrat,CA,Nay,Yea
+119,House,165,21506.0,"Aguilar, Peter Rey",Democrat,CA,Nay,Yea
+119,House,165,21507.0,"Lieu, Ted",Democrat,CA,Nay,Yea
+119,House,165,21525.0,"Moulton, Seth",Democrat,MA,Nay,Yea
+119,House,165,21529.0,"Dingell, Debbie",Democrat,MI,Nay,Yea
+119,House,165,21538.0,"Watson Coleman, Bonnie",Democrat,NJ,Nay,Yea
+119,House,165,21554.0,"Beyer, Donald Sternoff Jr.",Democrat,VA,Nay,Yea
+119,House,165,21566.0,"Evans, Dwight",Democrat,PA,Nay,Yea
+119,House,165,21703.0,"Barragán, Nanette Diaz",Democrat,CA,Nay,Yea
+119,House,165,21715.0,"Espaillat, Adriano J.",Democrat,NY,Nay,Yea
+119,House,165,21726.0,"Jayapal, Pramila",Democrat,WA,Nay,Yea
+119,House,165,21728.0,"Khanna, Ro",Democrat,CA,Nay,Yea
+119,House,165,21730.0,"Krishnamoorthi, S. Raja",Democrat,IL,Nay,Yea
+119,House,165,21741.0,"Raskin, Jamie Ben",Democrat,MD,Nay,Yea
+119,House,165,21746.0,"Soto, Darren Michael",Democrat,FL,Nay,Yea
+119,House,165,21754.0,"Gomez, Jimmy",Democrat,CA,Nay,Yea
+119,House,165,21762.0,"Scanlon, Mary Gay",Democrat,PA,Nay,Yea
+119,House,165,21906.0,"Casten, Sean",Democrat,IL,Nay,Yea
+119,House,165,21907.0,"Cisneros, Gil",Democrat,CA,Nay,Yea
+119,House,165,21912.0,"Crow, Jason",Democrat,CO,Nay,Yea
+119,House,165,21915.0,"Dean, Madeleine",Democrat,PA,Nay,Yea
+119,House,165,21917.0,"Escobar, Veronica",Democrat,TX,Nay,Yea
+119,House,165,21919.0,"Fletcher, Elizabeth",Democrat,TX,Nay,Yea
+119,House,165,21921.0,"García, Jesús",Democrat,IL,Nay,Yea
+119,House,165,21922.0,"Garcia, Sylvia",Democrat,TX,Nay,Yea
+119,House,165,21931.0,"Hayes, Jahana",Democrat,CT,Nay,Yea
+119,House,165,21944.0,"McBath, Lucy",Democrat,GA,Nay,Yea
+119,House,165,21948.0,"Neguse, Joseph",Democrat,CO,Nay,Yea
+119,House,165,21949.0,"Ocasio-Cortez, Alexandria",Democrat,NY,Nay,Yea
+119,House,165,21950.0,"Omar, Ilhan",Democrat,MN,Nay,Yea
+119,House,165,21955.0,"Pressley, Ayanna",Democrat,MA,Nay,Yea
+119,House,165,21975.0,"Tlaib, Rashida",Democrat,MI,Nay,Yea
+119,House,165,21977.0,"Trahan, Lori",Democrat,MA,Nay,Yea
+119,House,165,21979.0,"Underwood, Lauren",Democrat,IL,Nay,Yea
+119,House,165,22126.0,"Jacobs, Sara",Democrat,CA,Nay,Yea
+119,House,165,22131.0,"Leger Fernandez, Teresa",Democrat,NM,Nay,Yea
+119,House,165,22156.0,"Williams, Nikema",Democrat,GA,Nay,Yea
+119,House,165,22159.0,"Stansbury, Melanie Ann",Democrat,NM,Nay,Yea
+119,House,165,22161.0,"Brown, Shontel M.",Democrat,OH,Nay,Yea
+119,House,165,22301.0,"Balint, Becca",Democrat,VT,Nay,Yea
+119,House,165,22304.0,"Budzinski, Nikki",Democrat,IL,Nay,Yea
+119,House,165,22307.0,"Casar, Greg",Democrat,TX,Nay,Yea
+119,House,165,22312.0,"Crockett, Jasmine",Democrat,TX,Nay,Yea
+119,House,165,22321.0,"Frost, Maxwell",Democrat,FL,Nay,Yea
+119,House,165,22323.0,"Garcia, Robert",Democrat,CA,Nay,Yea
+119,House,165,22324.0,"Goldman, Daniel",Democrat,NY,Nay,Yea
+119,House,165,22333.0,"Kamlager-Dove, Sydney",Democrat,CA,Nay,Yea
+119,House,165,22342.0,"Lee, Summer",Democrat,PA,Nay,Yea
+119,House,165,22347.0,"McGarvey, Morgan",Democrat,KY,Nay,Yea
+119,House,165,22348.0,"Menendez, Robert",Democrat,NJ,Nay,Yea
+119,House,165,22354.0,"Mullin, Kevin",Democrat,CA,Nay,Yea
+119,House,165,22359.0,"Pettersen, Brittany",Democrat,CO,Nay,Yea
+119,House,165,22360.0,"Ramirez, Delia",Democrat,IL,Nay,Yea
+119,House,165,22368.0,"Thanedar, Shri",Democrat,MI,Nay,Yea
+119,House,165,22369.0,"Tokuda, Jill",Democrat,HI,Nay,Yea
+119,House,165,22374.0,"McClellan, Jennifer",Democrat,VA,Nay,Yea
+119,House,165,22381.0,"McIver, Lamonica",Democrat,NJ,Nay,Yea
+119,House,165,22500.0,"Ansari, Yassamin",Democrat,AZ,Nay,Yea
+119,House,165,22504.0,"Bell, Wesley",Democrat,MO,Nay,Yea
+119,House,165,22510.0,"Dexter, Maxine",Democrat,OR,Nay,Yea
+119,House,165,22532.0,"Liccardo, Sam T.",Democrat,CA,Nay,Yea
+119,House,165,22550.0,"Rivas, Luz M.",Democrat,CA,Nay,Yea
+119,House,165,22553.0,"Simon, Lateefah",Democrat,CA,Nay,Yea
+119,House,165,29106.0,"Waters, Maxine",Democrat,CA,Nay,Yea
+119,House,165,29368.0,"Thompson, Bennie",Democrat,MS,Nay,Yea
+119,House,165,29377.0,"Nadler, Jerrold Lewis",Democrat,NY,Nay,Yea
+119,House,165,29378.0,"Velázquez, Nydia M.",Democrat,NY,Nay,Yea
+119,House,165,29504.0,"Lofgren, Zoe",Democrat,CA,Nay,Yea
+119,House,165,29571.0,"Doggett, Lloyd Alton, Ii",Democrat,TX,Nay,Yea
+119,House,165,29707.0,"Sherman, Brad",Democrat,CA,Nay,Yea
+119,House,165,29710.0,"Degette, Diana",Democrat,CO,Nay,Yea
+119,House,165,29717.0,"Davis, Danny K.",Democrat,IL,Nay,Yea
+119,House,165,29729.0,"McGovern, James P.",Democrat,MA,Nay,Yea
+119,House,165,29768.0,"Smith, Adam",Democrat,WA,Nay,Yea
+119,House,165,29776.0,"Meeks, Gregory W.",Democrat,NY,Nay,Yea
+119,House,165,29911.0,"Schakowsky, Janice D.",Democrat,IL,Nay,Yea
+119,House,165,31102.0,"Massie, Thomas",Republican,KY,Nay,Yea
+119,House,165,39301.0,"Clyburn, James Enos",Democrat,SC,Nay,Yea
+119,House,165,39307.0,"Scott, Robert C.",Democrat,VA,Nay,Yea
+119,House,167,20342.0,"Turner, Michael R.",Republican,OH,Nay,Yea
+119,House,167,21196.0,"Amodei, Mark E.",Republican,NV,Nay,Yea
+119,House,167,21718.0,"Fitzpatrick, Brian K.",Republican,PA,Nay,Yea
+119,House,167,22133.0,"Malliotakis, Nicole",Republican,NY,Nay,Yea
 119,House,181,21923.0,"Golden, Jared",Democrat,ME,Yea,Nay
 119,House,181,22358.0,"Perez, Marie Gluesenkamp",Democrat,WA,Yea,Nay
+119,House,189,21718.0,"Fitzpatrick, Brian K.",Republican,PA,Nay,Yea
+119,House,189,31102.0,"Massie, Thomas",Republican,KY,Nay,Yea
 119,House,198,15448.0,"Pelosi, Nancy",Democrat,CA,Yea,Nay
 119,House,198,20501.0,"Costa, Jim",Democrat,CA,Yea,Nay
 119,House,198,20533.0,"Cuellar, Henry",Democrat,TX,Yea,Nay
@@ -18696,6 +18856,7 @@ congress,chamber,rollnumber,icpsr,name,party,state_abbrev,vote,party_position
 119,House,284,22358.0,"Perez, Marie Gluesenkamp",Democrat,WA,Yea,Nay
 119,House,284,22521.0,"Gray, Adam",Democrat,CA,Yea,Nay
 119,House,284,31102.0,"Massie, Thomas",Republican,KY,Nay,Yea
+119,House,288,21724.0,"Higgins, Clay",Republican,LA,Nay,Yea
 119,House,327,20145.0,"Larsen, Richard Ray (Rick)",Democrat,WA,Yea,Nay
 119,House,327,20310.0,"Sánchez, Linda T.",Democrat,CA,Yea,Nay
 119,House,327,20321.0,"Scott, David",Democrat,GA,Yea,Nay
@@ -19426,6 +19587,18 @@ congress,chamber,rollnumber,icpsr,name,party,state_abbrev,vote,party_position
 119,House,632,22314.0,"Davis, Don",Democrat,NC,Yea,Nay
 119,House,632,22371.0,"Vasquez, Gabriel",Democrat,NM,Yea,Nay
 119,House,632,31102.0,"Massie, Thomas",Republican,KY,Nay,Yea
+119,Senate,7,20923.0,"Peters, Gary C.",Democrat,MI,Yea,Nay
+119,Senate,7,21502.0,"Gallego, Ruben",Democrat,AZ,Yea,Nay
+119,Senate,7,21743.0,"Rosen, Jacklyn Sheryl",Democrat,NV,Yea,Nay
+119,Senate,7,21965.0,"Slotkin, Elissa",Democrat,MI,Yea,Nay
+119,Senate,7,40906.0,"Shaheen, Jeanne",Democrat,NH,Yea,Nay
+119,Senate,7,40909.0,"Warner, Mark R.",Democrat,VA,Yea,Nay
+119,Senate,7,41700.0,"Cortez Masto, Catherine Marie",Democrat,NV,Yea,Nay
+119,Senate,7,41702.0,"Hassan, Margaret Wood (Maggie)",Democrat,NH,Yea,Nay
+119,Senate,7,41905.0,"Kelly, Mark Edward",Democrat,AZ,Yea,Nay
+119,Senate,7,42103.0,"Ossoff, Thomas Jonathan (Jon)",Democrat,GA,Yea,Nay
+119,Senate,7,42105.0,"Warnock, Raphael Gamaliel",Democrat,GA,Yea,Nay
+119,Senate,7,42301.0,"Fetterman, John Karl",Democrat,PA,Yea,Nay
 119,Senate,13,15021.0,"Durbin, Richard Joseph",Democrat,IL,Yea,Nay
 119,Senate,13,20735.0,"Gillibrand, Kirsten",Democrat,NY,Yea,Nay
 119,Senate,13,20750.0,"Welch, Peter",Democrat,VT,Yea,Nay
@@ -19581,6 +19754,21 @@ congress,chamber,rollnumber,icpsr,name,party,state_abbrev,vote,party_position
 119,Senate,111,42101.0,"Hickenlooper, John Wright",Democrat,CO,Yea,Nay
 119,Senate,111,42103.0,"Ossoff, Thomas Jonathan (Jon)",Democrat,GA,Yea,Nay
 119,Senate,111,42105.0,"Warnock, Raphael Gamaliel",Democrat,GA,Yea,Nay
+119,Senate,127,14435.0,"Markey, Edward John",Democrat,MA,Nay,Yea
+119,Senate,127,14871.0,"Wyden, Ronald Lee",Democrat,OR,Nay,Yea
+119,Senate,127,20104.0,"Schiff, Adam",Democrat,CA,Nay,Yea
+119,Senate,127,20330.0,"Van Hollen, Christopher",Democrat,MD,Nay,Yea
+119,Senate,127,20707.0,"Murphy, Christopher",Democrat,CT,Nay,Yea
+119,Senate,127,20713.0,"Hirono, Mazie",Democrat,HI,Nay,Yea
+119,Senate,127,20750.0,"Welch, Peter",Democrat,VT,Nay,Yea
+119,Senate,127,21325.0,"Duckworth, Tammy",Democrat,IL,Nay,Yea
+119,Senate,127,21706.0,"Blunt Rochester, Lisa",Democrat,DE,Nay,Yea
+119,Senate,127,40908.0,"Merkley, Jeff",Democrat,OR,Nay,Yea
+119,Senate,127,41301.0,"Warren, Elizabeth",Democrat,MA,Nay,Yea
+119,Senate,127,41308.0,"Booker, Cory Anthony",Democrat,NJ,Nay,Yea
+119,Senate,127,42104.0,"Padilla, Alejandro (Alex)",Democrat,CA,Nay,Yea
+119,Senate,127,42105.0,"Warnock, Raphael Gamaliel",Democrat,GA,Nay,Yea
+119,Senate,127,42500.0,"Alsobrooks, Angela Deneece",Democrat,MD,Nay,Yea
 119,Senate,133,40906.0,"Shaheen, Jeanne",Democrat,NH,Yea,Nay
 119,Senate,133,41104.0,"Paul, Rand",Republican,KY,Nay,Yea
 119,Senate,139,15021.0,"Durbin, Richard Joseph",Democrat,IL,Yea,Nay
@@ -19663,6 +19851,11 @@ congress,chamber,rollnumber,icpsr,name,party,state_abbrev,vote,party_position
 119,Senate,318,42105.0,"Warnock, Raphael Gamaliel",Democrat,GA,Yea,Nay
 119,Senate,318,42301.0,"Fetterman, John Karl",Democrat,PA,Yea,Nay
 119,Senate,318,42500.0,"Alsobrooks, Angela Deneece",Democrat,MD,Yea,Nay
+119,Senate,372,41104.0,"Paul, Rand",Republican,KY,Nay,Yea
+119,Senate,372,41504.0,"Tillis, Thomas Roland (Thom)",Republican,NC,Nay,Yea
+119,Senate,372,49703.0,"Collins, Susan Margaret",Republican,ME,Nay,Yea
+119,Senate,411,40300.0,"Murkowski, Lisa",Republican,AK,Nay,Yea
+119,Senate,411,49703.0,"Collins, Susan Margaret",Republican,ME,Nay,Yea
 119,Senate,480,14435.0,"Markey, Edward John",Democrat,MA,Nay,Yea
 119,Senate,480,20104.0,"Schiff, Adam",Democrat,CA,Nay,Yea
 119,Senate,480,20707.0,"Murphy, Christopher",Democrat,CT,Nay,Yea

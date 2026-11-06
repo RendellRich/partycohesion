@@ -1,108 +1,164 @@
-# PartyCohesion — First Social Media Post Pack
+# PartyCohesion Social Post Pack
 
-Neutral, data-first captions ready to pair with charts from the app.  
-Live app: https://partycohesion.streamlit.app. Re-check the numbers in each post against the app before posting, since they change as new votes are recorded.
+Neutral, data-first posts ready to pair with charts from the app.
+Live app: https://partycohesion.streamlit.app
+
+Numbers below come from the app's data files (Voteview roll calls through Sept. 30, 2026). They change as new votes are recorded, so re-check each number against the app before posting.
+
+**How to get the chart:** open the page listed under each post, pick the download size in the sidebar (X or Instagram), then click the camera icon on the chart. Every chart already carries its title and the source line.
+
+**Style rules:** describe, don't judge. Say "voted with their party's majority X% of the time," not "loyal" or "broke ranks to…". Name the source. Never imply motive.
 
 ---
 
-## Post 1 — Launch / What this is
-**Platform**: X (primary) or Instagram carousel
+## Post 1: Launch
+**Chart:** Overview → Average Party Unity by Congress
 
-**Caption**:
 PartyCohesion is live.
 
-Primary data on how members of Congress actually vote — ideology scores and party-unity rates from the official roll-call record.
+It shows how often each member of Congress votes with their own party, using the official roll-call record from Voteview. Every member, every Congress since 2007.
 
-No scorecards. No spin. Just the numbers and the sources.
+No scorecards. No commentary. Just the votes and the method.
 
-Explore the data → https://partycohesion.streamlit.app
-
-Data: Voteview (UCLA)
+https://partycohesion.streamlit.app
 
 ---
 
-## Post 2 — Party unity snapshot (119th Congress)
-**Best with**: Box plot or mean comparison from the Key Votes page
+## Post 2: 119th Congress snapshot
+**Chart:** Key Votes → Party Unity Rates (119th, House and Senate)
 
-**Caption**:
-119th Congress party-unity rates (so far):
+How often members of the 119th Congress voted with their own party on party-line votes:
 
-• Democrats: mean ~96%  
-• Republicans: mean ~97.5%
+Democrats: 96.3% on average
+Republicans: 97.5% on average
 
-These figures measure how often members voted with the majority of their own party on votes where the two parties took opposite positions (1,313 such votes identified as of Nov. 5, 2026).
+Based on 1,313 roll calls where most Democrats and most Republicans voted on opposite sides.
 
-Full distribution and member-level data → https://partycohesion.streamlit.app
-
-Source: Voteview roll-call records
+Data: Voteview
 
 ---
 
-## Post 3 — Ideology distribution
-**Best with**: Histogram of DW-NOMINATE Dimension 1 from the Overview page
+## Post 3: The Senate over time
+**Chart:** Overview → Average Party Unity by Congress (Senate panel)
 
-**Caption**:
-Where members of the current Congress sit on the primary liberal–conservative axis of voting behavior.
+Average party unity among Senate Republicans:
 
-Negative = more liberal voting record  
-Positive = more conservative voting record
+110th Congress (2007–08): 85.3%
+119th Congress (2025–26): 98.6%
 
-These scores come from the full roll-call matrix, not from speeches or surveys.
+Senate Democrats over the same span: 91.5% and 95.4%.
 
-Interactive view → https://partycohesion.streamlit.app
+Each member's rate is computed separately for each Congress.
 
-Data: Voteview DW-NOMINATE
-
----
-
-## Post 4 — Who breaks with their party more often
-**Best with**: Table or highlighted list of lower party-unity members
-
-**Caption**:
-Most members vote with their party majority well over 90% of the time on party-unity votes.
-
-A smaller group votes against the party majority more frequently. Their party-unity rates and ideology scores are public in the data.
-
-See the full list and context → https://partycohesion.streamlit.app
-
-No judgment attached — just the recorded positions.
+Data: Voteview
 
 ---
 
-## Post 5 — Methodology transparency
-**Best with**: Screenshot of the Methodology page or a simple diagram
+## Post 4: Who votes against their party?
+**Chart:** Key Votes → Members with the lowest party-unity rates (expand the table)
 
-**Caption**:
-How PartyCohesion works:
+In the 119th Congress, members who voted with their own party less than 90% of the time on party-line votes:
 
-1. Start with official congressional roll-call votes  
-2. Use research-grade DW-NOMINATE scores (Voteview)  
-3. Compute classic party-unity rates on votes where the parties opposed each other  
-4. Show the numbers with sources and definitions
+House: 19 Democrats, 5 Republicans
+Senate: 4 Democrats, 3 Republicans
 
-Methodology page → https://partycohesion.streamlit.app
+Every member's rate, and the votes behind it, is searchable.
 
-Primary sources only.
+Data: Voteview
 
 ---
 
-## Post 6 — Short thread starter (X)
-1/ PartyCohesion looks at one clear question: when members of Congress vote, how often do they vote with the majority of their own party, and where do they sit on the main ideological dimension recovered from those votes?
+## Post 5: Hegseth confirmation
+**Chart:** Key Votes → 119th → Senate → Cabinet Confirmations → Hegseth vote
 
-2/ The data come from Voteview’s roll-call archive. Party-unity votes are defined the classic way: a majority of Democrats on one side, a majority of Republicans on the other.
+Senate vote to confirm Pete Hegseth as Secretary of Defense, Jan. 24, 2025:
 
-3/ Charts, member search, and full methodology are here: https://partycohesion.streamlit.app
+Total: 50 Yea, 50 Nay (tie broken by the Vice President)
+Democrats: 0 Yea, 45 Nay
+Republicans: 50 Yea, 3 Nay
+Independents: 0 Yea, 2 Nay
 
-No endorsements. No scorecards that hide the underlying votes.
+Republicans voting Nay: Collins, McConnell, Murkowski.
 
----
-
-## Usage tips
-- Always link the live app and name the data source (Voteview).
-- Prefer charts exported directly from the Streamlit app when possible.
-- Keep language descriptive (“voted with the party majority X% of the time”) rather than evaluative.
-- On Instagram, pair one clean chart with a short caption; put the longer explanation in the first comment if needed.
+Data: Voteview
 
 ---
 
-*Update the numbers in Posts 2 and 4 after each data refresh if they shift.*
+## Post 6: Ending the 2025 shutdown
+**Chart:** Key Votes → 119th → Senate → Funding & Appropriations → Nov. 10, 2025 vote
+
+Senate passage of the funding bill that ended the fall 2025 shutdown, Nov. 10, 2025: 60 Yea, 40 Nay.
+
+Democrats: 7 Yea, 38 Nay
+Republicans: 52 Yea, 1 Nay
+Independents: 1 Yea, 1 Nay
+
+Members who voted against their party's majority: Cortez Masto, Durbin, Fetterman, Hassan, Kaine, Rosen, Shaheen (D) and Paul (R).
+
+Data: Voteview
+
+---
+
+## Post 7: One Big Beautiful Bill Act
+**Chart:** Key Votes → 119th → Major Legislation
+
+Roll-call votes on the One Big Beautiful Bill Act (H.R. 1):
+
+House passage, May 22, 2025: 215–214
+Senate passage, July 1, 2025: 50–50
+House vote to accept Senate changes, July 3, 2025: 218–214
+
+No Democrat voted Yea on any of the three. Republicans voting Nay: 2 in the House (May), 3 in the Senate, 2 in the House (July).
+
+Data: Voteview
+
+---
+
+## Post 8: GENIUS Act
+**Chart:** Key Votes → 119th → House → Biggest Party Breaks → GENIUS Act
+
+The stablecoin bill (GENIUS Act) is one of the 10 biggest party breaks of the 119th House on a final vote.
+
+House passage, July 17, 2025: 308 Yea, 122 Nay
+Democrats: 102 Yea, 110 Nay
+Republicans: 206 Yea, 12 Nay
+
+Senate passage, June 17, 2025: 68 Yea, 30 Nay
+
+Data: Voteview
+
+---
+
+## Post 9: Cabinet confirmations across administrations
+**Chart:** Key Votes → Cabinet Confirmations (switch the Congress filter: 111th, 115th, 117th, 119th)
+
+Average share of opposing-party senators voting Yea on Cabinet confirmations (roll-call votes only):
+
+2009 (111th, 5 votes): 50%
+2017 (115th, 19 votes): 38%
+2021 (117th, 15 votes): 49%
+2025 (119th, 18 votes): 23%
+
+In the 119th, 6 of 18 Cabinet confirmation votes got no Yea votes from the opposing party.
+
+Cabinet nominees confirmed by voice vote have no roll call and are not counted.
+
+Data: Voteview
+
+---
+
+## Post 10: How the numbers work (thread)
+**Chart:** none, or a screenshot of the Methodology page
+
+1/ How PartyCohesion measures party unity, in plain terms:
+
+2/ A party-unity vote is a roll call where most Democrats voted one way and most Republicans voted the other. The 119th Congress has had 1,313 of them so far.
+
+3/ A member's party unity % is the share of those votes on which they sided with their own party's majority. Only real Yea and Nay votes count. Absences don't.
+
+4/ Each Congress is scored separately, so a member's rate can change from one Congress to the next. Member Explorer charts that change for anyone who served more than one term.
+
+5/ Key votes are grouped by fixed rules (funding bills, Cabinet confirmations, the biggest party breaks), so the selection isn't anyone's opinion. Hand-picked votes are labeled as hand-picked.
+
+6/ All data comes from Voteview's official roll-call records. Methodology: https://partycohesion.streamlit.app
+Code: https://github.com/RendellRich/partycohesion

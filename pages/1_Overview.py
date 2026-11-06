@@ -5,6 +5,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
+from chart_utils import show_chart, ordinal, chamber_label
 
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "members_processed.csv"
@@ -76,7 +77,7 @@ if not plot_df.empty:
         height=420,
         margin=dict(l=40, r=40, t=30, b=40),
     )
-    st.plotly_chart(fig, width="stretch")
+    show_chart(fig, f"Ideology distribution, {ordinal(congress)} Congress, {chamber_label(chamber)}", f"ideology_{congress}_{chamber.lower()}")
 else:
     st.info("No data for the selected filters.")
 
@@ -105,7 +106,7 @@ if not unity_df.empty:
         labels={"party_unity_pct": "Party Unity %", "party": "Party"},
     )
     fig_u.update_layout(showlegend=False, height=420, margin=dict(l=40, r=40, t=30, b=40))
-    st.plotly_chart(fig_u, width="stretch")
+    show_chart(fig_u, f"Party unity rates, {ordinal(congress)} Congress, {chamber_label(chamber)}", f"party_unity_{congress}_{chamber.lower()}")
 
 st.subheader("Average Party Unity Across Recent Congresses")
 unity_trend = (
@@ -127,7 +128,7 @@ fig_ut = px.line(
 )
 fig_ut.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
 fig_ut.update_layout(height=400, margin=dict(l=40, r=40, t=40, b=40))
-st.plotly_chart(fig_ut, width="stretch")
+show_chart(fig_ut, "Average party unity by Congress", "party_unity_trend")
 
 # Cohesion proxy distribution
 st.subheader("Cohesion Proxy Distribution")
@@ -147,7 +148,7 @@ if "cohesion_proxy" in plot_df.columns and not plot_df.empty:
         labels={"cohesion_proxy": "Cohesion Proxy (0–100)", "party": "Party"},
     )
     fig2.update_layout(showlegend=False, height=420, margin=dict(l=40, r=40, t=30, b=40))
-    st.plotly_chart(fig2, width="stretch")
+    show_chart(fig2, f"Cohesion proxy, {ordinal(congress)} Congress, {chamber_label(chamber)}", f"cohesion_proxy_{congress}_{chamber.lower()}")
 
 # Party median comparison over recent Congresses
 st.subheader("Party Median Ideology Across Recent Congresses")
@@ -170,7 +171,7 @@ fig3 = px.line(
 )
 fig3.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
 fig3.update_layout(height=400, margin=dict(l=40, r=40, t=40, b=40))
-st.plotly_chart(fig3, width="stretch")
+show_chart(fig3, "Party median ideology by Congress", "party_median_ideology_trend")
 
 st.markdown("---")
 st.caption("Source: Voteview (member and roll-call vote files). Ideology scores are DW-NOMINATE estimates. Party unity rates are computed from individual roll-call votes. The cohesion proxy is derived from distance to the party median within chamber and Congress.")

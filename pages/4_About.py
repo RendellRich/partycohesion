@@ -23,7 +23,7 @@ st.markdown("""
 st.header("Current Scope")
 st.markdown("""
 - U.S. House and Senate  
-- The 110th through 119th Congresses  
+- The 110th Congress (2007) to the present  
 - Party unity rates computed from individual roll-call votes, plus DW-NOMINATE ideology scores and a cohesion proxy  
 - Interactive exploration of members and chamber-level patterns  
 - High-profile vote series (funding bills, Cabinet confirmations, biggest party breaks) with every member who broke ranks

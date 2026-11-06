@@ -8,6 +8,7 @@ Built with Streamlit. Data primarily from Voteview (UCLA).
 import streamlit as st
 import pandas as pd
 from pathlib import Path
+from chart_utils import ordinal
 
 
 
@@ -24,18 +25,20 @@ def main():
 
     try:
         df = load_members()
-        current = df[df["congress"] == 119]
+        latest = int(df["congress"].max())
+        current = df[df["congress"] == latest]
         house = current[current["chamber"] == "House"]
         senate = current[current["chamber"] == "Senate"]
         house_n = len(house)
         senate_n = len(senate)
     except Exception:
+        latest = None
         house_n = "—"
         senate_n = "—"
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric(label="Congress", value="119th")
+        st.metric(label="Congress", value=ordinal(latest) if latest else "—")
     with col2:
         st.metric(label="House Members (scored)", value=house_n)
     with col3:
@@ -43,12 +46,18 @@ def main():
     with col4:
         st.metric(label="Data Source", value="Voteview")
 
+    try:
+        latest_vote = pd.read_csv(DATA_PATH.parent / "unity_summary.csv")["latest_vote_date"].max()
+        st.caption(f"Data includes roll-call votes through {pd.Timestamp(latest_vote):%B %-d, %Y}. Refreshed automatically twice a week.")
+    except Exception:
+        pass
+
     st.markdown("---")
 
     st.subheader("What this site shows")
     st.markdown("""
 **PartyCohesion** presents transparent metrics derived from official congressional roll-call data 
-(via Voteview / UCLA), covering the House and Senate from the 110th through the 119th Congress. The focus is on **how often members vote with the majority of their own party** 
+(via Voteview / UCLA), covering the House and Senate from the 110th Congress (2007) to the present. The focus is on **how often members vote with the majority of their own party** 
 and where they sit on the primary liberal–conservative dimension of voting behavior.
 
 - **Overview** — Chamber-level and party-level patterns  
@@ -61,7 +70,7 @@ Use the sidebar to navigate.
     """)
 
     st.markdown("---")
-    st.caption("Data: Lewis, Poole, Rosenthal, Boche, Rudkin & Sonnet — Voteview: Congressional Roll-Call Votes Database. Coverage: Congresses 110–119.")
+    st.caption("Data: Lewis, Poole, Rosenthal, Boche, Rudkin & Sonnet — Voteview: Congressional Roll-Call Votes Database. Coverage: 110th Congress to present.")
     st.caption("This is an independent educational project. It does not endorse any party or candidate.")
 
 main()

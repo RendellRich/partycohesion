@@ -7,7 +7,7 @@ Usage:
 
 This script:
 1. Downloads the latest HSall_members.csv from Voteview
-2. Downloads the House and Senate vote files for each Congress in range
+2. Downloads the House and Senate vote and roll-call files for each Congress from the 110th to the newest
 3. Computes a transparent cohesion proxy (distance from party median, DW-NOMINATE Dim 1)
 4. Computes classic party-unity rates for every member in every Congress
 5. Builds the key vote series (funding, cabinet confirmations, biggest party breaks,
@@ -19,6 +19,7 @@ Run from the project root. Raw downloads are cached in data/raw/ (not committed)
 
 from pathlib import Path
 import sys
+import urllib.error
 import urllib.request
 import pandas as pd
 import numpy as np
@@ -34,7 +35,9 @@ SUMMARY_FILE = DATA_DIR / "unity_summary.csv"
 BASE_URL = "https://voteview.com/static/data/out"
 MEMBERS_URL = f"{BASE_URL}/members/HSall_members.csv"
 
-CONGRESSES = range(110, 120)  # 110th through 119th
+FIRST_CONGRESS = 110
+# Set at runtime from the member file: FIRST_CONGRESS through the newest Congress with vote data.
+CONGRESSES = range(FIRST_CONGRESS, 120)
 CHAMBERS = {"House": "H", "Senate": "S"}
 
 PARTY_MAP = {
@@ -60,14 +63,29 @@ def download(url: str, dest: Path, force: bool = True) -> None:
 
 
 def download_raw(force: bool = True) -> None:
+    """Download the member file, then vote and roll-call files for every Congress from
+    FIRST_CONGRESS to the newest one Voteview has. A brand-new Congress whose vote files are
+    not published yet is skipped until they are."""
+    global CONGRESSES
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     print("Downloading Voteview files…")
     download(MEMBERS_URL, MEMBERS_RAW, force)
-    for cong in CONGRESSES:
-        for prefix in CHAMBERS.values():
-            name = f"{prefix}{cong}_votes.csv"
-            # Only the current Congress changes; older ones can be reused from cache.
-            download(f"{BASE_URL}/votes/{name}", RAW_DIR / name, force=force and cong == max(CONGRESSES))
+    latest = int(pd.read_csv(MEMBERS_RAW, usecols=["congress"])["congress"].max())
+    available = []
+    for cong in range(FIRST_CONGRESS, latest + 1):
+        try:
+            for prefix in CHAMBERS.values():
+                for kind in ("votes", "rollcalls"):
+                    name = f"{prefix}{cong}_{kind}.csv"
+                    # Only the newest two Congresses change; older ones are reused from cache.
+                    download(f"{BASE_URL}/{kind}/{name}", RAW_DIR / name, force=force and cong >= latest - 1)
+            available.append(cong)
+        except urllib.error.HTTPError as e:
+            if cong < latest:
+                raise
+            print(f"  {cong}th Congress vote files not available yet ({e.code}); skipping it for now")
+    CONGRESSES = range(FIRST_CONGRESS, max(available) + 1)
+    print(f"Congresses included: {FIRST_CONGRESS}–{max(available)}")
 
 
 def load_members() -> pd.DataFrame:
@@ -150,7 +168,8 @@ def add_party_unity(members: pd.DataFrame):
             unity["congress"] = cong
             unity["chamber"] = chamber
             frames.append(unity)
-            summary.append({"congress": cong, "chamber": chamber, "party_unity_votes": n_rolls})
+            last = pd.read_csv(RAW_DIR / f"{CHAMBERS[chamber]}{cong}_rollcalls.csv", usecols=["date"])["date"].max()
+            summary.append({"congress": cong, "chamber": chamber, "party_unity_votes": n_rolls, "latest_vote_date": last})
     unity_all = pd.concat(frames, ignore_index=True)
     merged = members.merge(unity_all, on=["congress", "chamber", "icpsr"], how="left")
     merged["unity_votes_cast"] = merged["unity_votes_cast"].astype("Int64")
@@ -181,13 +200,6 @@ CABINET_RE = (r"to be (?:the )?(?:Secretary of (?:State|the Treasury|Defense|the
 CUSTOM_FILE = DATA_DIR / "key_votes_custom.csv"
 KEY_VOTES_FILE = DATA_DIR / "key_votes.csv"
 DEFECTORS_FILE = DATA_DIR / "key_vote_defectors.csv"
-
-
-def download_rollcalls(force: bool = True) -> None:
-    for cong in CONGRESSES:
-        for prefix in CHAMBERS.values():
-            name = f"{prefix}{cong}_rollcalls.csv"
-            download(f"{BASE_URL}/rollcalls/{name}", RAW_DIR / name, force=force and cong == max(CONGRESSES))
 
 
 def vote_splits(cong: int, chamber: str, members: pd.DataFrame):
@@ -301,7 +313,6 @@ def process() -> None:
 def main() -> None:
     try:
         download_raw()
-        download_rollcalls()
         process()
         print("\nRefresh complete. Commit the updated files in data/ and the app will pick them up.")
     except Exception as e:

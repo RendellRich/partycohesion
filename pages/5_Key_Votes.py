@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from pathlib import Path
+from chart_utils import show_chart, ordinal, chamber_label
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 PARTY_COLORS = {"Democrat": "#2E86AB", "Republican": "#A23B72"}
@@ -25,14 +26,13 @@ def load_data():
     votes = pd.read_csv(DATA_DIR / "key_votes.csv")
     defectors = pd.read_csv(DATA_DIR / "key_vote_defectors.csv")
     votes["label"] = votes["vote_desc"].fillna(votes["bill_number"].fillna("") + " " + votes["vote_question"].fillna(""))
+    # Hand-picked votes carry a short plain-language note; use it as the name when present
+    votes["label"] = votes["note"].where(votes["note"].notna() & (votes["note"].astype(str).str.strip() != ""), votes["label"])
     return members, summary, votes, defectors
 
 
 members, summary, votes, defectors = load_data()
 
-
-def ordinal(n: int) -> str:
-    return f"{n}{'th' if 11 <= n % 100 <= 13 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
 
 
 def split(y, n) -> str:
@@ -79,7 +79,7 @@ if not unity.empty:
         color_discrete_map=PARTY_COLORS, labels={"party_unity_pct": "Party Unity %", "party": "Party"},
     )
     fig.update_layout(showlegend=False, height=400, margin=dict(l=40, r=40, t=20, b=40))
-    st.plotly_chart(fig, width="stretch")
+    show_chart(fig, f"Party unity rates, {ordinal(congress)} Congress, {chamber_label(chamber)}", f"party_unity_{congress}_{chamber.lower()}")
 
     with st.expander("Members with the lowest party-unity rates"):
         low = unity.nsmallest(15, "party_unity_pct")[
@@ -145,7 +145,7 @@ else:
                            color_discrete_map={"Yea": "#8ecae6", "Nay": "#577590"},
                            category_orders={"Party": ["Democrat", "Republican", "Independent"], "Vote": ["Yea", "Nay"]})
             fig_v.update_layout(height=230, margin=dict(l=40, r=40, t=10, b=30), legend_title_text="")
-            st.plotly_chart(fig_v, width="stretch", key=f"kv_chart_{name}")
+            show_chart(fig_v, f"{v['label'][:70]} ({v['chamber']}, {v['date']})", f"vote_{v['chamber'].lower()}_{congress}_{int(v['rollnumber'])}", key=f"kv_chart_{name}")
 
             broke = defectors[(defectors["congress"] == congress) & (defectors["chamber"] == v["chamber"])
                               & (defectors["rollnumber"] == v["rollnumber"])]
