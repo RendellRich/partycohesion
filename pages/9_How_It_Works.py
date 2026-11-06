@@ -17,8 +17,8 @@ CATEGORIES = ["All categories", "Debt limit", "Stopgap funding", "Full-year fund
 FRIENDLY = {
     "Debt limit": ("Raising or suspending the debt limit", "Yea (Nay on a resolution blocking an increase)"),
     "Stopgap funding": ("Short-term bills that keep the government open", "Yea"),
-    "Full-year funding": ("Large packages that fund the government for the year", "Yea"),
-    "Disaster aid": ("Emergency spending after hurricanes, fires and floods", "Yea"),
+    "Full-year funding": ("Packages that fund the government for the rest of the year", "Yea"),
+    "Disaster aid": ("Laws with $10 billion or more for hurricanes, fires and floods", "Yea"),
     "War powers limits": ("Resolutions ordering the president to withdraw U.S. forces", "Nay"),
 }
 # The two worked examples are the parties' Senate leaders during the years they led at the same time (2017 to 2024),

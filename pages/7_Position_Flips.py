@@ -16,8 +16,9 @@ FRIENDLY = {
     "Debt limit": "Yea to raise or suspend the debt limit (Nay on resolutions disapproving an increase)",
     "Stopgap funding": "Yea on a stopgap funding bill that passed the chamber",
     "War powers limits": "Nay on a resolution directing the president to remove U.S. forces",
-    "Full-year funding": "Yea on a full-year funding package (omnibus) that passed the chamber",
-    "Disaster aid": "Yea on a disaster relief spending bill that passed the chamber",
+    "Full-year funding": "Yea on the final vote for a full-year funding package (omnibus, minibus or full-year "
+                         "continuing resolution) that became law",
+    "Disaster aid": "Yea on the final vote for a law with $10 billion or more in disaster relief",
 }
 
 
@@ -83,10 +84,10 @@ with st.expander("Limits of this measure", expanded=False):
 - **The bills are not identical.** Two debt limit or funding bills can carry different spending cuts, riders, or
   conditions, so a changed vote can reflect a changed bill rather than a changed principle. Each member's votes are
   listed below so you can judge for yourself.
-- **Debt limit votes are listed by hand** (see the full list at the bottom) because increases often rode on unrelated
-  "vehicle" bills. Funding and disaster bills that rode on unrelated vehicle bills are only caught when a White House
-  statement names them, so some (such as Biden-era omnibus packages) are missing. Increases passed without a direct roll call (such as the House rule in Oct. 2021) or folded into a
-  much larger bill (such as the 2025 reconciliation law) are not included.
+- **Debt limit, full-year funding and disaster aid votes are listed by hand,** following written rules (see the full
+  list at the bottom), because these laws usually pass as unrelated "vehicle" bills that no keyword search can find.
+  Debt limit increases passed without a direct roll call (such as the House rule in Oct. 2021) or folded into a much
+  larger bill (such as the 2025 reconciliation law) are not included.
 - **Votes are not spread evenly across presidents.** {by_president} Some categories have no votes at all under some
   presidents, so members who served in different years are scored on different mixes of votes.
 - **Matching leaves some votes out.** Votes with no match of the same type and chamber situation under the other
@@ -230,8 +231,10 @@ with st.expander(f"All {len(votes)} votes used on this page"):
              "White House statement", "Selected by"]],
         width="stretch", hide_index=True, column_config={"Vote": st.column_config.TextColumn(width="large")},
     )
-    st.caption("Selected by: rule = picked automatically by the written rule above; listed = on the hand-made debt limit list "
-               "in data/flip_debt_limit_votes.csv. Based on: president's statement = the White House's official Statement of "
-               "Administration Policy on that bill; default rule = no statement was issued, so the rule above applies.")
+    st.caption("Selected by: rule = picked automatically by the written rule above; listed = on a hand-made list that "
+               "follows a written rule (data/flip_debt_limit_votes.csv for the debt limit, data/flip_funding_votes.csv for "
+               "full-year funding and disaster aid). Based on: president's statement = the White House's official Statement "
+               "of Administration Policy on that bill; listed or default rule = no statement was issued, so the listed or "
+               "default president-friendly vote applies.")
 
 st.caption("Source: Voteview roll-call records. Only actual Yea and Nay floor votes are counted.")

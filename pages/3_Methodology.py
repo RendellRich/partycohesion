@@ -88,10 +88,16 @@ Position Flips looks at five kinds of votes that come up under presidents of bot
 - **Debt limit:** Yea to raise or suspend the limit, or Nay on a resolution disapproving an increase. These votes are **listed by hand** in `data/flip_debt_limit_votes.csv`, because increases often rode on unrelated vehicle bills.
 - **Stopgap funding:** Yea on a government-wide continuing resolution that passed the chamber. One-agency "mini" bills and rival versions that failed are excluded.
 - **War powers limits:** Nay on a resolution directing the president to remove U.S. forces from hostilities.
-- **Full-year funding:** Yea on an omnibus or consolidated appropriations package that passed the chamber.
-- **Disaster aid:** Yea on a spending bill that explicitly funds disaster relief and passed the chamber. Generic "emergency supplemental" bills are excluded because the same wording was used for war, border and pandemic funding.
+- **Full-year funding:** Yea on the final vote for every law that gave full-year funding to two or more of the twelve
+  regular appropriations bills at once (omnibus, minibus, consolidated or full-year continuing appropriations), fiscal
+  year 2008 on. **Listed by hand** in `data/flip_funding_votes.csv`. Full-year continuing resolutions count here, not
+  as stopgaps.
+- **Disaster aid:** Yea on the final vote for every law containing a disaster relief supplemental of $10 billion or
+  more, as listed by the Congressional Budget Office. **Listed by hand** in the same file.
 
-Funding and disaster votes are matched on the vote's description or on the title of a linked White House statement, because these bills often ride on unrelated "vehicle" bills.
+The final vote is the last one in each chamber that approved the text that became law; when the House split a
+package into two votes, both count. These two lists replaced keyword matching, which missed packages passed as
+unrelated "vehicle" bills and caught bills that never became law.
 
 A step-by-step example with a real member's votes is on the **How We Measure Consistency** page.
 
@@ -137,22 +143,24 @@ st.markdown("""
   so no pattern reads as good or bad, and colors never carry meaning on their own.
 - The worked examples on How We Measure Consistency are the two parties' Senate leaders during the years they led at
   the same time (McConnell and Schumer, 2017 to 2024), one from each party. Readers can switch to any member.
-- Anything picked by hand (the debt limit list and Major Legislation) is labeled, and the full lists are public.
+- Anything picked by hand (the debt limit, full-year funding and disaster aid lists, and Major Legislation) is
+  labeled, and the full lists are public. The three Position Flips lists follow written rules that cover every
+  president the same way.
 - Pages describe what the votes show. They do not call any vote right or wrong.
 
 **Known imbalances in the Position Flips data**
 
-- Votes are not spread evenly across presidents. Of the votes in the five categories, far more fall under Obama and
-  Trump than under Bush or Biden, and some categories (full-year funding, disaster aid) have no Biden-era votes,
-  partly because those bills often passed as unrelated vehicle bills that the rules cannot detect. The current counts
-  are listed on the Position Flips page.
+- Votes are not spread evenly across presidents. More fall under Obama and Trump, who served longer in the years
+  covered, than under Bush or Biden, and war powers votes fall almost entirely under Trump. The current counts are
+  listed on the Position Flips page.
 - Members cast the president-friendly vote far more often when their own party runs the chamber, under presidents of
   both parties, and that effect is about as large as the president's. The shift compares like with like to account
   for this (see Position Flips above). The cost is that votes with no comparable match are set aside, so some members
   are scored on a small share of their votes; every score shows how many votes it rests on.
-- Even compared like with like, scores differ by party and chamber: House Democrats shift more than House
-  Republicans, while in the Senate the difference is smaller and runs the other way. The gap also narrows among
-  members with longer records. Treat party-level summaries as descriptions of the members, not verdicts on either party.
+- Compared like with like, the two parties' scores are close. The remaining difference comes mostly from war powers
+  votes, which fall almost entirely under one president, and in the Senate it runs the other way. An earlier version
+  of the data, which was missing most Biden-era funding votes, showed a much larger gap, so treat any party-level
+  summary as a description of the members, not a verdict on either party.
 """)
 
 st.header("What This Site Does *Not* Do")
