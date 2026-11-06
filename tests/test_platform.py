@@ -21,6 +21,8 @@ def against_on(mv, congress, chamber, roll):
 
 
 def test_platform_in_force():
+    assert platform_year(110, "Republican") == 2004 and platform_year(112, "Democrat") == 2008
+    assert platform_year(114, "Republican") == 2012
     assert platform_year(115, "Democrat") == 2016 and platform_year(116, "Republican") == 2016
     assert platform_year(117, "Democrat") == 2020 and platform_year(118, "Republican") == 2016  # re-adopted 2016 text
     assert platform_year(119, "Republican") == 2024 and platform_year(120, "Democrat") == 2024
@@ -41,9 +43,10 @@ def test_topics_follow_the_rules():
 
 def test_both_presidents_parties_represented():
     topics, _ = load_platform()
-    trump = topics["congress"].isin([115, 116, 119, 120]).sum()
-    biden = topics["congress"].isin([117, 118]).sum()
-    assert trump >= 5 and biden >= 5 and abs(trump - biden) <= 2
+    republican_president = topics["congress"].isin([110, 115, 116, 119, 120]).sum()
+    democratic_president = topics["congress"].isin([111, 112, 113, 114, 117, 118]).sum()
+    assert republican_president >= 5 and democratic_president >= 5
+    assert topics["congress"].min() == 110  # back to the start of the data
 
 
 def test_known_votes_scored_correctly():
@@ -53,18 +56,19 @@ def test_known_votes_scored_correctly():
     # 2021 $15 wage motion: seven Democrats plus King, who caucuses with Democrats
     wage = against_on(mv, 117, "Senate", 74)
     assert len(wage) == 8 and "King" in wage and "Manchin" in wage
+    # 2013 assault weapons amendment: 15 Democrats and King (caucuses with Democrats) voted no; Kirk (R) voted yes
+    awb = against_on(mv, 113, "Senate", 101)
+    assert len(awb) == 17 and "King" in awb and "Kirk" in awb
     # 2025 global tariff resolution: Republicans who voted to end the tariffs
     assert against_on(mv, 119, "Senate", 225) == ["Collins", "Murkowski", "Paul"]
 
 
 def test_procedural_and_related_votes_are_shown_not_counted():
     _, links, mv = scored()
-    shown_only = links[~links["counts"]]
-    assert len(shown_only) >= 3
+    assert len(links[~links["counts"]]) >= 3
+    assert not mv.loc[(mv["procedural"] == "yes") | (mv["link"] == "related"), "counts"].any()
     ms = member_summary(mv)
-    manchin = ms[ms["name"].str.startswith("Manchin")]
-    # Manchin's only votes against his platform were procedural, so none are counted
-    assert manchin.empty or int(manchin["against"].iloc[0]) == 0
+    assert ms["cast"].sum() == mv["counts"].sum()  # the per-member totals use counted votes only
 
 
 def test_party_totals_add_up():

@@ -14,7 +14,7 @@ import streamlit as st
 from vote_index import VOTE_WORD, load_matrix, load_votes
 
 DATA_DIR = Path(__file__).parent / "data"
-PLATFORM_YEAR = {115: 2016, 116: 2016, 117: 2020, 118: 2020, 119: 2024, 120: 2024}
+PLATFORM_YEAR = {110: 2004, 111: 2008, 112: 2008, 113: 2012, 114: 2012, 115: 2016, 116: 2016, 117: 2020, 118: 2020, 119: 2024, 120: 2024}
 
 
 def platform_year(congress: int, party: str) -> int:

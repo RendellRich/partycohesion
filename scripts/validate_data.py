@@ -132,7 +132,7 @@ check(not all_votes.duplicated(["congress", "chamber", "rollnumber"]).any(), "al
 # platform in force for its Congress, and each topic has at least one vote linked
 topics = pd.read_csv(DATA / "platform_topics.csv", comment="#")
 links = pd.read_csv(DATA / "platform_votes.csv", comment="#")
-in_force = {115: 2016, 116: 2016, 117: 2020, 118: 2020, 119: 2024, 120: 2024}
+in_force = {110: 2004, 111: 2008, 112: 2008, 113: 2012, 114: 2012, 115: 2016, 116: 2016, 117: 2020, 118: 2020, 119: 2024, 120: 2024}
 for t in topics.itertuples():
     check(t.dem_platform == in_force.get(t.congress), f"platform topic {t.topic_id}: Democratic platform year is wrong")
     check(t.rep_platform == (2016 if in_force.get(t.congress) == 2020 else in_force.get(t.congress)),

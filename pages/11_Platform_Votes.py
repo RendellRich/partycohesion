@@ -14,7 +14,7 @@ from platform_utils import load_platform, member_platform_votes, member_summary,
 from ui import chips, display_name, fmt_date, html_table, inject_css, intro, metric_row, party_tag
 from vote_index import voteview_url
 
-PRESIDENT = {115: "Trump", 116: "Trump", 117: "Biden", 118: "Biden", 119: "Trump", 120: "Trump"}
+PRESIDENT = {110: "Bush", 111: "Obama", 112: "Obama", 113: "Obama", 114: "Obama", 115: "Trump", 116: "Trump", 117: "Biden", 118: "Biden", 119: "Trump", 120: "Trump"}
 
 
 @st.cache_data
@@ -101,31 +101,38 @@ for side in ("Democrat", "Republican"):
                      f"{'these topics' if len(top2) > 1 else 'this topic'}: "
                      + " and ".join(f"{name} ({n})" for name, n in top2.items()))
 st.caption("Counted votes are direct, non-procedural roll calls. Don't read the two parties' totals as a ranking: "
-           "they depend on which topics qualify under the rules, and this first list is short. "
+           "they depend on which topics qualify under the rules, and the list is still growing. "
            + ". ".join(where) + ".")
 
+pres_counts = topics["congress"].map(PRESIDENT).value_counts()
+by_president = ", ".join(f"{pres_counts[p]} from the {p} years" for p in ("Bush", "Obama", "Trump", "Biden")
+                         if p in pres_counts)
+dem_backed = int((topics["dem_stance"] == "Supports").sum())
+rep_backed = len(topics) - dem_backed
 with st.expander("The rules for picking topics and votes", expanded=False):
-    st.markdown("""
+    st.markdown(f"""
 These rules were written down before any member results were computed, and apply the same way to both parties.
 
-1. **Which platform applies.** The one adopted in the presidential election year before the vote: 2016 platforms for
-   2017 to 2020, 2020 for 2021 to 2024, and 2024 for 2025 on. The Republican Party re-adopted its 2016 platform in
-   2020, so that text applies to 2021 to 2024.
+1. **Which platform applies.** The one adopted in the presidential election year before the vote: 2004 platforms for
+   2007 to 2008, 2008 for 2009 to 2012, 2012 for 2013 to 2016, 2016 for 2017 to 2020, 2020 for 2021 to 2024, and 2024
+   for 2025 on. The Republican Party re-adopted its 2016 platform in 2020, so that text applies to 2021 to 2024.
 2. **Which topics qualify.** Both parties' platforms must take opposite positions on a specific, testable action (a
    law, a program, a rate, a power), and at least one roll call must be on exactly that action.
 3. **Which votes count.** Votes on the measure itself: passage, final approval, a joint resolution, or an amendment
    that adds or removes the policy. Procedural votes such as cloture and budget waivers are shown, but not counted.
 4. **Direct or related.** A direct vote is on exactly what the planks name. A related vote is on the same topic but a
    different or broader measure. Only direct votes count.
-5. **Balance.** Topics come from Congresses under presidents of both parties: 7 from the Trump years and 7 from the
-   Biden years in this first list.
+5. **Every qualifying topic is included.** Topics aren't dropped to make the two sides even. Instead, the split is
+   published: {by_president}. Of the topics, {dem_backed} are measures the Democratic platform backs and {rep_backed}
+   are measures the Republican platform backs. The data starts in 2007, so the Bush years cover only 2007 and 2008.
 6. **Everything is public.** Every plank and every vote link is in the site's data files, with a link to the platform
    text and a note on how the wording was checked. Each plank is a paraphrase, not a quote.
 7. **Neutral wording.** This page says "voted against their party's platform", never "broke a promise".
 
 **Topics left out so far.** Some well-known votes don't qualify because only one platform takes a position. The
-Respect for Marriage Act (2022) is out because the 2020 Democratic platform doesn't mention marriage; expanded
-background checks for gun sales (2019 and 2021) are out because the Republican platform doesn't mention them.
+Respect for Marriage Act (2022) is out because the 2020 Democratic platform doesn't mention marriage. Expanded
+background checks for gun sales (2013, 2019 and 2021) are out because the Republican platforms don't mention them. The
+2014 minimum wage vote and the 2015 Keystone XL pipeline vote are out because only one 2012 platform addresses them.
 """)
 
 st.subheader("Look up a member")

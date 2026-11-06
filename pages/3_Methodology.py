@@ -153,8 +153,9 @@ Platform Votes compares members' votes with their **party's national platform**,
 adopts at its convention every four years. Members don't write or sign it, so the page says a member "voted against
 their party's platform", not that they broke a personal promise.
 
-- **Which platform:** the one adopted in the presidential election year before the vote (2016 for 2017 to 2020, 2020
-  for 2021 to 2024, 2024 for 2025 on). The Republican Party re-adopted its 2016 platform in 2020.
+- **Which platform:** the one adopted in the presidential election year before the vote (2004 for 2007 to 2008, 2008
+  for 2009 to 2012, 2012 for 2013 to 2016, 2016 for 2017 to 2020, 2020 for 2021 to 2024, 2024 for 2025 on). The
+  Republican Party re-adopted its 2016 platform in 2020.
 - **Which topics:** only actions both platforms address in opposite directions, such as a specific law or program,
   with at least one roll call on exactly that action. Topics only one platform mentions are left out.
 - **Which votes count:** direct votes on the measure itself. Procedural votes and votes on broader, related measures
@@ -198,10 +199,12 @@ st.markdown("""
 
 **Known imbalances in the Platform Votes data**
 
-- The first list has 14 topics, 7 from the Trump years and 7 from the Biden years. Most counted votes are House votes,
-  because the Senate rarely held direct votes on these measures.
-- More of the topics are bills the Democratic platform backs, mostly House bills from 2019 to 2022, so the two
-  parties' totals depend heavily on which topics qualify. Read them as a description of these votes, not a ranking.
+- The list has 24 topics: 1 from the Bush years (the data starts in 2007), 9 from the Obama years, 7 from the Trump
+  years and 7 from the Biden years. Every topic that qualifies under the rules is included rather than dropping some
+  to even out the count, and the page shows the split.
+- More of the topics are measures the Democratic platform backs, partly because House Democrats brought many of their
+  platform bills to the floor from 2007 to 2010 and 2019 to 2022. The two parties' totals depend heavily on which
+  topics qualify, so read them as a description of these votes, not a ranking.
 """)
 
 st.header("What This Site Does *Not* Do")

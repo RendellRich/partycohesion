@@ -31,3 +31,24 @@ tariffs_119,119,House,425,End the Canada tariff emergency (H.J.Res. 72),related,
 tax_law_2025_119,119,House,144,"One Big Beautiful Bill Act (H.R. 1), House passage",direct,no,Nay,Yea,
 tax_law_2025_119,119,Senate,372,"One Big Beautiful Bill Act (H.R. 1), Senate passage",direct,no,Nay,Yea,The Vice President broke the 50 to 50 tie.
 tax_law_2025_119,119,House,189,"One Big Beautiful Bill Act (H.R. 1), House final approval",direct,no,Nay,Yea,
+stem_cells_110,110,House,19,"Stem Cell Research Enhancement Act (H.R. 3), House passage",direct,no,Yea,Nay,
+stem_cells_110,110,Senate,127,"Stem Cell Research Enhancement Act (S. 5), Senate passage",direct,no,Yea,Nay,
+stem_cells_110,110,House,437,"Stem Cell Research Enhancement Act (S. 5), House passage",direct,no,Yea,Nay,President Bush vetoed the bill.
+dadt_repeal_111,111,House,1621,"Don't Ask, Don't Tell Repeal Act of 2010, House passage",direct,no,Yea,Nay,Passed as an amendment to an unrelated bill (H.R. 2965).
+dadt_repeal_111,111,Senate,676,"Don't Ask, Don't Tell Repeal Act of 2010, cloture",direct,yes,Yea,Nay,A procedural vote to end debate. It needed 60 votes.
+dadt_repeal_111,111,Senate,678,"Don't Ask, Don't Tell Repeal Act of 2010, Senate final approval",direct,no,Yea,Nay,
+dreamers_111,111,House,1608,"DREAM Act, House passage",direct,no,Yea,Nay,Passed as an amendment to an unrelated bill (H.R. 5281).
+dreamers_111,111,Senate,675,"DREAM Act, cloture",direct,yes,Yea,Nay,A procedural vote to end debate. It needed 60 votes and failed.
+top_tax_rates_111,111,House,1587,"Middle Class Tax Relief Act, extending the tax cuts only for income under $250,000",direct,no,Yea,Nay,Passed as an amendment to H.R. 4853. A Yea vote let the cuts expire for higher incomes. Two weeks later Congress extended all the cuts for two years in a broader deal.
+aca_repeal_113,113,House,153,"Repeal of the Affordable Care Act (H.R. 45), House passage",direct,no,Nay,Yea,
+assault_weapons_113,113,Senate,101,Assault weapons ban amendment to S. 649,direct,no,Yea,Nay,Needed 60 votes and failed 40 to 60.
+assault_weapons_113,113,Senate,103,"Limit on large-capacity magazines, amendment to S. 649",direct,no,Yea,Nay,Needed 60 votes and failed 46 to 54.
+immigration_reform_113,113,Senate,168,"Border Security, Economic Opportunity, and Immigration Modernization Act (S. 744), Senate passage",direct,no,Yea,Nay,The bill also included large increases in border security spending.
+abortion_20_weeks_113,113,House,250,"Pain-Capable Unborn Child Protection Act (H.R. 1797), House passage",direct,no,Nay,Yea,"Voteview's title describes the bill as introduced (D.C. only). As passed, it applied nationwide."
+aca_repeal_114,114,House,57,"Repeal of the Affordable Care Act (H.R. 596), House passage",direct,no,Nay,Yea,
+aca_repeal_114,114,House,566,"Restoring Americans' Healthcare Freedom Reconciliation Act (H.R. 3762), House passage",direct,no,Nay,Yea,A budget bill repealing the law's main parts. It also cut Planned Parenthood funding for one year.
+aca_repeal_114,114,Senate,329,"Restoring Americans' Healthcare Freedom Reconciliation Act (H.R. 3762), Senate passage",direct,no,Nay,Yea,A budget bill repealing the law's main parts. It also cut Planned Parenthood funding for one year.
+aca_repeal_114,114,House,707,"Restoring Americans' Healthcare Freedom Reconciliation Act (H.R. 3762), House final approval",direct,no,Nay,Yea,President Obama vetoed the bill.
+aca_repeal_114,114,House,753,"Restoring Americans' Healthcare Freedom Reconciliation Act (H.R. 3762), vote to override the veto",direct,no,Nay,Yea,Needed two thirds and failed.
+abortion_20_weeks_114,114,House,222,"Pain-Capable Unborn Child Protection Act (H.R. 36), House passage",direct,no,Nay,Yea,
+abortion_20_weeks_114,114,Senate,268,"Pain-Capable Unborn Child Protection Act (H.R. 36), cloture on the motion to proceed",direct,yes,Nay,Yea,A procedural vote to start debate. It needed 60 votes.
