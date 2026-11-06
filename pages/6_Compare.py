@@ -6,7 +6,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 from pathlib import Path
-from chart_utils import show_chart, ordinal
+from chart_utils import show_chart, ordinal, PAIR_COLORS
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 MATRIX_DIR = DATA_DIR / "matrices"
@@ -108,7 +108,7 @@ history = pd.concat([
 if not history.empty:
     fig = px.line(history, x="congress", y="party_unity_pct", color="Member", markers=True,
                   hover_data={"chamber": True, "party": True},
-                  color_discrete_sequence=["#e07a5f", "#81b29a"],
+                  color_discrete_sequence=PAIR_COLORS,
                   labels={"congress": "Congress", "party_unity_pct": "Party Unity %"})
     fig.update_layout(height=380, xaxis=dict(dtick=1), legend_title_text="")
     show_chart(fig, f"Party unity across Congresses: {a_name} vs. {b_name}",

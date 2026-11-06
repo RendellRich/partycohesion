@@ -1,5 +1,8 @@
 [theme]
 base = "dark"
-# Pinned so chart backgrounds (chart_utils.BG) always match the page, including in downloaded PNGs.
+# Mirrors the PartyCohesion Figma design system. Background is pinned so chart backgrounds
+# (chart_utils.BG) always match the page, including in downloaded PNGs.
 backgroundColor = "#171614"
 secondaryBackgroundColor = "#21201d"
+textColor = "#FAFAFA"
+primaryColor = "#E9C46A"

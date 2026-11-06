@@ -20,15 +20,24 @@ st.set_page_config(
 
 st.markdown("<style>footer {visibility: hidden;}</style>", unsafe_allow_html=True)
 
-pages = [
-    st.Page("pages/0_Home.py", title="Home", icon="🏠", default=True),
-    st.Page("pages/1_Overview.py", title="Overview", icon="📊"),
-    st.Page("pages/2_Member_Explorer.py", title="Member Explorer", icon="👤"),
-    st.Page("pages/5_Key_Votes.py", title="Key Votes", icon="🗳️"),
-    st.Page("pages/6_Compare.py", title="Compare Members", icon="⚖️"),
-    st.Page("pages/3_Methodology.py", title="Methodology", icon="📐"),
-    st.Page("pages/4_About.py", title="About", icon="ℹ️"),
-]
+# Grouped as in the Figma design: findings first, then exploration tools, then how it works
+pages = {
+    "": [st.Page("pages/0_Home.py", title="Home", icon="🏠", default=True)],
+    "Findings": [
+        st.Page("pages/7_Position_Flips.py", title="Position Flips", icon="🔄"),
+        st.Page("pages/5_Key_Votes.py", title="Key Votes", icon="🗳️"),
+        st.Page("pages/8_Ideology_Drift.py", title="Ideology Drift", icon="📈"),
+    ],
+    "Explore": [
+        st.Page("pages/2_Member_Explorer.py", title="Members", icon="👤"),
+        st.Page("pages/6_Compare.py", title="Compare Members", icon="⚖️"),
+        st.Page("pages/1_Overview.py", title="Overview", icon="📊"),
+    ],
+    "About": [
+        st.Page("pages/3_Methodology.py", title="Methodology", icon="📐"),
+        st.Page("pages/4_About.py", title="About", icon="ℹ️"),
+    ],
+}
 
 nav = st.navigation(pages)
 

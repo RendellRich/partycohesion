@@ -10,6 +10,8 @@ Neutral, data-first view of U.S. Congressional voting patterns and party cohesio
 - **Member Explorer** — Search any member, view party unity %, ideology score, and their unity rate across every Congress they served in
 - **Key Votes** — Party unity by Congress, plus high-profile vote series (funding bills, Cabinet confirmations, biggest party breaks) showing each party's split and every member who voted against their party
 - **Compare Members** — Two members side by side: party unity over time, vote-by-vote agreement while serving together, and key votes where they split
+- **Position Flips** — Whether members cast the same vote on debt limits, stopgap funding and war powers limits under presidents of both parties
+- **Ideology Drift** — How far each member's per-Congress ideology score moved compared with their party
 - **Methodology** — Clear definitions of party unity, DW-NOMINATE, and the cohesion proxy
 - **About** — Project purpose and independence statement
 
@@ -33,7 +35,7 @@ From the project root:
 python scripts/refresh_data.py
 ```
 
-This downloads the latest Voteview member file and the House and Senate vote and roll-call files from the 110th Congress to the newest one, then rebuilds `data/members_processed.csv` and `data/unity_summary.csv`. It also rebuilds the key vote series in `data/key_votes.csv` and `data/key_vote_defectors.csv`. Raw downloads are cached in `data/raw/` (git-ignored). Commit the updated CSVs and Streamlit Cloud redeploys automatically.
+`scripts/build_president_positions.py` reads the White House's Statements of Administration Policy (2009 on) into `data/president_positions.csv`; the scheduled refresh re-reads the current administration's statements. This downloads the latest Voteview member file and the House and Senate vote and roll-call files from the 110th Congress to the newest one, then rebuilds `data/members_processed.csv` and `data/unity_summary.csv`. It also rebuilds the key vote series in `data/key_votes.csv` and `data/key_vote_defectors.csv`. Raw downloads are cached in `data/raw/` (git-ignored). Commit the updated CSVs and Streamlit Cloud redeploys automatically.
 
 ### Automatic refresh
 

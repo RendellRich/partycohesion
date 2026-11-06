@@ -9,8 +9,19 @@ import streamlit as st
 
 BG = "#171614"  # matches the app background set in .streamlit/config.toml
 FG = "#fafafa"
-GRID = "#2e2c29"
+GRID = "#3A3733"
 SOURCE = "partycohesion.streamlit.app · Data: Voteview"
+
+# Design tokens (mirror the PartyCohesion Figma design system). Every color passes WCAG 3:1 for
+# chart marks on BG; text colors pass 4.5:1. Colors never carry meaning alone.
+MUTED = "#A8A29E"
+ACCENT = "#E9C46A"          # highlights "this member" and links
+PARTY_COLORS = {"Democrat": "#5B9BD5", "Republican": "#E06C6C", "Independent": "#A8A29E"}
+# Position Flips: one hue at different strengths, so no pattern reads as good or bad
+PATTERN_COLORS = {"Consistent": "#E7DFF5", "Partly changed": "#B9A6E3", "Changed with the White House": "#8C6BD1",
+                  "Opposite pattern": "#7A8597"}
+VOTE_COLORS = {"Yea": "#8ECAE6", "Nay": "#577590"}
+PAIR_COLORS = [ACCENT, "#8ECAE6"]  # two members side by side (deliberately not party colors)
 
 EXPORT_SIZES = {
     "X / Twitter (1200×675)": (1200, 675),
@@ -42,7 +53,7 @@ def show_chart(fig, title: str, filename: str, key: str | None = None) -> None:
     fig.update_yaxes(gridcolor=GRID, zerolinecolor=GRID)
     fig.add_annotation(
         text=SOURCE, xref="paper", yref="paper", x=1, y=1, xanchor="right", yanchor="bottom",
-        yshift=34, showarrow=False, font=dict(size=11, color="#9aa0a6"),
+        yshift=34, showarrow=False, font=dict(size=11, color=MUTED),
     )
     width, height = EXPORT_SIZES[st.session_state.get("export_size", DEFAULT_EXPORT)]
     config = {

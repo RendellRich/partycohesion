@@ -5,7 +5,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
-from chart_utils import show_chart, ordinal, chamber_label
+from chart_utils import show_chart, ordinal, chamber_label, PARTY_COLORS
 
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "members_processed.csv"
@@ -68,7 +68,7 @@ if not plot_df.empty:
         nbins=40,
         barmode="overlay",
         opacity=0.7,
-        color_discrete_map={"Democrat": "#2E86AB", "Republican": "#A23B72"},
+        color_discrete_map=PARTY_COLORS,
         labels={"nominate_dim1": "DW-NOMINATE Dimension 1", "count": "Members"},
         title=None,
     )
@@ -102,7 +102,7 @@ if not unity_df.empty:
         color="party",
         points="all",
         hover_name="name",
-        color_discrete_map={"Democrat": "#2E86AB", "Republican": "#A23B72"},
+        color_discrete_map=PARTY_COLORS,
         labels={"party_unity_pct": "Party Unity %", "party": "Party"},
     )
     fig_u.update_layout(showlegend=False, height=420, margin=dict(l=40, r=40, t=30, b=40))
@@ -123,7 +123,7 @@ fig_ut = px.line(
     color="party",
     facet_col="chamber",
     markers=True,
-    color_discrete_map={"Democrat": "#2E86AB", "Republican": "#A23B72"},
+    color_discrete_map=PARTY_COLORS,
     labels={"party_unity_pct": "Mean Party Unity %", "congress": "Congress"},
 )
 fig_ut.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
@@ -143,7 +143,7 @@ if "cohesion_proxy" in plot_df.columns and not plot_df.empty:
         x="party",
         y="cohesion_proxy",
         color="party",
-        color_discrete_map={"Democrat": "#2E86AB", "Republican": "#A23B72"},
+        color_discrete_map=PARTY_COLORS,
         points="all",
         labels={"cohesion_proxy": "Cohesion Proxy (0–100)", "party": "Party"},
     )
@@ -166,7 +166,7 @@ fig3 = px.line(
     color="party",
     facet_col="chamber",
     markers=True,
-    color_discrete_map={"Democrat": "#2E86AB", "Republican": "#A23B72"},
+    color_discrete_map=PARTY_COLORS,
     labels={"nominate_dim1": "Median Dim 1", "congress": "Congress"},
 )
 fig3.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
