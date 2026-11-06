@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 from pathlib import Path
-from chart_utils import show_chart, ordinal, chamber_label
+from chart_utils import show_chart, ordinal, chamber_label, ACCENT, MUTED, PARTY_COLORS
 
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "members_processed.csv"
@@ -154,7 +154,7 @@ if len(filtered) > 0:
             markers=True,
             labels={"congress": "Congress", "value": "Party Unity %", "variable": ""},
             title=f"Party unity across Congresses: {selected}",
-            color_discrete_sequence=["#e03131", "#868e96"],
+            color_discrete_sequence=[ACCENT, MUTED],
         )
         names = {"party_unity_pct": selected.split(",")[0], "party_avg": f"{member['party']} average"}
         fig_h.for_each_trace(lambda t: t.update(name=names.get(t.name, t.name)))
@@ -204,13 +204,13 @@ if len(filtered) > 0:
             nbins=25,
             title=f"Ideology distribution of {member['party']}s in the {member['chamber']} ({congress}th)",
             labels={"nominate_dim1": "DW-NOMINATE Dimension 1"},
-            color_discrete_sequence=["#5c7cfa"],
+            color_discrete_sequence=[PARTY_COLORS.get(member["party"], MUTED)],
         )
         # Add vertical line for the selected member
         fig.add_vline(
             x=member["nominate_dim1"],
             line_dash="dash",
-            line_color="#e03131",
+            line_color=ACCENT,
             annotation_text=selected.split(",")[0],
             annotation_position="top",
         )

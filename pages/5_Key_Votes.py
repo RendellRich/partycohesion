@@ -6,10 +6,9 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from pathlib import Path
-from chart_utils import show_chart, ordinal, chamber_label
+from chart_utils import show_chart, ordinal, chamber_label, PARTY_COLORS, VOTE_COLORS
 
 DATA_DIR = Path(__file__).parent.parent / "data"
-PARTY_COLORS = {"Democrat": "#2E86AB", "Republican": "#A23B72"}
 SERIES_ORDER = ["Funding & Appropriations", "Cabinet Confirmations", "Biggest Party Breaks"]
 SERIES_RULES = {
     "Funding & Appropriations": "Final passage votes on appropriations bills and continuing resolutions (stopgap funding). "
@@ -53,7 +52,7 @@ with f2:
 # ---------------------------------------------------------------------------
 # Party unity summary
 # ---------------------------------------------------------------------------
-current = members[(members["congress"] == congress) & members["party"].isin(PARTY_COLORS)]
+current = members[(members["congress"] == congress) & members["party"].isin(["Democrat", "Republican"])]
 if chamber != "Both":
     current = current[current["chamber"] == chamber]
 s = summary[summary["congress"] == congress]
@@ -144,7 +143,7 @@ else:
             })
             bars = bars[bars.groupby("Party")["Members"].transform("sum") > 0]
             fig_v = px.bar(bars, y="Party", x="Members", color="Vote", orientation="h", text="Members",
-                           color_discrete_map={"Yea": "#8ecae6", "Nay": "#577590"},
+                           color_discrete_map=VOTE_COLORS,
                            category_orders={"Party": ["Democrat", "Republican", "Independent"], "Vote": ["Yea", "Nay"]})
             fig_v.update_layout(height=230, margin=dict(l=40, r=40, t=10, b=30), legend_title_text="")
             show_chart(fig_v, f"{textwrap.shorten(v['label'], 70, placeholder='…')} ({v['chamber']}, {v['date']})", f"vote_{v['chamber'].lower()}_{congress}_{int(v['rollnumber'])}", key=f"kv_chart_{name}")

@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 from pathlib import Path
-from chart_utils import show_chart, ordinal
+from chart_utils import show_chart, ordinal, PARTY_COLORS, MUTED, ACCENT
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 NOISE = 0.10  # per-Congress scores move this much from noise alone; smaller changes aren't flagged
@@ -99,13 +99,13 @@ c3.metric("Moved more conservative than their party", f"{(view['direction'] == '
 
 fig = px.scatter(view, x="party_change", y="own_change", color="party", hover_name="name",
                  hover_data={"state": True, "first": True, "last": True, "vs_party": ":.2f", "party_change": ":.2f", "own_change": ":.2f"},
-                 color_discrete_map={"Democrat": "#2E86AB", "Republican": "#A23B72"},
+                 color_discrete_map=PARTY_COLORS,
                  labels={"party_change": "Party's change", "own_change": "Member's own change", "party": ""})
 lo = min(view["party_change"].min(), view["own_change"].min()) - 0.05
 hi = max(view["party_change"].max(), view["own_change"].max()) + 0.05
-fig.add_shape(type="line", x0=lo, y0=lo, x1=hi, y1=hi, line=dict(color="#9aa0a6", dash="dot"))
+fig.add_shape(type="line", x0=lo, y0=lo, x1=hi, y1=hi, line=dict(color=MUTED, dash="dot"))
 fig.add_annotation(x=hi, y=hi, text="moved with party", showarrow=False, xanchor="right", yanchor="bottom",
-                   font=dict(size=11, color="#9aa0a6"))
+                   font=dict(size=11, color=MUTED))
 fig.update_layout(height=460)
 show_chart(fig, "Each member's ideology change vs. their party's change", "ideology_drift_scatter")
 st.caption("Points on the dotted line moved exactly as much as their party. Above the line = more conservative than "
@@ -131,7 +131,7 @@ if pick:
         rows[["congress", "party_median"]].rename(columns={"party_median": "score"}).assign(Line=f"{rows['party'].iloc[-1]} median"),
     ])
     fig2 = px.line(long, x="congress", y="score", color="Line", markers=True,
-                   color_discrete_sequence=["#e07a5f", "#9aa0a6"], labels={"congress": "Congress", "score": "Ideology score", "Line": ""})
+                   color_discrete_sequence=[ACCENT, MUTED], labels={"congress": "Congress", "score": "Ideology score", "Line": ""})
     fig2.update_layout(height=360, xaxis=dict(dtick=1))
     show_chart(fig2, f"Ideology over time: {pick.split(' (')[0]}", f"ideology_drift_{pick.split(',')[0].lower().replace(' ', '_')}")
 

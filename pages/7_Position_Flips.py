@@ -5,14 +5,13 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 from pathlib import Path
-from chart_utils import show_chart, ordinal
+from chart_utils import show_chart, ordinal, PATTERN_COLORS, ACCENT, MUTED
 from flip_utils import flip_scores, MIN_VOTES_EACH_SIDE
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 CATEGORIES = ["All categories", "Debt limit", "Stopgap funding", "Full-year funding", "Disaster aid", "War powers limits"]
 LABEL_ORDER = ["Consistent", "Partly changed", "Changed with the White House", "Opposite pattern"]
-LABEL_COLORS = {"Consistent": "#81b29a", "Partly changed": "#f2cc8f", "Changed with the White House": "#e07a5f",
-                "Opposite pattern": "#8d99ae"}
+LABEL_COLORS = PATTERN_COLORS
 FRIENDLY = {
     "Debt limit": "Yea to raise or suspend the debt limit (Nay on resolutions disapproving an increase)",
     "Stopgap funding": "Yea on a stopgap funding bill that passed the chamber",
@@ -174,7 +173,7 @@ if pick:
         long = detail.melt(id_vars=["Type of vote"], value_vars=["Own party's president", "Other party's president"],
                            var_name="White House", value_name="Gave the president room (%)").dropna()
         fig2 = px.bar(long, x="Type of vote", y="Gave the president room (%)", color="White House", barmode="group",
-                      color_discrete_sequence=["#e07a5f", "#81b29a"], range_y=[0, 105])
+                      color_discrete_sequence=[ACCENT, MUTED], range_y=[0, 105])
         fig2.update_layout(height=340, legend_title_text="")
         name = pick.split(",")[0]
         show_chart(fig2, f"{name}: votes under each party's president", f"position_flips_{name.lower().replace(' ', '_')}")
