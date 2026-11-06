@@ -28,7 +28,7 @@ def load():
     member_votes = pd.read_csv(DATA_DIR / "flip_member_votes.csv")
     votes["label"] = votes["note"].where(votes["note"].notna() & (votes["note"].astype(str).str.strip() != ""),
                                          votes["vote_desc"].fillna(votes["bill_number"].fillna("")))
-    latest = members.sort_values("congress").groupby("icpsr").tail(1)[["icpsr", "name", "party", "state_abbrev", "chamber", "congress"]]
+    latest = members.sort_values("congress").groupby("icpsr").tail(1)[["icpsr", "name", "party", "caucus", "state_abbrev", "chamber", "congress"]]
     return members, votes, member_votes, latest
 
 
@@ -103,7 +103,7 @@ view = scores.copy()
 if chamber != "Both":
     view = view[view["chamber"] == chamber]
 if party != "Both":
-    view = view[view["party"] == party]
+    view = view[view["caucus"] == party]  # independents count with the party they caucus with
 if current_only:
     view = view[view["congress"] == newest]
 scored = view[view["label"] != "Not enough votes"]
@@ -121,7 +121,8 @@ else:
     m2.metric("Consistent", f"{(scored['label'] == 'Consistent').mean() * 100:.0f}%")
     m3.metric("Changed with the White House", f"{(scored['label'] == 'Changed with the White House').mean() * 100:.0f}%")
 
-    dist = (scored.groupby(["party", "label"]).size().reset_index(name="Members"))
+    # Independents are grouped with the party they caucus with, as in the scoring
+    dist = (scored.groupby(["caucus", "label"]).size().reset_index(name="Members").rename(columns={"caucus": "party"}))
     dist["Share"] = dist["Members"] / dist.groupby("party")["Members"].transform("sum") * 100
     fig = px.bar(dist, y="party", x="Share", color="label", orientation="h", text=dist["Share"].round(0).astype(int).astype(str) + "%",
                  category_orders={"label": LABEL_ORDER, "party": ["Democrat", "Republican"]},
