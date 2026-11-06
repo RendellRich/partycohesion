@@ -34,6 +34,11 @@ SUMMARY_FILE = DATA_DIR / "unity_summary.csv"
 
 BASE_URL = "https://voteview.com/static/data/out"
 MEMBERS_URL = f"{BASE_URL}/members/HSall_members.csv"
+# Which party each independent caucuses with (unitedstates/congress-legislators, CC0)
+LEGISLATORS_URLS = {
+    "legislators-current.json": "https://unitedstates.github.io/congress-legislators/legislators-current.json",
+    "legislators-historical.json": "https://unitedstates.github.io/congress-legislators/legislators-historical.json",
+}
 
 FIRST_CONGRESS = 110
 # Set at runtime from the member file: FIRST_CONGRESS through the newest Congress with vote data.
@@ -70,6 +75,8 @@ def download_raw(force: bool = True) -> None:
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     print("Downloading Voteview files…")
     download(MEMBERS_URL, MEMBERS_RAW, force)
+    for name, url in LEGISLATORS_URLS.items():
+        download(url, RAW_DIR / name, force)
     latest = int(pd.read_csv(MEMBERS_RAW, usecols=["congress"])["congress"].max())
     available = []
     for cong in range(FIRST_CONGRESS, latest + 1):
@@ -88,6 +95,52 @@ def download_raw(force: bool = True) -> None:
     print(f"Congresses included: {FIRST_CONGRESS}–{max(available)}")
 
 
+def caucus_periods() -> dict:
+    """bioguide -> list of (start, end, caucus party) from congress-legislators. A member's caucus is
+    their party if Democrat/Republican, otherwise the party they caucus with (None if neither)."""
+    import json
+    people = []
+    for name in LEGISLATORS_URLS:
+        path = RAW_DIR / name
+        if path.exists():
+            people += json.loads(path.read_text(encoding="utf-8"))
+    periods = {}
+    for person in people:
+        bio = person.get("id", {}).get("bioguide")
+        for term in person.get("terms", []):
+            affiliations = term.get("party_affiliations") or [
+                {"start": term["start"], "end": term["end"], "party": term.get("party"), "caucus": term.get("caucus")}]
+            for a in affiliations:
+                party = a.get("party")
+                if party in ("Democrat", "Republican"):
+                    continue  # only independent periods are needed; D/R members are scored with their own party
+                caucus = a.get("caucus") if "party_affiliations" in term else term.get("caucus")
+                periods.setdefault(bio, []).append((a["start"], a.get("end", term["end"]), caucus))
+    return periods
+
+
+def congress_dates(cong: int):
+    first_year = 1789 + 2 * (cong - 1)
+    return f"{first_year}-01-03", f"{first_year + 2}-01-03"
+
+
+def add_caucus(members: pd.DataFrame) -> pd.DataFrame:
+    """Add a 'caucus' column: the party a member is scored with. Same as party for Democrats and
+    Republicans; for independents, the party they caucus with during that Congress (if any)."""
+    periods = caucus_periods()
+
+    def lookup(row):
+        if row["party"] in ("Democrat", "Republican"):
+            return row["party"]
+        start, end = congress_dates(row["congress"])
+        # Independent periods overlapping this Congress, latest first; None if they caucus with neither party
+        found = sorted((s, c) for s, e, c in periods.get(row["bioguide_id"], []) if s < end and e > start)
+        return found[-1][1] if found else None
+
+    members["caucus"] = members.apply(lookup, axis=1)
+    return members
+
+
 def load_members() -> pd.DataFrame:
     df = pd.read_csv(MEMBERS_RAW)
     recent = df[df["congress"].isin(CONGRESSES) & df["chamber"].isin(CHAMBERS)].copy()
@@ -100,7 +153,7 @@ def load_members() -> pd.DataFrame:
         "party", "nominate_dim1", "nominate_dim2",
         "nominate_number_of_votes", "nokken_poole_dim1",
     ]
-    return recent[cols].dropna(subset=["nominate_dim1"]).copy()
+    return add_caucus(recent[cols].dropna(subset=["nominate_dim1"]).copy())
 
 
 def add_cohesion_proxy(members: pd.DataFrame) -> pd.DataFrame:
@@ -132,9 +185,12 @@ def party_unity_for(cong: int, chamber: str, members: pd.DataFrame):
     votes["yea"] = votes["cast_code"].isin(YEA_CODES)
 
     party = members.loc[(members["congress"] == cong) & (members["chamber"] == chamber),
-                        ["icpsr", "party"]].drop_duplicates("icpsr")
+                        ["icpsr", "party", "caucus"]].drop_duplicates("icpsr")
     votes = votes.merge(party, on="icpsr", how="left")
+    # Party majorities come from Democrats and Republicans only; independents are then scored
+    # against the majority of the party they caucus with.
     dr = votes[votes["party"].isin(["Democrat", "Republican"])]
+    scored = votes[votes["caucus"].isin(["Democrat", "Republican"])].drop(columns="party").rename(columns={"caucus": "party"})
 
     # Majority position of each party on each roll call (ties excluded)
     share = dr.groupby(["rollnumber", "party"])["yea"].mean().unstack()
@@ -149,7 +205,7 @@ def party_unity_for(cong: int, chamber: str, members: pd.DataFrame):
         return pd.DataFrame(columns=["icpsr", "unity_votes_cast", "votes_with_party", "party_unity_pct"]), 0
 
     long = unity_rolls.stack().rename("party_yea").reset_index().rename(columns={"level_1": "party"})
-    on_unity = dr.merge(long, on=["rollnumber", "party"], how="inner")
+    on_unity = scored.merge(long, on=["rollnumber", "party"], how="inner")
     on_unity["with_party"] = on_unity["yea"] == on_unity["party_yea"].astype(bool)
 
     out = on_unity.groupby("icpsr").agg(
@@ -363,6 +419,9 @@ WAR_POWERS_QUESTION_RE = (r"^On (?:Passage|Agreeing to the Resolution|the Joint 
                           r"Agreeing to the Concurrent Resolution|Motion to Suspend the Rules and Pass)")
 
 DEBT_LIST = DATA_DIR / "flip_debt_limit_votes.csv"
+POSITIONS_FILE = DATA_DIR / "president_positions.csv"
+POSITION_VOTES_FILE = DATA_DIR / "president_position_votes.csv"
+POSITION_WINDOW_DAYS = 30  # a statement covers final votes on its bill within this many days (or until the next statement)
 FLIP_VOTES_FILE = DATA_DIR / "flip_votes.csv"
 FLIP_MEMBER_VOTES_FILE = DATA_DIR / "flip_member_votes.csv"
 
@@ -375,7 +434,42 @@ def president_on(date: str):
     return name, party
 
 
-def build_flip_data(members: pd.DataFrame) -> None:
+def link_president_positions() -> pd.DataFrame:
+    """Link each Statement of Administration Policy to the final floor votes on its bill: same Congress,
+    same chamber (when the statement names one), on or after the statement date, within
+    POSITION_WINDOW_DAYS, and before any later statement on the same bill."""
+    if not POSITIONS_FILE.exists():
+        print("  president_positions.csv not found; run scripts/build_president_positions.py")
+        return pd.DataFrame()
+    st_ = pd.read_csv(POSITIONS_FILE)
+    st_ = st_[st_["position"].isin(["Support", "Oppose"])].copy()
+    st_["bill_list"] = st_["bills"].str.split(";")
+    st_ = st_.explode("bill_list")
+    rows = []
+    for cong in CONGRESSES:
+        for chamber, prefix in CHAMBERS.items():
+            rc = pd.read_csv(RAW_DIR / f"{prefix}{cong}_rollcalls.csv")
+            rc = rc[rc["vote_question"].fillna("").str.contains(FLIP_FINAL_RE, regex=True)]
+            rc = rc.assign(bill=rc["bill_number"].fillna("").str.upper())
+            sc = st_[(st_["congress"] == cong) & (st_["chamber"].isna() | (st_["chamber"] == chamber))]
+            for _, s in sc.iterrows():
+                end = str((pd.Timestamp(s["date"]) + pd.Timedelta(days=POSITION_WINDOW_DAYS)).date())
+                later = sc[(sc["bill_list"] == s["bill_list"]) & (sc["date"] > s["date"])]["date"]
+                if len(later):
+                    end = min(end, later.min())
+                hit = rc[(rc["bill"] == s["bill_list"]) & (rc["date"] >= s["date"]) & (rc["date"] <= end)]
+                for _, r in hit.iterrows():
+                    rows.append({"congress": cong, "chamber": chamber, "rollnumber": r["rollnumber"], "vote_date": r["date"],
+                                 "president": s["president"], "president_party": s["president_party"],
+                                 "president_position": s["position"], "president_vote": "Yea" if s["position"] == "Support" else "Nay",
+                                 "statement_date": s["date"], "statement_title": s["title"], "statement_url": s["statement_url"]})
+    linked = pd.DataFrame(rows).drop_duplicates(["congress", "chamber", "rollnumber"], keep="last")
+    linked.to_csv(POSITION_VOTES_FILE, index=False)
+    print(f"Linked president's stated position to {len(linked)} floor votes ({POSITION_VOTES_FILE.name})")
+    return linked
+
+
+def build_flip_data(members: pd.DataFrame, positions: pd.DataFrame) -> None:
     debt = pd.read_csv(DEBT_LIST, comment="#")
     vote_rows, member_rows = [], []
     for cong in CONGRESSES:
@@ -400,11 +494,24 @@ def build_flip_data(members: pd.DataFrame) -> None:
             if chosen.empty:
                 continue
             chosen[["president", "president_party"]] = chosen["date"].apply(lambda x: pd.Series(president_on(x)))
+            # Where the White House issued a statement, use the president's actual position instead of the
+            # default assumption (e.g. Obama opposed the Sept. 2013 House stopgap that defunded the ACA).
+            # The hand-listed debt limit votes keep their listed direction.
+            chosen = chosen.merge(positions[(positions["congress"] == cong) & (positions["chamber"] == chamber)]
+                                  [["rollnumber", "president_position", "president_vote", "statement_title"]],
+                                  on="rollnumber", how="left") if not positions.empty else chosen.assign(
+                                  president_position=None, president_vote=None, statement_title=None)
+            use = chosen["president_vote"].notna() & (chosen["category"] != "Debt limit")
+            chosen["position_source"] = np.where(use, "president's statement",
+                                                 np.where(chosen["category"] == "Debt limit", "listed", "default rule"))
+            chosen.loc[use, "friendly_vote"] = chosen.loc[use, "president_vote"]
             vote_rows.append(chosen)
 
             votes = pd.read_csv(RAW_DIR / f"{prefix}{cong}_votes.csv", usecols=["rollnumber", "icpsr", "cast_code"])
             votes = votes[votes["rollnumber"].isin(chosen["rollnumber"]) & votes["cast_code"].isin(YEA_CODES | NAY_CODES)]
-            party = members.loc[(members["congress"] == cong) & (members["chamber"] == chamber), ["icpsr", "party"]].drop_duplicates("icpsr")
+            # Independents are scored with the party they caucus with
+            party = (members.loc[(members["congress"] == cong) & (members["chamber"] == chamber), ["icpsr", "caucus"]]
+                     .drop_duplicates("icpsr").rename(columns={"caucus": "party"}))
             votes = votes.merge(party, on="icpsr", how="inner")
             votes = votes[votes["party"].isin(["Democrat", "Republican"])]
             mv = votes.merge(chosen[["rollnumber", "category", "friendly_vote", "president_party"]], on="rollnumber")
@@ -415,7 +522,8 @@ def build_flip_data(members: pd.DataFrame) -> None:
                 ["icpsr", "congress", "chamber", "rollnumber", "category", "party", "vote", "friendly", "own_president"]])
 
     cols = ["category", "congress", "chamber", "rollnumber", "date", "president", "president_party", "bill_number",
-            "vote_question", "vote_desc", "vote_result", "yea_count", "nay_count", "friendly_vote", "selection", "note"]
+            "vote_question", "vote_desc", "vote_result", "yea_count", "nay_count", "friendly_vote", "selection", "note",
+            "position_source", "president_position", "statement_title"]
     flip_votes = pd.concat(vote_rows, ignore_index=True)[cols].sort_values(["category", "date", "chamber", "rollnumber"])
     flip_member_votes = pd.concat(member_rows, ignore_index=True).sort_values(["icpsr", "category", "congress", "rollnumber"])
     flip_votes.to_csv(FLIP_VOTES_FILE, index=False)
@@ -442,8 +550,11 @@ def process() -> None:
     print("\nBuilding vote matrices…")
     build_vote_matrices(members)
 
+    print("\nLinking the president's stated positions…")
+    positions = link_president_positions()
+
     print("\nBuilding position flip data…")
-    build_flip_data(members)
+    build_flip_data(members, positions)
 
 
 def main() -> None:

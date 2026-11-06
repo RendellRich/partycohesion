@@ -85,15 +85,18 @@ if len(filtered) > 0:
     with d5:
         st.metric("Cohesion Proxy", f"{member['cohesion_proxy']:.1f}" if pd.notna(member["cohesion_proxy"]) else "—")
 
+    caucus = member.get("caucus")
+    party_text = member["party"] if member["party"] in ("Democrat", "Republican") or pd.isna(caucus) else \
+        f"{member['party']} (caucuses with {caucus}s)"
     if pd.notna(member["party_unity_pct"]):
         st.markdown(
-            f"**{member['party']}, {member['chamber']}**  |  Voted with the {member['party']} majority on "
+            f"**{party_text}, {member['chamber']}**  |  Voted with the {caucus} majority on "
             f"**{int(member['votes_with_party'])} of {int(member['unity_votes_cast'])}** party-unity votes."
         )
     else:
         st.markdown(
-            f"**{member['party']}, {member['chamber']}**  |  No party unity rate: only Democrats and Republicans are scored, "
-            "and the member must have cast at least one party-unity vote."
+            f"**{party_text}, {member['chamber']}**  |  No party unity rate: members are scored with the party they belong to "
+            "or caucus with, and must have cast at least one party-unity vote."
         )
 
     # Party unity across every Congress this member served in (same Voteview ID)

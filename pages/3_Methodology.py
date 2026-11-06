@@ -38,7 +38,7 @@ The **party unity rate** is the classic measure of how often a member votes with
 4. A member's **party unity %** is the share of the party-unity votes they cast on which they sided with their own party's majority.
 
 Scores are computed separately for each Congress and chamber, so a member's rate in one Congress never carries over to another.
-Only Democrats and Republicans are scored. Independents (including those who caucus with a party) are shown without a unity rate.
+Party majorities are set by Democrats and Republicans. Independents who caucus with a party (such as Sanders and King with the Democrats) are scored against that party's majority, using the caucus records in the public congress-legislators dataset. Independents who caucus with neither party have no unity rate.
 """)
 
 st.header("Party Cohesion Proxy")
@@ -79,6 +79,15 @@ Position Flips looks at three kinds of votes that come up under presidents of bo
 - **War powers limits:** Nay on a resolution directing the president to remove U.S. forces from hostilities.
 
 Each vote is matched to the president in office on its date. For every Democrat and Republican, the page compares how often they cast the president-friendly vote when their own party held the White House versus when the other party did. The difference in percentage points is the **shift**. Members need at least 2 votes under each party's president to be labeled. The bills in a category are not identical, so a changed vote can reflect a changed bill; every vote is listed on the page.
+""")
+
+st.header("The President's Stated Positions")
+st.markdown("""
+The White House's Office of Management and Budget issues **Statements of Administration Policy** giving the president's official position on bills before a floor vote. The site reads every statement from 2009 on (from the public archive maintained by the @unitedstates project) and records whether the president **supported** or **opposed** the bill, based on the statement's own wording ("The Administration strongly supports…", or a veto threat against the bill as written). Statements that take no clear position are not used.
+
+Each statement is linked to final floor votes on the same bill, in the same chamber, within 30 days and before any newer statement on that bill. Position Flips uses these positions for stopgap and war powers votes where a statement exists.
+
+**Why this isn't used to score every bill:** comparing how often a member agrees with presidents of different parties *across different bills* would mostly measure ideology, not consistency. A conservative who agrees with a Republican president's bills and disagrees with a Democratic president's bills hasn't changed position. Position Flips only compares the *same kind of question* asked under both parties' presidents.
 """)
 
 st.header("Ideology Drift")

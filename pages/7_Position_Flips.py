@@ -57,6 +57,10 @@ For every member, we compare how often they took that side **when their own part
   room when it's their own party's president
 - **Opposite pattern** (−25 or less): more willing to give room to the *other* party's president
 
+**Where the White House issued an official Statement of Administration Policy on a stopgap or war powers vote, the
+president's actual stated position is used** instead of the default (for example, Obama opposed the Sept. 2013 House
+stopgap that also defunded the Affordable Care Act, so voting No was the president-friendly vote there).
+
 A member needs at least {MIN_VOTES_EACH_SIDE} votes under each party's president to get a label. Only actual Yea and
 Nay votes count. Presidents are matched to each vote by its date.
 """)
@@ -71,7 +75,8 @@ with st.expander("Limits of this measure", expanded=False):
 - **Debt limit votes are listed by hand** (see the full list at the bottom) because increases often rode on unrelated
   "vehicle" bills. Increases passed without a direct roll call (such as the House rule in Oct. 2021) or folded into a
   much larger bill (such as the 2025 reconciliation law) are not included.
-- **Independents are not scored**, because the data doesn't record which party they caucus with.
+- **Independents are scored with the party they caucus with** (for example, Sanders and King with the Democrats). Those
+  who caucus with neither party are not scored.
 """)
 
 # ---------------------------------------------------------------------------
@@ -173,13 +178,14 @@ if pick:
         }).drop(columns=["n_own", "n_other"]), width="stretch", hide_index=True)
 
     mine = member_votes[member_votes["icpsr"] == icpsr].merge(
-        votes[["congress", "chamber", "rollnumber", "date", "president", "label", "vote_result", "friendly_vote"]],
-        on=["congress", "chamber", "rollnumber"])
+        votes[["category", "congress", "chamber", "rollnumber", "date", "president", "label", "vote_result", "friendly_vote", "position_source"]],
+        on=["category", "congress", "chamber", "rollnumber"])  # one vote can count in two categories
     st.dataframe(
         mine.sort_values("date", ascending=False).rename(columns={
             "date": "Date", "category": "Type", "president": "President", "label": "Vote", "vote": "Their vote",
-            "friendly_vote": "President-friendly vote", "vote_result": "Result", "chamber": "Chamber"})[
-            ["Date", "Chamber", "President", "Type", "Vote", "Their vote", "President-friendly vote", "Result"]],
+            "friendly_vote": "President-friendly vote", "vote_result": "Result", "chamber": "Chamber",
+            "position_source": "Based on"})[
+            ["Date", "Chamber", "President", "Type", "Vote", "Their vote", "President-friendly vote", "Based on", "Result"]],
         width="stretch", hide_index=True, column_config={"Vote": st.column_config.TextColumn(width="large")},
     )
 
@@ -191,11 +197,14 @@ with st.expander(f"All {len(votes)} votes used on this page"):
     st.dataframe(
         votes.sort_values("date", ascending=False).rename(columns={
             "category": "Type", "date": "Date", "chamber": "Chamber", "rollnumber": "Roll Call", "president": "President",
-            "label": "Vote", "vote_result": "Result", "friendly_vote": "President-friendly vote", "selection": "Selected by"})[
-            ["Date", "Chamber", "Roll Call", "President", "Type", "Vote", "Result", "President-friendly vote", "Selected by"]],
+            "label": "Vote", "vote_result": "Result", "friendly_vote": "President-friendly vote", "selection": "Selected by",
+            "position_source": "Based on", "statement_title": "White House statement"})[
+            ["Date", "Chamber", "Roll Call", "President", "Type", "Vote", "Result", "President-friendly vote", "Based on",
+             "White House statement", "Selected by"]],
         width="stretch", hide_index=True, column_config={"Vote": st.column_config.TextColumn(width="large")},
     )
     st.caption("Selected by: rule = picked automatically by the written rule above; listed = on the hand-made debt limit list "
-               "in data/flip_debt_limit_votes.csv.")
+               "in data/flip_debt_limit_votes.csv. Based on: president's statement = the White House's official Statement of "
+               "Administration Policy on that bill; default rule = no statement was issued, so the rule above applies.")
 
 st.caption("Source: Voteview roll-call records. Only actual Yea and Nay floor votes are counted.")

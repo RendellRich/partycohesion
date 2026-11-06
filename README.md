@@ -35,7 +35,7 @@ From the project root:
 python scripts/refresh_data.py
 ```
 
-This downloads the latest Voteview member file and the House and Senate vote and roll-call files from the 110th Congress to the newest one, then rebuilds `data/members_processed.csv` and `data/unity_summary.csv`. It also rebuilds the key vote series in `data/key_votes.csv` and `data/key_vote_defectors.csv`. Raw downloads are cached in `data/raw/` (git-ignored). Commit the updated CSVs and Streamlit Cloud redeploys automatically.
+`scripts/build_president_positions.py` reads the White House's Statements of Administration Policy (2009 on) into `data/president_positions.csv`; the scheduled refresh re-reads the current administration's statements. This downloads the latest Voteview member file and the House and Senate vote and roll-call files from the 110th Congress to the newest one, then rebuilds `data/members_processed.csv` and `data/unity_summary.csv`. It also rebuilds the key vote series in `data/key_votes.csv` and `data/key_vote_defectors.csv`. Raw downloads are cached in `data/raw/` (git-ignored). Commit the updated CSVs and Streamlit Cloud redeploys automatically.
 
 ### Automatic refresh
 

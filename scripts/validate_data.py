@@ -92,6 +92,17 @@ for cat, grp in flip_votes.groupby("category"):
 check(flip_member_votes["friendly"].isin([0, 1]).all(), "flip_member_votes has invalid 'friendly' values")
 check(len(flip_member_votes) > 20000, f"flip_member_votes looks too small ({len(flip_member_votes):,} rows)")
 
+# President's stated positions: most statements classified, and enough linked to floor votes
+positions = pd.read_csv(DATA / "president_positions.csv")
+check(len(positions) >= 1000, f"only {len(positions)} White House statements (expected 1,000+)")
+clear = positions["position"].isin(["Support", "Oppose"]).mean()
+check(clear >= 0.9, f"only {clear:.0%} of White House statements have a clear position (expected 90%+)")
+position_votes = pd.read_csv(DATA / "president_position_votes.csv")
+check(len(position_votes) >= 500, f"only {len(position_votes)} floor votes linked to a White House statement")
+# Independents who caucus with a party get scored
+ind = members[~members["party"].isin(["Democrat", "Republican"]) & members["caucus"].notna()]
+check(ind["party_unity_pct"].notna().all(), "an independent who caucuses with a party is missing a party unity rate")
+
 # No sudden shrinkage compared with the last committed data
 for name, df in (("data/members_processed.csv", members), ("data/key_votes.csv", key_votes)):
     old = previous_version(name)
