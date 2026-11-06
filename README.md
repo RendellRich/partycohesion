@@ -6,9 +6,10 @@ Neutral, data-first view of U.S. Congressional voting patterns and party cohesio
 
 ## Features
 
-- **Overview** — Party unity rates, ideology distributions, cohesion proxy, and party trends across Congresses 110–119
+- **Overview** — Party unity rates, ideology distributions, cohesion proxy, and party trends from the 110th Congress (2007) to the present
 - **Member Explorer** — Search any member, view party unity %, ideology score, and their unity rate across every Congress they served in
-- **Key Votes** — 119th Congress party unity by party, members who break with their party most often, and a framework for high-profile vote series
+- **Key Votes** — Party unity by Congress, plus high-profile vote series (funding bills, Cabinet confirmations, biggest party breaks) showing each party's split and every member who voted against their party
+- **Compare Members** — Two members side by side: party unity over time, vote-by-vote agreement while serving together, and key votes where they split
 - **Methodology** — Clear definitions of party unity, DW-NOMINATE, and the cohesion proxy
 - **About** — Project purpose and independence statement
 
@@ -32,7 +33,22 @@ From the project root:
 python scripts/refresh_data.py
 ```
 
-This downloads the latest Voteview member file and the House and Senate roll-call vote files for Congresses 110–119, then rebuilds `data/members_processed.csv` and `data/unity_summary.csv`. Raw downloads are cached in `data/raw/` (git-ignored). Commit the updated CSVs and Streamlit Cloud redeploys automatically.
+This downloads the latest Voteview member file and the House and Senate vote and roll-call files from the 110th Congress to the newest one, then rebuilds `data/members_processed.csv` and `data/unity_summary.csv`. It also rebuilds the key vote series in `data/key_votes.csv` and `data/key_vote_defectors.csv`. Raw downloads are cached in `data/raw/` (git-ignored). Commit the updated CSVs and Streamlit Cloud redeploys automatically.
+
+### Automatic refresh
+
+A GitHub Action (`.github/workflows/refresh-data.yml`) runs the refresh every Monday and Thursday and commits the data files when Voteview has new votes. Streamlit Cloud then redeploys on its own. Before committing, `scripts/validate_data.py` checks the new data; if it fails, nothing is committed, GitHub emails a failure notice, and the site shows a small warning until a refresh succeeds. To run it by hand: GitHub → **Actions** → **Refresh Voteview data** → **Run workflow**.
+
+## Add Your Own Key Votes
+
+To add a hand-picked series (for example, signature legislation), add rows to `data/key_votes_custom.csv`:
+
+```csv
+series,congress,chamber,rollnumber,note
+Signature Legislation,119,House,123,Final passage
+```
+
+The roll call number is shown in the **Roll Call** column on the Key Votes page. Then run `python scripts/refresh_data.py` and commit the updated data files.
 
 ## Deploy to Streamlit Community Cloud (Free)
 
@@ -66,7 +82,7 @@ Then follow the Streamlit Cloud steps above.
 - **Ideology**: DW-NOMINATE Dimension 1 (negative ≈ more liberal, positive ≈ more conservative).
 - **Party unity %**: For each Congress and chamber, a party-unity vote is a roll call where a majority of voting Democrats opposed a majority of voting Republicans. A member's rate is the share of those votes (Yea/Nay only) on which they sided with their own party's majority. Only Democrats and Republicans are scored.
 - **Cohesion proxy**: Within each Congress + chamber + party, members are ranked by absolute distance from the party median on Dimension 1. Score of 100 = closest to the party median; lower scores = further toward the ideological wing.
-- Coverage: House and Senate, Congresses 110–119.
+- Coverage: House and Senate, 110th Congress to the present. New Congresses are picked up automatically by the refresh script.
 
 ## Project Principles
 

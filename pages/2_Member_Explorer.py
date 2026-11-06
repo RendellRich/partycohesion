@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from pathlib import Path
+from chart_utils import show_chart, ordinal, chamber_label
 
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "members_processed.csv"
@@ -15,7 +16,7 @@ def load_members():
 df = load_members()
 
 st.title("Member Explorer")
-st.markdown("Search any member of the 110th through 119th Congresses and see how often they voted with their own party, where they sit ideologically, and how that changed over time.")
+st.markdown("Search any member of Congress from the 110th (2007) to the present and see how often they voted with their own party, where they sit ideologically, and how that changed over time.")
 
 # Filters
 c1, c2, c3 = st.columns(3)
@@ -74,11 +75,9 @@ if len(filtered) > 0:
 
     member = filtered[filtered["name"] == selected].iloc[0]
 
-    d1, d2, d3, d4, d5 = st.columns(5)
-    with d1:
-        st.metric("Party", member["party"])
+    d2, d3, d4, d5 = st.columns(4)
     with d2:
-        st.metric("State", member["state_abbrev"])
+        st.metric("Party-State", f"{member['party'][0]}-{member['state_abbrev']}", help=member["party"])
     with d3:
         st.metric("Party Unity %", f"{member['party_unity_pct']:.1f}%" if pd.notna(member["party_unity_pct"]) else "—")
     with d4:
@@ -88,12 +87,12 @@ if len(filtered) > 0:
 
     if pd.notna(member["party_unity_pct"]):
         st.markdown(
-            f"**Chamber:** {member['chamber']}  |  Voted with the {member['party']} majority on "
+            f"**{member['party']}, {member['chamber']}**  |  Voted with the {member['party']} majority on "
             f"**{int(member['votes_with_party'])} of {int(member['unity_votes_cast'])}** party-unity votes."
         )
     else:
         st.markdown(
-            f"**Chamber:** {member['chamber']}  |  No party unity rate: only Democrats and Republicans are scored, "
+            f"**{member['party']}, {member['chamber']}**  |  No party unity rate: only Democrats and Republicans are scored, "
             "and the member must have cast at least one party-unity vote."
         )
 
@@ -120,7 +119,7 @@ if len(filtered) > 0:
         names = {"party_unity_pct": selected.split(",")[0], "party_avg": f"{member['party']} average"}
         fig_h.for_each_trace(lambda t: t.update(name=names.get(t.name, t.name)))
         fig_h.update_layout(height=360, margin=dict(l=40, r=40, t=50, b=40), xaxis=dict(dtick=1))
-        st.plotly_chart(fig_h, width="stretch")
+        show_chart(fig_h, f"Party unity across Congresses: {selected}", f"party_unity_history_{selected.split(',')[0].lower().replace(' ', '_')}")
 
     # Context: where this member sits relative to their party
     party_members = df[
@@ -147,7 +146,7 @@ if len(filtered) > 0:
             annotation_position="top",
         )
         fig.update_layout(height=380, margin=dict(l=40, r=40, t=50, b=40))
-        st.plotly_chart(fig, width="stretch")
+        show_chart(fig, f"{selected.split(',')[0]} among {member['party']}s in the {member['chamber']}, {ordinal(congress)} Congress", f"ideology_position_{selected.split(',')[0].lower().replace(' ', '_')}_{congress}")
 else:
     st.info("No members match the current filters.")
 

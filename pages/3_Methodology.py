@@ -32,7 +32,7 @@ st.header("Party Unity Rate")
 st.markdown("""
 The **party unity rate** is the classic measure of how often a member votes with their own party.
 
-1. For every roll call in a Congress and chamber, count only Yea and Nay votes (present and not voting are excluded).
+1. For every roll call in a Congress and chamber, count only actual Yea and Nay floor votes. Present, not voting, and "paired" or "announced" positions are excluded, which matches the official clerk totals.
 2. Find the majority position of Democrats and of Republicans. Roll calls where a party splits exactly 50/50 are excluded.
 3. A **party-unity vote** is a roll call where a majority of Democrats opposed a majority of Republicans.
 4. A member's **party unity %** is the share of the party-unity votes they cast on which they sided with their own party's majority.
@@ -52,6 +52,24 @@ A second, ideology-based measure shows who sits near the center of their party v
 A member can have a high party unity rate and still sit toward their party's wing. The two measures answer different questions.
 """)
 
+st.header("Key Vote Series")
+st.markdown("""
+The Key Votes page groups high-profile roll calls into series. Each series is chosen by a fixed rule, not by hand:
+
+- **Funding & Appropriations**: final passage votes (including votes to concur in the other chamber's changes) on appropriations bills and continuing resolutions. Procedural rule votes and authorization bills are excluded.
+- **Cabinet Confirmations**: Senate confirmation votes for the heads of the 15 executive departments and the Attorney General. Nominees confirmed by voice vote have no roll call.
+- **Biggest Party Breaks**: in each chamber, the 10 party-unity votes on final passage or nominations where the most Democrats and Republicans combined voted against their own party's majority.
+
+Additional series can be added by listing roll calls in `data/key_votes_custom.csv`. Any such series is labeled as hand-picked.
+
+For every vote, the page shows the Yea–Nay split for each party and lists each Democrat or Republican who voted against their party's majority. If a party splits exactly evenly, it has no majority position and none of its members are counted as breaking with it.
+""")
+
+st.header("Comparing Two Members")
+st.markdown("""
+Compare Members uses every roll call where both members actually voted Yea or Nay while serving in the same chamber during the same Congress. "Voted the same way" is the share of those votes where their votes matched. The same figure is shown for party-unity votes only. Members who never served in the same chamber at the same time can be compared on party unity but not vote by vote.
+""")
+
 st.header("What This Site Does *Not* Do")
 st.markdown("""
 - It does not assign moral judgments (“good” or “bad” members).
@@ -64,7 +82,8 @@ The goal is descriptive: show the patterns that exist in the official voting rec
 
 st.header("Updates & Reproducibility")
 st.markdown("""
-- Member files and roll-call vote files are re-downloaded periodically from Voteview with `scripts/refresh_data.py`, which recomputes every number shown here.
+- Member files and roll-call vote files are re-downloaded from Voteview twice a week by an automatic job (`scripts/refresh_data.py`), which recomputes every number shown here.
+- Before new data is published, `scripts/validate_data.py` checks it (complete chambers, vote totals matching official counts, no sudden drops). If a check fails, nothing is published and a notice appears on the site until a refresh succeeds.
 - Processed data used by the app live in the project repository.
 - Code and data processing steps are kept simple and inspectable so others can reproduce the numbers.
 """)

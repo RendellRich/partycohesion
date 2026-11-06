@@ -1,0 +1,18 @@
+# Your hand-picked key votes. Add one row per roll call, then run: python scripts/refresh_data.py
+# series: any group name you want shown on the Key Votes page (e.g. "Signature Legislation")
+# congress: 110-119   chamber: House or Senate   rollnumber: Voteview roll call number (shown on Key Votes)
+# note: optional short neutral description. Do not use the # character in notes.
+series,congress,chamber,rollnumber,note
+Major Legislation,119,House,22,Laken Riley Act: House passage of S. 5
+Major Legislation,119,Senate,7,Laken Riley Act: Senate passage of S. 5
+Major Legislation,119,House,103,TAKE IT DOWN Act: House passage of S. 146
+Major Legislation,119,House,144,One Big Beautiful Bill Act: House passage of H.R. 1
+Major Legislation,119,Senate,372,One Big Beautiful Bill Act: Senate passage of H.R. 1
+Major Legislation,119,House,189,One Big Beautiful Bill Act: House vote to concur in Senate changes
+Major Legislation,119,House,167,Rescissions Act of 2025: House passage of H.R. 4
+Major Legislation,119,Senate,411,Rescissions Act of 2025: Senate passage of H.R. 4
+Major Legislation,119,Senate,127,HALT Fentanyl Act: Senate passage of S. 331
+Major Legislation,119,House,165,HALT Fentanyl Act: House passage of S. 331
+Major Legislation,119,Senate,318,GENIUS Act: Senate passage of S. 1582
+Major Legislation,119,House,199,GENIUS Act: House passage of S. 1582
+Major Legislation,119,House,288,Epstein Files Transparency Act: House passage of H.R. 4405

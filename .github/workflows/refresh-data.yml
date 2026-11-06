@@ -1,0 +1,50 @@
+name: Refresh Voteview data
+
+# Runs twice a week (Monday and Thursday, early morning US Eastern) and can be started by hand
+# from the Actions tab. If Voteview has new votes and the data passes its checks, it commits
+# the updated data files and Streamlit Community Cloud redeploys the app automatically.
+on:
+  schedule:
+    - cron: "23 8 * * 1,4"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install "pandas>=2.0.0" "numpy>=1.24.0"
+
+      - name: Refresh data from Voteview
+        run: python scripts/refresh_data.py
+
+      # Stops the run (nothing is committed, and GitHub emails a failure notice) if the
+      # new data looks incomplete or wrong.
+      - name: Check the data before publishing
+        run: python scripts/validate_data.py
+
+      - name: Commit updated data if anything changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/*.csv data/matrices/*.npz
+          if git diff --cached --quiet; then
+            echo "No new votes since the last refresh."
+          else
+            git commit -m "Refresh Voteview data ($(date -u +%Y-%m-%d))"
+            git push
+          fi
