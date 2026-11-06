@@ -9,6 +9,7 @@ This file is the entry point. It sets the page config once and defines the sideb
 
 import streamlit as st
 from chart_utils import EXPORT_SIZES, DEFAULT_EXPORT
+from site_status import show_refresh_notice
 
 st.set_page_config(
     page_title="PartyCohesion",
@@ -24,6 +25,7 @@ pages = [
     st.Page("pages/1_Overview.py", title="Overview", icon="📊"),
     st.Page("pages/2_Member_Explorer.py", title="Member Explorer", icon="👤"),
     st.Page("pages/5_Key_Votes.py", title="Key Votes", icon="🗳️"),
+    st.Page("pages/6_Compare.py", title="Compare Members", icon="⚖️"),
     st.Page("pages/3_Methodology.py", title="Methodology", icon="📐"),
     st.Page("pages/4_About.py", title="About", icon="ℹ️"),
 ]
@@ -35,4 +37,5 @@ with st.sidebar:
              index=list(EXPORT_SIZES).index(DEFAULT_EXPORT))
     st.caption("Use the camera icon on any chart to download a PNG at this size.")
 
+show_refresh_notice()
 nav.run()

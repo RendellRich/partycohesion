@@ -63,6 +63,7 @@ and where they sit on the primary liberal–conservative dimension of voting beh
 - **Overview** — Chamber-level and party-level patterns  
 - **Member Explorer** — Look up any member’s party-unity rate, ideology score, and how they changed across Congresses  
 - **Key Votes** — Party splits on funding bills, Cabinet confirmations and the biggest party breaks, with every member who broke ranks  
+- **Compare Members** — Two members side by side: party unity over time, how often they voted alike, and key votes where they split  
 - **Methodology** — Exact definitions and data sources  
 - **About** — Project purpose and neutrality statement  
 

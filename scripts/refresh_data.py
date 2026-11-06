@@ -294,6 +294,45 @@ def build_key_votes(members: pd.DataFrame) -> None:
     print(key_votes.groupby(["congress", "series"]).size().unstack(fill_value=0))
 
 
+# ---------------------------------------------------------------------------
+# Compact vote matrices (used by the Compare Members page)
+# ---------------------------------------------------------------------------
+MATRIX_DIR = DATA_DIR / "matrices"
+
+
+def build_vote_matrices(members: pd.DataFrame) -> None:
+    """One small file per Congress + chamber: rows = members, columns = roll calls,
+    values 1 = Yea, -1 = Nay, 0 = did not vote. Lets the app compare any two members
+    on every vote without shipping the full Voteview files."""
+    MATRIX_DIR.mkdir(parents=True, exist_ok=True)
+    wanted = {f"{p}{c}.npz" for c in CONGRESSES for p in CHAMBERS.values()}
+    for old in MATRIX_DIR.glob("*.npz"):
+        if old.name not in wanted:
+            old.unlink()
+    for cong in CONGRESSES:
+        for chamber, prefix in CHAMBERS.items():
+            ids = members.loc[(members["congress"] == cong) & (members["chamber"] == chamber), "icpsr"].unique()
+            votes = pd.read_csv(RAW_DIR / f"{prefix}{cong}_votes.csv", usecols=["rollnumber", "icpsr", "cast_code"])
+            votes = votes[votes["icpsr"].isin(ids)]
+            votes["v"] = np.select([votes["cast_code"].isin(YEA_CODES), votes["cast_code"].isin(NAY_CODES)], [1, -1], 0)
+            mat = votes.pivot_table(index="icpsr", columns="rollnumber", values="v", aggfunc="first", fill_value=0)
+            arrays = {
+                "icpsr": mat.index.to_numpy(dtype=np.int32),
+                "rollnumber": mat.columns.to_numpy(dtype=np.int32),
+                "votes": mat.to_numpy(dtype=np.int8),
+            }
+            path = MATRIX_DIR / f"{prefix}{cong}.npz"
+            # .npz files embed a timestamp, so only rewrite when the votes actually changed;
+            # otherwise every scheduled refresh would commit an identical-looking change.
+            if path.exists():
+                with np.load(path) as old:
+                    if all(k in old and np.array_equal(old[k], v) for k, v in arrays.items()):
+                        continue
+            np.savez_compressed(path, **arrays)
+    size = sum(f.stat().st_size for f in MATRIX_DIR.glob("*.npz"))
+    print(f"Wrote vote matrices to {MATRIX_DIR.name}/ ({size / 1e6:.1f} MB)")
+
+
 def process() -> None:
     print("Processing members…")
     members = load_members()
@@ -308,6 +347,9 @@ def process() -> None:
 
     print("\nBuilding key vote series…")
     build_key_votes(members)
+
+    print("\nBuilding vote matrices…")
+    build_vote_matrices(members)
 
 
 def main() -> None:

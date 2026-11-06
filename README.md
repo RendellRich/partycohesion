@@ -9,6 +9,7 @@ Neutral, data-first view of U.S. Congressional voting patterns and party cohesio
 - **Overview** — Party unity rates, ideology distributions, cohesion proxy, and party trends from the 110th Congress (2007) to the present
 - **Member Explorer** — Search any member, view party unity %, ideology score, and their unity rate across every Congress they served in
 - **Key Votes** — Party unity by Congress, plus high-profile vote series (funding bills, Cabinet confirmations, biggest party breaks) showing each party's split and every member who voted against their party
+- **Compare Members** — Two members side by side: party unity over time, vote-by-vote agreement while serving together, and key votes where they split
 - **Methodology** — Clear definitions of party unity, DW-NOMINATE, and the cohesion proxy
 - **About** — Project purpose and independence statement
 
@@ -36,7 +37,7 @@ This downloads the latest Voteview member file and the House and Senate vote and
 
 ### Automatic refresh
 
-A GitHub Action (`.github/workflows/refresh-data.yml`) runs the refresh every Monday and Thursday and commits the data files when Voteview has new votes. Streamlit Cloud then redeploys on its own. To run it by hand: GitHub → **Actions** → **Refresh Voteview data** → **Run workflow**.
+A GitHub Action (`.github/workflows/refresh-data.yml`) runs the refresh every Monday and Thursday and commits the data files when Voteview has new votes. Streamlit Cloud then redeploys on its own. Before committing, `scripts/validate_data.py` checks the new data; if it fails, nothing is committed, GitHub emails a failure notice, and the site shows a small warning until a refresh succeeds. To run it by hand: GitHub → **Actions** → **Refresh Voteview data** → **Run workflow**.
 
 ## Add Your Own Key Votes
 

@@ -65,6 +65,11 @@ Additional series can be added by listing roll calls in `data/key_votes_custom.c
 For every vote, the page shows the Yea–Nay split for each party and lists each Democrat or Republican who voted against their party's majority. If a party splits exactly evenly, it has no majority position and none of its members are counted as breaking with it.
 """)
 
+st.header("Comparing Two Members")
+st.markdown("""
+Compare Members uses every roll call where both members actually voted Yea or Nay while serving in the same chamber during the same Congress. "Voted the same way" is the share of those votes where their votes matched. The same figure is shown for party-unity votes only. Members who never served in the same chamber at the same time can be compared on party unity but not vote by vote.
+""")
+
 st.header("What This Site Does *Not* Do")
 st.markdown("""
 - It does not assign moral judgments (“good” or “bad” members).
@@ -77,7 +82,8 @@ The goal is descriptive: show the patterns that exist in the official voting rec
 
 st.header("Updates & Reproducibility")
 st.markdown("""
-- Member files and roll-call vote files are re-downloaded periodically from Voteview with `scripts/refresh_data.py`, which recomputes every number shown here.
+- Member files and roll-call vote files are re-downloaded from Voteview twice a week by an automatic job (`scripts/refresh_data.py`), which recomputes every number shown here.
+- Before new data is published, `scripts/validate_data.py` checks it (complete chambers, vote totals matching official counts, no sudden drops). If a check fails, nothing is published and a notice appears on the site until a refresh succeeds.
 - Processed data used by the app live in the project repository.
 - Code and data processing steps are kept simple and inspectable so others can reproduce the numbers.
 """)
