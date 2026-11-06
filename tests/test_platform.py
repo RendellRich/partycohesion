@@ -59,6 +59,9 @@ def test_known_votes_scored_correctly():
     # 2013 assault weapons amendment: 15 Democrats and King (caucuses with Democrats) voted no; Kirk (R) voted yes
     awb = against_on(mv, 113, "Senate", 101)
     assert len(awb) == 17 and "King" in awb and "Kirk" in awb
+    # 2015 amendment to end DACA: 26 Republicans voted no, so against the 2012 Republican platform
+    daca = mv[(mv["congress"] == 114) & (mv["chamber"] == "House") & (mv["rollnumber"] == 29) & mv["against"]]
+    assert set(daca["side"]) == {"Republican"} and len(daca) == 26
     # 2025 global tariff resolution: Republicans who voted to end the tariffs
     assert against_on(mv, 119, "Senate", 225) == ["Collins", "Murkowski", "Paul"]
 

@@ -107,8 +107,11 @@ st.caption("Counted votes are direct, non-procedural roll calls. Don't read the 
 pres_counts = topics["congress"].map(PRESIDENT).value_counts()
 by_president = ", ".join(f"{pres_counts[p]} from the {p} years" for p in ("Bush", "Obama", "Trump", "Biden")
                          if p in pres_counts)
-dem_backed = int((topics["dem_stance"] == "Supports").sum())
-rep_backed = len(topics) - dem_backed
+# Which platform backs the measures voted on: the party whose platform vote was Yea on the topic's direct votes
+yea_party = links[links["link"] == "direct"].assign(
+    backer=lambda d: d["dem_platform_vote"].map({"Yea": "Democratic", "Nay": "Republican"}))
+backers = yea_party.groupby("topic_id")["backer"].agg(lambda b: b.iloc[0] if b.nunique() == 1 else "both")
+dem_backed, rep_backed, mixed = (int((backers == k).sum()) for k in ("Democratic", "Republican", "both"))
 with st.expander("The rules for picking topics and votes", expanded=False):
     st.markdown(f"""
 These rules were written down before any member results were computed, and apply the same way to both parties.
@@ -123,8 +126,8 @@ These rules were written down before any member results were computed, and apply
 4. **Direct or related.** A direct vote is on exactly what the planks name. A related vote is on the same topic but a
    different or broader measure. Only direct votes count.
 5. **Every qualifying topic is included.** Topics aren't dropped to make the two sides even. Instead, the split is
-   published: {by_president}. Of the topics, {dem_backed} are measures the Democratic platform backs and {rep_backed}
-   are measures the Republican platform backs. The data starts in 2007, so the Bush years cover only 2007 and 2008.
+   published: {by_president}. On {dem_backed} topics the votes were on measures the Democratic platform backs, on
+   {rep_backed} on measures the Republican platform backs, and on {mixed} there were votes on both sides' measures. The data starts in 2007, so the Bush years cover only 2007 and 2008.
 6. **Everything is public.** Every plank and every vote link is in the site's data files, with a link to the platform
    text and a note on how the wording was checked. Each plank is a paraphrase, not a quote.
 7. **Neutral wording.** This page says "voted against their party's platform", never "broke a promise".

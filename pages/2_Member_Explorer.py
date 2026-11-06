@@ -155,10 +155,12 @@ if pick:
         side = plat_rows["side"].iloc[-1]
         st.markdown(f"On topics where the two parties' platforms take opposite positions, {short} voted against the "
                     f"{side} platform on **{plat_against} of {plat_cast}** counted votes.")
-        html_table(["Date", "Topic", "Vote", "Their vote", "Platform vote", "Against platform", "Counted"],
-                   [[fmt_date(x.date), x.topic, x.measure, x.vote, x.platform_vote, "Yes" if x.against else "No",
-                     "Yes" if x.counts else "No"] for x in plat_rows.sort_values("date", ascending=False).itertuples()],
-                   muted_cols=(0, 6))
+        show_all = st.toggle("Include procedural and related votes (not counted)", key="me_plat_all")
+        shown = plat_rows if show_all else plat_rows[plat_rows["counts"]]
+        html_table(["Date", "Vote", "Their vote", "Matches their platform"] + (["Counted"] if show_all else []),
+                   [[fmt_date(x.date), x.measure, x.vote, "No" if x.against else "Yes"]
+                    + (["Yes" if x.counts else "No"] if show_all else [])
+                    for x in shown.sort_values("date", ascending=False).itertuples()], muted_cols=(0,))
         st.caption("A platform is the party's official policy document, not a personal promise, and members often give "
                    "reasons a roll call can't show. Procedural and related votes are shown but not counted.")
         st.page_link("pages/11_Platform_Votes.py", label="See every topic and the rules →")
