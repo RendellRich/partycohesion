@@ -34,6 +34,7 @@ pages = {
         st.Page("pages/1_Overview.py", title="Overview", icon="📊"),
     ],
     "About": [
+        st.Page("pages/9_How_It_Works.py", title="How We Measure Consistency", icon="🧮"),
         st.Page("pages/3_Methodology.py", title="Methodology", icon="📐"),
         st.Page("pages/4_About.py", title="About", icon="ℹ️"),
     ],
