@@ -199,11 +199,12 @@ st.markdown("""
 
 **Known imbalances in the Platform Votes data**
 
-- The list has 24 topics: 1 from the Bush years (the data starts in 2007), 9 from the Obama years, 7 from the Trump
+- The list has 29 topics: 1 from the Bush years (the data starts in 2007), 14 from the Obama years, 7 from the Trump
   years and 7 from the Biden years. Every topic that qualifies under the rules is included rather than dropping some
   to even out the count, and the page shows the split.
-- More of the topics are measures the Democratic platform backs, partly because House Democrats brought many of their
-  platform bills to the floor from 2007 to 2010 and 2019 to 2022. The two parties' totals depend heavily on which
+- On more topics the vote was on a measure the Democratic platform backs (16, against 11 for the Republican platform
+  and 1 with both), partly because House Democrats brought many of their platform bills to the floor from 2007 to
+  2010 and 2019 to 2022. The Platform Votes page shows the current split. The two parties' totals depend heavily on which
   topics qualify, so read them as a description of these votes, not a ranking.
 """)
 

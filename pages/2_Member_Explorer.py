@@ -11,7 +11,8 @@ import streamlit as st
 
 from chart_utils import ACCENT, MUTED, PARTY_COLORS, ordinal, show_chart
 from flip_utils import add_chamber_control, flip_scores
-from ui import display_name, html_table, inject_css, intro, last_name, member_header, metric_row, pattern_badge
+from platform_utils import platform_record
+from ui import display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row, pattern_badge
 from vote_index import load_votes, member_record, search_votes, voteview_url
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -111,8 +112,11 @@ if pick:
                 else f"{int(o['n_own'] + o['n_other'])} votes, too few matched")
     ideo = member["nominate_dim1"]
     chambers = " and ".join(sorted(rows["chamber"].unique()))
+    plat_rows, plat_cast, plat_against = platform_record(icpsr)
+    platform = (("Against party platform", f"{plat_against} of {plat_cast}", "counted Platform Votes")
+                if plat_cast else ("Against party platform", "None", "No counted Platform Votes"))
     metric_row([
-        unity, flip,
+        unity, flip, platform,
         ("Ideology score", f"{ideo:.2f}" if pd.notna(ideo) else "None", "−1 liberal to +1 conservative"),
         ("In this data since", str(2 * int(rows["congress"].min()) + 1787),
          f"{rows['congress'].nunique()} Congress{'es' if rows['congress'].nunique() > 1 else ''}, {chambers}"
@@ -141,6 +145,25 @@ if pick:
         st.page_link("pages/9_How_It_Works.py", label="How this is measured →")
     else:
         st.caption("This member cast no Yea or Nay votes on debt limit, funding, disaster aid or war powers bills in this data.")
+
+    # Platform Votes
+    st.subheader("Votes on their party's platform")
+    if plat_rows.empty:
+        st.caption("No votes in this data on topics where the Democratic and Republican platforms take opposite, "
+                   "specific positions.")
+    else:
+        side = plat_rows["side"].iloc[-1]
+        st.markdown(f"On topics where the two parties' platforms take opposite positions, {short} voted against the "
+                    f"{side} platform on **{plat_against} of {plat_cast}** counted votes.")
+        show_all = st.toggle("Include procedural and related votes (not counted)", key="me_plat_all")
+        shown = plat_rows if show_all else plat_rows[plat_rows["counts"]]
+        html_table(["Date", "Vote", "Their vote", "Matches their platform"] + (["Counted"] if show_all else []),
+                   [[fmt_date(x.date), x.measure, x.vote, "No" if x.against else "Yes"]
+                    + (["Yes" if x.counts else "No"] if show_all else [])
+                    for x in shown.sort_values("date", ascending=False).itertuples()], muted_cols=(0,))
+        st.caption("A platform is the party's official policy document, not a personal promise, and members often give "
+                   "reasons a roll call can't show. Procedural and related votes are shown but not counted.")
+        st.page_link("pages/11_Platform_Votes.py", label="See every topic and the rules →")
 
     # Party unity over time
     if len(scored) > 1:
