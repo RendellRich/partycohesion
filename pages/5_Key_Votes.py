@@ -79,7 +79,7 @@ members, summary, votes, defectors = load_data()
 
 st.title("Key Votes")
 intro("The highest-profile votes in each Congress, how each party split, and exactly who voted against their own "
-      "party. Every series is picked by a published rule.")
+      "party. Three series are picked by a published rule, and one hand-picked list is labeled as such.")
 
 f1, f2, _ = st.columns([1.2, 1, 0.8])
 with f1:
