@@ -2,7 +2,6 @@
 
 import streamlit as st
 
-st.set_page_config(page_title="Methodology | PartyCohesion", page_icon="📐", layout="wide")
 
 st.title("Methodology & Sources")
 st.markdown("Transparent definitions so anyone can understand (and critique) the numbers.")
@@ -29,19 +28,28 @@ DW-NOMINATE is a scaling procedure that places legislators in a low-dimensional 
 These scores are **not** opinions or survey responses. They are statistical summaries of actual voting behavior.
 """)
 
-st.header("Party Cohesion Proxy (Current Version)")
+st.header("Party Unity Rate")
 st.markdown("""
-True **party unity scores** measure the percentage of times a member votes with the majority of their own party on party-unity votes (votes where a majority of Democrats opposed a majority of Republicans).
+The **party unity rate** is the classic measure of how often a member votes with their own party.
 
-For this release we display a transparent **proxy**:
+1. For every roll call in a Congress and chamber, count only Yea and Nay votes (present and not voting are excluded).
+2. Find the majority position of Democrats and of Republicans. Roll calls where a party splits exactly 50/50 are excluded.
+3. A **party-unity vote** is a roll call where a majority of Democrats opposed a majority of Republicans.
+4. A member's **party unity %** is the share of the party-unity votes they cast on which they sided with their own party's majority.
+
+Scores are computed separately for each Congress and chamber, so a member's rate in one Congress never carries over to another.
+Only Democrats and Republicans are scored. Independents (including those who caucus with a party) are shown without a unity rate.
+""")
+
+st.header("Party Cohesion Proxy")
+st.markdown("""
+A second, ideology-based measure shows who sits near the center of their party versus the wings:
 
 1. Within each Congress + chamber + party, compute the median DW-NOMINATE Dimension 1 score.
 2. Rank every member by absolute distance from that party median.
 3. Convert the rank into a 0–100 score (100 = closest to the party median; lower scores = further toward the ideological wing).
 
-This shows who sits near the center of their party’s voting coalition versus the wings. It is **not** identical to classic party-unity percentages (% of votes with the party majority on party-unity votes).
-
-**Next data upgrade**: Incorporate full roll-call vote files from Voteview to compute official party-unity percentages (the classic “votes with party majority” metric). That work is straightforward once the vote matrices are processed and will replace or supplement the current proxy.
+A member can have a high party unity rate and still sit toward their party's wing. The two measures answer different questions.
 """)
 
 st.header("What This Site Does *Not* Do")
@@ -56,7 +64,7 @@ The goal is descriptive: show the patterns that exist in the official voting rec
 
 st.header("Updates & Reproducibility")
 st.markdown("""
-- Member ideology files are re-downloaded periodically from Voteview.
+- Member files and roll-call vote files are re-downloaded periodically from Voteview with `scripts/refresh_data.py`, which recomputes every number shown here.
 - Processed data used by the app live in the project repository.
 - Code and data processing steps are kept simple and inspectable so others can reproduce the numbers.
 """)

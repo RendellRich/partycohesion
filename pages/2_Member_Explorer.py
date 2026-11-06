@@ -5,7 +5,6 @@ import pandas as pd
 import plotly.express as px
 from pathlib import Path
 
-st.set_page_config(page_title="Member Explorer | PartyCohesion", page_icon="👤", layout="wide")
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "members_processed.csv"
 
@@ -16,7 +15,7 @@ def load_members():
 df = load_members()
 
 st.title("Member Explorer")
-st.markdown("Search any member of the recent Congresses and view their ideology score and cohesion proxy.")
+st.markdown("Search any member of the 110th through 119th Congresses and see how often they voted with their own party, where they sit ideologically, and how that changed over time.")
 
 # Filters
 c1, c2, c3 = st.columns(3)
@@ -45,9 +44,7 @@ if search:
 st.caption(f"Showing {len(filtered)} members")
 
 # Table
-display_cols = ["name", "chamber", "state_abbrev", "party", "nominate_dim1", "cohesion_proxy", "nominate_number_of_votes"]
-if "party_unity_pct" in filtered.columns:
-    display_cols.insert(-1, "party_unity_pct")
+display_cols = ["name", "chamber", "state_abbrev", "party", "party_unity_pct", "unity_votes_cast", "nominate_dim1", "cohesion_proxy"]
 rename = {
     "name": "Name",
     "chamber": "Chamber",
@@ -56,13 +53,13 @@ rename = {
     "nominate_dim1": "Ideology (Dim 1)",
     "cohesion_proxy": "Cohesion Proxy",
     "party_unity_pct": "Party Unity %",
-    "nominate_number_of_votes": "Votes in score",
+    "unity_votes_cast": "Party-Unity Votes Cast",
 }
 table = filtered[display_cols].rename(columns=rename).sort_values("Name")
 
 st.dataframe(
     table,
-    use_container_width=True,
+    width="stretch",
     height=420,
     hide_index=True,
 )
@@ -77,17 +74,53 @@ if len(filtered) > 0:
 
     member = filtered[filtered["name"] == selected].iloc[0]
 
-    d1, d2, d3, d4 = st.columns(4)
+    d1, d2, d3, d4, d5 = st.columns(5)
     with d1:
         st.metric("Party", member["party"])
     with d2:
         st.metric("State", member["state_abbrev"])
     with d3:
-        st.metric("Ideology (Dim 1)", f"{member['nominate_dim1']:.3f}")
+        st.metric("Party Unity %", f"{member['party_unity_pct']:.1f}%" if pd.notna(member["party_unity_pct"]) else "—")
     with d4:
+        st.metric("Ideology (Dim 1)", f"{member['nominate_dim1']:.3f}")
+    with d5:
         st.metric("Cohesion Proxy", f"{member['cohesion_proxy']:.1f}" if pd.notna(member["cohesion_proxy"]) else "—")
 
-    st.markdown(f"**Chamber:** {member['chamber']}  |  **Votes used in NOMINATE:** {int(member['nominate_number_of_votes']) if pd.notna(member['nominate_number_of_votes']) else '—'}")
+    if pd.notna(member["party_unity_pct"]):
+        st.markdown(
+            f"**Chamber:** {member['chamber']}  |  Voted with the {member['party']} majority on "
+            f"**{int(member['votes_with_party'])} of {int(member['unity_votes_cast'])}** party-unity votes."
+        )
+    else:
+        st.markdown(
+            f"**Chamber:** {member['chamber']}  |  No party unity rate: only Democrats and Republicans are scored, "
+            "and the member must have cast at least one party-unity vote."
+        )
+
+    # Party unity across every Congress this member served in (same Voteview ID)
+    history = df[(df["icpsr"] == member["icpsr"]) & df["party_unity_pct"].notna()].sort_values("congress")
+    if len(history) > 1:
+        party_avg = (
+            df[df["party"] == member["party"]]
+            .groupby(["congress", "chamber"])["party_unity_pct"]
+            .mean()
+            .reset_index()
+            .rename(columns={"party_unity_pct": "party_avg"})
+        )
+        history = history.merge(party_avg, on=["congress", "chamber"], how="left")
+        fig_h = px.line(
+            history,
+            x="congress",
+            y=["party_unity_pct", "party_avg"],
+            markers=True,
+            labels={"congress": "Congress", "value": "Party Unity %", "variable": ""},
+            title=f"Party unity across Congresses: {selected}",
+            color_discrete_sequence=["#e03131", "#868e96"],
+        )
+        names = {"party_unity_pct": selected.split(",")[0], "party_avg": f"{member['party']} average"}
+        fig_h.for_each_trace(lambda t: t.update(name=names.get(t.name, t.name)))
+        fig_h.update_layout(height=360, margin=dict(l=40, r=40, t=50, b=40), xaxis=dict(dtick=1))
+        st.plotly_chart(fig_h, width="stretch")
 
     # Context: where this member sits relative to their party
     party_members = df[
@@ -114,9 +147,9 @@ if len(filtered) > 0:
             annotation_position="top",
         )
         fig.update_layout(height=380, margin=dict(l=40, r=40, t=50, b=40))
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 else:
     st.info("No members match the current filters.")
 
 st.markdown("---")
-st.caption("Ideology scores are DW-NOMINATE first-dimension estimates from Voteview. Cohesion proxy reflects distance from the party median within the same chamber and Congress. Full party-unity vote percentages will be added as complete roll-call series are processed.")
+st.caption("Party unity % is the share of party-unity votes (a majority of Democrats opposed a majority of Republicans) on which the member voted with their own party's majority, computed from Voteview roll-call records. Ideology scores are DW-NOMINATE first-dimension estimates. The cohesion proxy reflects distance from the party median within the same chamber and Congress.")

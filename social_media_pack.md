@@ -1,7 +1,7 @@
 # PartyCohesion — First Social Media Post Pack
 
 Neutral, data-first captions ready to pair with charts from the app.  
-Replace `[LINK]` with your live Streamlit URL once deployed.
+Live app: https://partycohesion.streamlit.app. Re-check the numbers in each post against the app before posting, since they change as new votes are recorded.
 
 ---
 
@@ -15,7 +15,7 @@ Primary data on how members of Congress actually vote — ideology scores and pa
 
 No scorecards. No spin. Just the numbers and the sources.
 
-Explore the data → [LINK]
+Explore the data → https://partycohesion.streamlit.app
 
 Data: Voteview (UCLA)
 
@@ -30,9 +30,9 @@ Data: Voteview (UCLA)
 • Democrats: mean ~96%  
 • Republicans: mean ~97.5%
 
-These figures measure how often members voted with the majority of their own party on votes where the two parties took opposite positions (1,314 such votes identified).
+These figures measure how often members voted with the majority of their own party on votes where the two parties took opposite positions (1,313 such votes identified as of Nov. 5, 2026).
 
-Full distribution and member-level data → [LINK]
+Full distribution and member-level data → https://partycohesion.streamlit.app
 
 Source: Voteview roll-call records
 
@@ -49,7 +49,7 @@ Positive = more conservative voting record
 
 These scores come from the full roll-call matrix, not from speeches or surveys.
 
-Interactive view → [LINK]
+Interactive view → https://partycohesion.streamlit.app
 
 Data: Voteview DW-NOMINATE
 
@@ -63,7 +63,7 @@ Most members vote with their party majority well over 90% of the time on party-u
 
 A smaller group votes against the party majority more frequently. Their party-unity rates and ideology scores are public in the data.
 
-See the full list and context → [LINK]
+See the full list and context → https://partycohesion.streamlit.app
 
 No judgment attached — just the recorded positions.
 
@@ -80,7 +80,7 @@ How PartyCohesion works:
 3. Compute classic party-unity rates on votes where the parties opposed each other  
 4. Show the numbers with sources and definitions
 
-Methodology page → [LINK]
+Methodology page → https://partycohesion.streamlit.app
 
 Primary sources only.
 
@@ -91,7 +91,7 @@ Primary sources only.
 
 2/ The data come from Voteview’s roll-call archive. Party-unity votes are defined the classic way: a majority of Democrats on one side, a majority of Republicans on the other.
 
-3/ Charts, member search, and full methodology are here: [LINK]
+3/ Charts, member search, and full methodology are here: https://partycohesion.streamlit.app
 
 No endorsements. No scorecards that hide the underlying votes.
 
