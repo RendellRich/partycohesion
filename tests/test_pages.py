@@ -8,7 +8,7 @@ from streamlit.testing.v1 import AppTest
 from flip_utils import flip_scores
 
 ROOT = Path(__file__).resolve().parent.parent
-PAGES = sorted(p.relative_to(ROOT).as_posix() for p in (ROOT / "pages").glob("*.py"))
+PAGES = sorted(p.relative_to(ROOT).as_posix() for p in (ROOT / "views").glob("*.py"))
 
 
 def open_page(page: str) -> AppTest:
@@ -34,7 +34,7 @@ def test_page_loads(page):
 
 
 def test_members_profile():
-    at = open_page("pages/2_Member_Explorer.py")
+    at = open_page("views/2_Member_Explorer.py")
     box = at.selectbox(key="me_member")
     box.set_value(option(box, "Murkowski, Lisa")).run()
     assert not at.exception, [e.value for e in at.exception]
@@ -44,7 +44,7 @@ def test_members_profile():
 
 
 def test_compare_pair():
-    at = open_page("pages/6_Compare.py")
+    at = open_page("views/6_Compare.py")
     for key, name in (("cmp_a", "Collins, Susan"), ("cmp_b", "Murkowski, Lisa")):
         box = at.selectbox(key=key)
         box.set_value(option(box, name)).run()
@@ -56,7 +56,7 @@ def test_compare_pair():
 
 
 def test_compare_never_served_together():
-    at = open_page("pages/6_Compare.py")
+    at = open_page("views/6_Compare.py")
     for key, name in (("cmp_a", "Abercrombie"), ("cmp_b", "Ocasio-Cortez")):
         box = at.selectbox(key=key)
         box.set_value(option(box, name)).run()
@@ -65,7 +65,7 @@ def test_compare_never_served_together():
 
 
 def test_key_votes_every_tab_has_a_vote_card():
-    at = open_page("pages/5_Key_Votes.py")
+    at = open_page("views/5_Key_Votes.py")
     assert len(at.tabs) >= 3
     assert html(at).count('<div class="pc-bars">') == len(at.tabs)
     at.selectbox(key="kv_cham").set_value("Senate").run()
@@ -73,7 +73,7 @@ def test_key_votes_every_tab_has_a_vote_card():
 
 
 def test_explainer_matches_position_flips_math():
-    at = open_page("pages/9_How_It_Works.py")
+    at = open_page("views/9_How_It_Works.py")
     mv = pd.read_csv(ROOT / "data" / "flip_member_votes.csv")
     m = pd.read_csv(ROOT / "data" / "members_processed.csv")
     for example, prefix in (("Chuck Schumer (D-NY)", "Schumer, Charles"), ("Mitch McConnell (R-KY)", "McConnell, Addison")):
@@ -88,14 +88,14 @@ def test_explainer_matches_position_flips_math():
 
 
 def test_position_flips_member_detail():
-    at = open_page("pages/7_Position_Flips.py")
+    at = open_page("views/7_Position_Flips.py")
     box = at.selectbox(key="fl_member")
     box.set_value(box.options[0]).run()
     assert not at.exception
 
 
 def test_all_votes_search_and_card():
-    at = open_page("pages/10_All_Votes.py")
+    at = open_page("views/10_All_Votes.py")
     at.text_input(key="av_q").set_value("S. 5").run()
     assert not at.exception
     found = at.dataframe[0].value
@@ -108,7 +108,7 @@ def test_all_votes_search_and_card():
 
 
 def test_member_voting_record():
-    at = open_page("pages/2_Member_Explorer.py")
+    at = open_page("views/2_Member_Explorer.py")
     box = at.selectbox(key="me_member")
     box.set_value(option(box, "Murkowski, Lisa")).run()
     assert "Voting record" in [s.value for s in at.subheader]
@@ -120,7 +120,7 @@ def test_member_voting_record():
 
 
 def test_platform_votes_member_lookup():
-    at = open_page("pages/11_Platform_Votes.py")
+    at = open_page("views/11_Platform_Votes.py")
     text = html(at)
     assert "voted against their own party" in text and "Platform text" in text
     box = at.selectbox(key="pv_member")
@@ -135,16 +135,22 @@ def test_platform_votes_member_lookup():
 
 
 def test_platform_record_on_member_and_compare_pages():
-    at = open_page("pages/2_Member_Explorer.py")
+    at = open_page("views/2_Member_Explorer.py")
     box = at.selectbox(key="me_member")
     box.set_value(option(box, "Collins, Susan")).run()
     assert not at.exception, [e.value for e in at.exception]
     assert "Votes on their party's platform" in [s.value for s in at.subheader]
     assert "Against party platform" in html(at) and "Skinny repeal" in html(at)
-    at = open_page("pages/6_Compare.py")
+    at = open_page("views/6_Compare.py")
     for key, name in (("cmp_a", "Collins, Susan"), ("cmp_b", "Murkowski, Lisa")):
         box = at.selectbox(key=key)
         box.set_value(option(box, name)).run()
     assert not at.exception, [e.value for e in at.exception]
     assert "Votes on their party's platform" in [s.value for s in at.subheader]
     assert "(against platform)" in html(at)
+
+
+def test_no_legacy_pages_folder():
+    """A pages/ folder switches on Streamlit's older automatic navigation, which skips app.py for direct links."""
+    assert not (ROOT / "pages").exists()
+    assert len(PAGES) >= 12

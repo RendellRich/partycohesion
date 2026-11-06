@@ -56,19 +56,19 @@ with c1:
     card("POSITION FLIPS", f"{pct_consistent:.0f}%",
          f"of current members ({len(scored)} with enough comparable votes) cast the same vote on debt limits, "
          "government funding, disaster aid and war powers under presidents of both parties, comparing like with like.")
-    st.page_link("pages/7_Position_Flips.py", label="See every member →")
-    st.page_link("pages/9_How_It_Works.py", label="How this is measured →")
+    st.page_link("views/7_Position_Flips.py", label="See every member →")
+    st.page_link("views/9_How_It_Works.py", label="How this is measured →")
 with c2:
     card("PARTY UNITY", f"{means.min():.0f}–{means.max():.0f}%",
          f"Average share of the {ordinal(latest)} Congress's {n_unity:,} party-line votes on which members sided with "
          "their own party.")
-    st.page_link("pages/2_Member_Explorer.py", label="Explore members →")
+    st.page_link("views/2_Member_Explorer.py", label="Explore members →")
 with c3:
     if top is not None:
         label = str(top["vote_desc"] if pd.notna(top["vote_desc"]) else top["bill_number"])
         card("BIGGEST PARTY BREAK", f"{int(top['broke'])} members",
              f"voted against their own party's majority on {label[:90]} ({top['chamber']}, {top['date']}).")
-    st.page_link("pages/5_Key_Votes.py", label="See who broke ranks →")
+    st.page_link("views/5_Key_Votes.py", label="See who broke ranks →")
 
 st.write("")
 m1, m2, m3, m4 = st.columns(4)
