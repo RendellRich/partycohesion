@@ -92,6 +92,16 @@ for cat, grp in flip_votes.groupby("category"):
 check(flip_member_votes["friendly"].isin([0, 1]).all(), "flip_member_votes has invalid 'friendly' values")
 check(len(flip_member_votes) > 20000, f"flip_member_votes looks too small ({len(flip_member_votes):,} rows)")
 
+# Chamber control: every chamber with Position Flips votes needs a majority party, or its votes can't be compared
+# like for like. A tie needs an entry in MAJORITY_OVERRIDES in flip_utils.py.
+sys.path.insert(0, str(ROOT))
+from flip_utils import chamber_majority  # noqa: E402
+majority = chamber_majority(members)
+needed = flip_member_votes[["congress", "chamber"]].drop_duplicates().merge(majority, how="left")
+for r in needed[needed["majority"].isna()].itertuples():
+    check(False, f"{r.congress}th {r.chamber}: Democrats and Republicans tie on member count; add the majority "
+                 "party to MAJORITY_OVERRIDES in flip_utils.py")
+
 # President's stated positions: most statements classified, and enough linked to floor votes
 positions = pd.read_csv(DATA / "president_positions.csv")
 check(len(positions) >= 1000, f"only {len(positions)} White House statements (expected 1,000+)")

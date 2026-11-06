@@ -3,27 +3,18 @@ PartyCohesion home page: the site's question, three headline findings computed f
 and current coverage. Layout follows the "Home" mockup in the PartyCohesion Figma design system.
 """
 
-from html import escape
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
 from chart_utils import ordinal
-from flip_utils import flip_scores
+from flip_utils import add_chamber_control, flip_scores
+from ui import card, fmt_date, inject_css
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
-st.markdown("""
-<style>
-.pc-hero { font-size: 2.5rem; font-weight: 700; line-height: 1.2; max-width: 900px; margin: 0.5rem 0 1rem 0; }
-.pc-intro { color: #A8A29E; font-size: 1.05rem; line-height: 1.6; max-width: 900px; margin-bottom: 1.5rem; }
-.pc-card { background: #21201D; border: 1px solid #3A3733; border-radius: 10px; padding: 20px; height: 100%; }
-.pc-eyebrow { color: #E9C46A; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.04em; }
-.pc-stat { font-size: 2.4rem; font-weight: 700; line-height: 1.2; margin: 6px 0 8px 0; }
-.pc-body { color: #A8A29E; font-size: 1rem; line-height: 1.5; }
-</style>
-""", unsafe_allow_html=True)
+inject_css()
 
 
 @st.cache_data
@@ -31,20 +22,8 @@ def load():
     members = pd.read_csv(DATA_DIR / "members_processed.csv")
     summary = pd.read_csv(DATA_DIR / "unity_summary.csv")
     key_votes = pd.read_csv(DATA_DIR / "key_votes.csv")
-    flip_votes = pd.read_csv(DATA_DIR / "flip_member_votes.csv")
+    flip_votes = add_chamber_control(pd.read_csv(DATA_DIR / "flip_member_votes.csv"), members)
     return members, summary, key_votes, flip_votes
-
-
-def fmt_date(value) -> str:
-    """e.g. Sep 30, 2026 (portable: %-d is not supported on Windows)."""
-    ts = pd.Timestamp(value)
-    return f"{ts:%b} {ts.day}, {ts.year}"
-
-
-def card(eyebrow: str, stat: str, body: str) -> None:
-    st.markdown(f'<div class="pc-card"><div class="pc-eyebrow">{escape(eyebrow)}</div>'
-                f'<div class="pc-stat">{escape(stat)}</div><div class="pc-body">{escape(body)}</div></div>',
-                unsafe_allow_html=True)
 
 
 members, summary, key_votes, flip_votes = load()
@@ -75,9 +54,10 @@ top = breaks.sort_values("broke", ascending=False).iloc[0] if len(breaks) else N
 c1, c2, c3 = st.columns(3, gap="medium")
 with c1:
     card("POSITION FLIPS", f"{pct_consistent:.0f}%",
-         f"of current members ({len(scored)} with enough votes) cast the same vote on debt limits, government funding, "
-         "disaster aid and war powers under presidents of both parties.")
+         f"of current members ({len(scored)} with enough comparable votes) cast the same vote on debt limits, "
+         "government funding, disaster aid and war powers under presidents of both parties, comparing like with like.")
     st.page_link("pages/7_Position_Flips.py", label="See every member →")
+    st.page_link("pages/9_How_It_Works.py", label="How this is measured →")
 with c2:
     card("PARTY UNITY", f"{means.min():.0f}–{means.max():.0f}%",
          f"Average share of the {ordinal(latest)} Congress's {n_unity:,} party-line votes on which members sided with "
