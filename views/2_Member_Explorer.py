@@ -142,7 +142,7 @@ if pick:
                    raw_cols=(4,), muted_cols=(1, 2))
         st.caption("The first two columns count every vote. The shift compares only matched votes: the same type of "
                    "vote, cast when the member's party was in the same position in the chamber.")
-        st.page_link("pages/9_How_It_Works.py", label="How this is measured →")
+        st.page_link("views/9_How_It_Works.py", label="How this is measured →")
     else:
         st.caption("This member cast no Yea or Nay votes on debt limit, funding, disaster aid or war powers bills in this data.")
 
@@ -163,7 +163,7 @@ if pick:
                     for x in shown.sort_values("date", ascending=False).itertuples()], muted_cols=(0,))
         st.caption("A platform is the party's official policy document, not a personal promise, and members often give "
                    "reasons a roll call can't show. Procedural and related votes are shown but not counted.")
-        st.page_link("pages/11_Platform_Votes.py", label="See every topic and the rules →")
+        st.page_link("views/11_Platform_Votes.py", label="See every topic and the rules →")
 
     # Party unity over time
     if len(scored) > 1:
@@ -266,7 +266,7 @@ if pick:
                            "Voteview": st.column_config.LinkColumn(display_text="Open")})
         if len(view) > 1000:
             st.caption(f"Showing the 1,000 most recent of {len(view):,}. Search or pick a Congress to narrow it.")
-        st.page_link("pages/10_All_Votes.py", label="Search every vote and see who broke ranks →")
+        st.page_link("views/10_All_Votes.py", label="Search every vote and see who broke ranks →")
 else:
     st.info("Start typing a last name to see a member's profile, or browse everyone below.")
 

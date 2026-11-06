@@ -43,7 +43,7 @@ st.markdown(
     "questions **stays the same no matter who is president**, or **changes when the White House changes parties**."
 )
 
-st.page_link("pages/9_How_It_Works.py", label="New here? See the math step by step with a real member →")
+st.page_link("views/9_How_It_Works.py", label="New here? See the math step by step with a real member →")
 
 with st.expander("How to read this page", expanded=False):
     st.markdown(f"""
