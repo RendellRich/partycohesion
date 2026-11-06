@@ -1,15 +1,15 @@
 """Key Votes: high-profile vote series with each party's split and the members who broke ranks, then each
 party's unity rate. Layout follows the "Key Votes" mockup in the PartyCohesion Figma design system."""
 
-from html import escape
 from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from chart_utils import PARTY_COLORS, VOTE_COLORS, chamber_label, ordinal, show_chart
-from ui import chips, fmt_date, inject_css, intro, last_name, metric_row, party_tag
+from chart_utils import PARTY_COLORS, chamber_label, ordinal, show_chart
+from ui import inject_css, intro, metric_row, vote_card
+from vote_index import voteview_url
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 SERIES_ORDER = ["Funding & Appropriations", "Cabinet Confirmations", "Biggest Party Breaks", "Major Legislation"]
@@ -43,35 +43,6 @@ def split(y, n) -> str:
 
 def congress_label(c: int) -> str:
     return f"{ordinal(c)} ({2 * c + 1787} to {2 * c + 1788})"
-
-
-def vote_card(v: pd.Series, broke: pd.DataFrame) -> None:
-    """One vote: what it was, how each party split, and who broke with their party."""
-    parties = [("Democrat", v["dem_yea"], v["dem_nay"]), ("Republican", v["rep_yea"], v["rep_nay"]),
-               ("Independent", v["other_yea"], v["other_nay"])]
-    widest = max(y + n for _, y, n in parties) or 1
-    bars = ""
-    for party, y, n in parties:
-        if y + n == 0:
-            continue
-        seg = "".join(f'<span style="width:{max(cnt / widest * 100, 1.2 if cnt else 0):.1f}%;background:{VOTE_COLORS[k]}"></span>'
-                      for cnt, k in ((y, "Yea"), (n, "Nay")) if cnt)
-        bars += f'<div>{party_tag(party)}</div><div class="pc-bar">{seg}</div>' \
-                f'<div class="pc-body">{int(y)} Yea · {int(n)} Nay</div>'
-    legend = " ".join(f'<span class="pc-tag" style="margin-right:14px"><span class="pc-dot" style="border-radius:2px;'
-                      f'background:{VOTE_COLORS[k]}"></span>{k}</span>' for k in ("Yea", "Nay"))
-    eyebrow = f"{v['chamber']} · {fmt_date(v['date'])} · roll call {int(v['rollnumber'])}"
-    result = f"{v['vote_question']} · {v['vote_result']}, {int(v['yea_count'])} Yea to {int(v['nay_count'])} Nay"
-    if broke.empty:
-        who = '<div class="pc-body" style="margin-top:12px">No Democrat or Republican voted against their party\'s majority.</div>'
-    else:
-        names = [f"{last_name(r.name)} ({r.party[0]}-{r.state_abbrev})" for r in broke.sort_values(["party", "name"]).itertuples()]
-        who = (f'<div style="margin-top:14px;font-weight:600">{len(broke)} member{"s" if len(broke) != 1 else ""} voted '
-               f"against their party's majority</div>{chips(names)}")
-    st.markdown(f'<div class="pc-card"><div class="pc-eyebrow">{escape(eyebrow)}</div>'
-                f'<div style="font-size:1.4rem;font-weight:600;margin:6px 0 4px 0">{escape(str(v["label"]))}</div>'
-                f'<div class="pc-body">{escape(result)}</div><div class="pc-bars">{bars}</div>'
-                f'<div class="pc-body" style="font-size:0.85rem">{legend}</div>{who}</div>', unsafe_allow_html=True)
 
 
 inject_css()
@@ -111,7 +82,7 @@ else:
             v = sv.loc[labels[pick]]
             broke = defectors[(defectors["congress"] == congress) & (defectors["chamber"] == v["chamber"])
                               & (defectors["rollnumber"] == v["rollnumber"])]
-            vote_card(v, broke)
+            vote_card(v, broke, link=voteview_url(congress, v["chamber"], v["rollnumber"]))
 
             st.subheader(f"All {len(sv)} votes in this series")
             st.dataframe(pd.DataFrame({

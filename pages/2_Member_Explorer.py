@@ -12,6 +12,7 @@ import streamlit as st
 from chart_utils import ACCENT, MUTED, PARTY_COLORS, ordinal, show_chart
 from flip_utils import add_chamber_control, flip_scores
 from ui import display_name, html_table, inject_css, intro, last_name, member_header, metric_row, pattern_badge
+from vote_index import load_votes, member_record, search_votes, voteview_url
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 PREFIX = {"House": "H", "Senate": "S"}
@@ -196,6 +197,53 @@ if pick:
         fig.update_layout(height=340, yaxis_title="Members")
         show_chart(fig, f"{short} among {member['party']}s in the {member['chamber']}, {ordinal(member['congress'])} Congress",
                    f"ideology_position_{short.lower().replace(' ', '_')}_{int(member['congress'])}")
+    # Full voting record
+    st.subheader("Voting record")
+    side = caucus if pd.notna(caucus) else member["party"]
+    st.markdown(f"Every roll call {short} was eligible for while in office, from 2007 on. A vote is flagged when "
+                f"{short} voted against the {side} majority.")
+    record = member_record(icpsr, rows, load_votes())
+    if record.empty:
+        st.caption("No roll-call records found for this member.")
+    else:
+        cast = record["their_vote"].isin(["Yea", "Nay"])
+        sided = record["with_party"] | record["against_party"]
+        against = int(record["against_party"].sum())
+        metric_row([
+            ("Votes cast", f"{int(cast.sum()):,}", f"of {len(record):,} roll calls while in office"),
+            (f"Against the {side} majority", f"{against:,}",
+             f"{against / sided.sum() * 100:.1f}% of {int(sided.sum()):,} votes where the party took a side" if sided.any()
+             else "No votes where the party took a side"),
+            ("Missed votes", f"{int((~cast).sum()):,}", f"{(~cast).mean() * 100:.1f}% of roll calls"),
+        ])
+        r1, r2, r3 = st.columns([2, 1, 1])
+        with r1:
+            rq = st.text_input("Search this record", "", key="me_rec_q", placeholder="Bill number or words in the title")
+        with r2:
+            served = sorted(record["congress"].unique(), reverse=True)
+            rc_pick = st.selectbox("Congress", ["All", *served], key="me_rec_cong",
+                                   format_func=lambda c: "All" if c == "All" else ordinal(c))
+        with r3:
+            only_against = st.toggle("Only votes against party", key="me_rec_against")
+        view = search_votes(record, rq, None if rc_pick == "All" else int(rc_pick))
+        if only_against:
+            view = view[view["against_party"]]
+        st.dataframe(pd.DataFrame({
+            "Date": view["date"],
+            "Chamber": view["chamber"],
+            "Bill": view["bill_number"].fillna(""),
+            "Vote": view["label"],
+            "Their vote": view["their_vote"],
+            f"{side} majority": view["party_position"].replace({"Tie": "Split evenly", "None": "None"}),
+            "Against party": view["against_party"].map({True: "Yes", False: ""}),
+            "Result": view["vote_result"],
+            "Voteview": [voteview_url(c, ch, r) for c, ch, r in zip(view["congress"], view["chamber"], view["rollnumber"])],
+        }).head(1000), width="stretch", hide_index=True, height=400,
+            column_config={"Vote": st.column_config.TextColumn(width="large"),
+                           "Voteview": st.column_config.LinkColumn(display_text="Open")})
+        if len(view) > 1000:
+            st.caption(f"Showing the 1,000 most recent of {len(view):,}. Search or pick a Congress to narrow it.")
+        st.page_link("pages/10_All_Votes.py", label="Search every vote and see who broke ranks →")
 else:
     st.info("Start typing a last name to see a member's profile, or browse everyone below.")
 

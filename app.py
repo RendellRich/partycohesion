@@ -29,6 +29,7 @@ pages = {
         st.Page("pages/8_Ideology_Drift.py", title="Ideology Drift", icon="📈"),
     ],
     "Explore": [
+        st.Page("pages/10_All_Votes.py", title="All Votes", icon="🔎"),
         st.Page("pages/2_Member_Explorer.py", title="Members", icon="👤"),
         st.Page("pages/6_Compare.py", title="Compare Members", icon="⚖️"),
         st.Page("pages/1_Overview.py", title="Overview", icon="📊"),

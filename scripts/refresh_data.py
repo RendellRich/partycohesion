@@ -256,6 +256,7 @@ CABINET_RE = (r"to be (?:the )?(?:Secretary of (?:State|the Treasury|Defense|the
 CUSTOM_FILE = DATA_DIR / "key_votes_custom.csv"
 KEY_VOTES_FILE = DATA_DIR / "key_votes.csv"
 DEFECTORS_FILE = DATA_DIR / "key_vote_defectors.csv"
+ALL_VOTES_FILE = DATA_DIR / "all_votes.csv"  # every roll call with party splits, for the All Votes search page
 
 
 def vote_splits(cong: int, chamber: str, members: pd.DataFrame):
@@ -305,12 +306,13 @@ def vote_splits(cong: int, chamber: str, members: pd.DataFrame):
 
 def build_key_votes(members: pd.DataFrame) -> None:
     custom = pd.read_csv(CUSTOM_FILE, comment="#") if CUSTOM_FILE.exists() else pd.DataFrame()
-    vote_frames, defector_frames = [], []
+    vote_frames, defector_frames, all_frames = [], [], []
     for cong in CONGRESSES:
         for chamber, prefix in CHAMBERS.items():
             rc = pd.read_csv(RAW_DIR / f"{prefix}{cong}_rollcalls.csv")
             splits, defectors = vote_splits(cong, chamber, members)
             rc = rc.merge(splits, on="rollnumber", how="inner")
+            all_frames.append(rc.assign(congress=cong, chamber=chamber))
             q = rc["vote_question"].fillna("")
             d = rc["vote_desc"].fillna("")
 
@@ -345,6 +347,9 @@ def build_key_votes(members: pd.DataFrame) -> None:
     key_defectors = pd.concat(defector_frames, ignore_index=True)[
         ["congress", "chamber", "rollnumber", "icpsr", "name", "party", "state_abbrev", "vote", "party_position"]]
     key_votes.to_csv(KEY_VOTES_FILE, index=False)
+    all_votes = pd.concat(all_frames, ignore_index=True)[[c for c in cols if c not in ("series", "note")]]
+    all_votes.sort_values(["congress", "chamber", "rollnumber"]).to_csv(ALL_VOTES_FILE, index=False)
+    print(f"Wrote {ALL_VOTES_FILE.name} ({len(all_votes):,} roll calls)")
     key_defectors.to_csv(DEFECTORS_FILE, index=False)
     print(f"Wrote {KEY_VOTES_FILE.name} ({len(key_votes):,} rows) and {DEFECTORS_FILE.name} ({len(key_defectors):,} rows)")
     print(key_votes.groupby(["congress", "series"]).size().unstack(fill_value=0))

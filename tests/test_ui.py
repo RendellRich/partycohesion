@@ -37,3 +37,9 @@ def test_cache_clears_only_when_data_files_change(tmp_path, monkeypatch):
     os.utime(f, (2_000_000, 2_000_000))  # a refresh rewrote the file
     assert chart_utils.clear_cache_if_data_changed(tmp_path) is True
     assert cleared == [1]
+
+
+def test_bill_numbers_are_recognized():
+    from vote_index import bill_code
+    assert bill_code("H.R. 1") == "HR1" and bill_code("s 5") == "S5" and bill_code("H.J.Res. 31") == "HJRES31"
+    assert bill_code("debt limit") is None and bill_code("S") is None

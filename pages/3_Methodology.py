@@ -76,6 +76,20 @@ It is labeled as hand-picked on the page.
 For every vote, the page shows the Yea–Nay split for each party and lists each Democrat or Republican who voted against their party's majority. If a party splits exactly evenly, it has no majority position and none of its members are counted as breaking with it.
 """)
 
+st.header("All Votes and Member Voting Records")
+st.markdown("""
+The All Votes page lists every House and Senate roll call since 2007, refreshed twice a week. For each vote it shows
+each party's Yea–Nay split and lists every Democrat and Republican who voted against their own party's majority (a
+party that split exactly evenly has no majority). Searching by bill number, such as H.R. 1 or S. 5, finds every
+roll call on that bill in both chambers; other searches match words in the bill's official title, and Senate records
+often use the formal title rather than the short name.
+
+Each member's profile has their full voting record. A vote is flagged **against their party** when they voted Yea or
+Nay and their party's majority voted the other way. Independents are compared with the party they caucus with. This
+counts every roll call where the party took a side, including lopsided and procedural votes, so it is a broader
+count than the party unity rate, which uses only party-line votes.
+""")
+
 st.header("Comparing Two Members")
 st.markdown("""
 Compare Members uses every roll call where both members actually voted Yea or Nay while serving in the same chamber during the same Congress. "Voted the same way" is the share of those votes where their votes matched. The same figure is shown for party-unity votes only. Members who never served in the same chamber at the same time can be compared on party unity but not vote by vote.

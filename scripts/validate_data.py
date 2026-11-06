@@ -119,8 +119,18 @@ check(len(position_votes) >= 500, f"only {len(position_votes)} floor votes linke
 ind = members[~members["party"].isin(["Democrat", "Republican"]) & members["caucus"].notna()]
 check(ind["party_unity_pct"].notna().all(), "an independent who caucuses with a party is missing a party unity rate")
 
+# All Votes index: one row per roll call in the vote matrices, for every Congress and chamber
+all_votes = pd.read_csv(DATA / "all_votes.csv")
+n_matrix = 0
+for f in (DATA / "matrices").glob("*.npz"):
+    with np.load(f) as z:
+        n_matrix += len(z["rollnumber"])
+check(len(all_votes) == n_matrix, f"all_votes.csv has {len(all_votes):,} roll calls but the vote matrices have {n_matrix:,}")
+check(not all_votes.duplicated(["congress", "chamber", "rollnumber"]).any(), "all_votes.csv has duplicate roll calls")
+
 # No sudden shrinkage compared with the last committed data
-for name, df in (("data/members_processed.csv", members), ("data/key_votes.csv", key_votes)):
+for name, df in (("data/members_processed.csv", members), ("data/key_votes.csv", key_votes),
+                 ("data/all_votes.csv", all_votes)):
     old = previous_version(name)
     if old is not None:
         check(len(df) >= 0.95 * len(old), f"{name} shrank from {len(old):,} to {len(df):,} rows")
