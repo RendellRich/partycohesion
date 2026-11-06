@@ -107,3 +107,14 @@ def platform_record(icpsr: int) -> tuple[pd.DataFrame, int, int]:
     mine = mv[mv["icpsr"] == icpsr]
     counted = mine[mine["counts"]]
     return mine, len(counted), int(counted["against"].sum())
+
+
+@st.cache_data
+def platform_roll_calls() -> pd.DataFrame:
+    """One row per roll call used on Platform Votes, with its topic and whether it counts, for the All Votes page."""
+    topics, links = load_platform()
+    out = links.merge(topics[["topic_id", "topic"]], on="topic_id")
+    out["status"] = out.apply(lambda r: "Counted" if r["counts"] else (
+        "Shown, procedural" if r["procedural"] == "yes" else "Shown, related measure"), axis=1)
+    return out[["congress", "chamber", "rollnumber", "topic", "status", "measure", "dem_platform_vote",
+                "rep_platform_vote"]]
