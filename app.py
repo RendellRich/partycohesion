@@ -8,6 +8,14 @@ This file is the entry point. It sets the page config once and defines the sideb
 """
 
 import streamlit as st
+
+from module_refresh import drop_changed_local_modules
+
+# A deploy that changed a helper module takes effect without a reboot. Cached data is cleared too, because the
+# data-change check in chart_utils starts over when chart_utils is reloaded.
+if drop_changed_local_modules():
+    st.cache_data.clear()
+
 from chart_utils import EXPORT_SIZES, DEFAULT_EXPORT, clear_cache_if_data_changed
 from site_status import show_refresh_notice
 
