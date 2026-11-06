@@ -35,6 +35,12 @@ def load():
     return members, summary, key_votes, flip_votes
 
 
+def fmt_date(value) -> str:
+    """e.g. Sep 30, 2026 (portable: %-d is not supported on Windows)."""
+    ts = pd.Timestamp(value)
+    return f"{ts:%b} {ts.day}, {ts.year}"
+
+
 def card(eyebrow: str, stat: str, body: str) -> None:
     st.markdown(f'<div class="pc-card"><div class="pc-eyebrow">{escape(eyebrow)}</div>'
                 f'<div class="pc-stat">{escape(stat)}</div><div class="pc-body">{escape(body)}</div></div>',
@@ -90,7 +96,7 @@ m1.metric("Congress", ordinal(latest), help="House and Senate")
 m2.metric("Members scored", f"{current['party_unity_pct'].notna().sum():,}")
 m3.metric("Party-line votes", f"{n_unity:,}", help=f"so far in the {ordinal(latest)} Congress")
 try:
-    m4.metric("Data through", f"{pd.Timestamp(summary['latest_vote_date'].max()):%b %-d, %Y}",
+    m4.metric("Data through", fmt_date(summary["latest_vote_date"].max()),
               help="Refreshed automatically twice a week")
 except Exception:
     m4.metric("Data through", "—")

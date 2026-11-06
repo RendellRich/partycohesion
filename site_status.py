@@ -45,9 +45,9 @@ def show_refresh_notice() -> None:
 
     last_success = parse(status["last_success_time"])
     if status["last_conclusion"] not in ("success", "cancelled", "skipped"):
-        when = f" (last successful update {last_success:%b %-d, %Y})" if last_success else ""
+        when = f" (last successful update {last_success:%b} {last_success.day}, {last_success.year})" if last_success else ""
         st.warning(f"The latest automatic data refresh didn't complete, so the newest votes may be missing{when}.",
                    icon="⚠️")
     elif last_success and (now - last_success).days > OVERDUE_DAYS:
-        st.warning(f"The data hasn't been refreshed since {last_success:%b %-d, %Y}. The newest votes may be missing.",
+        st.warning(f"The data hasn't been refreshed since {last_success:%b} {last_success.day}, {last_success.year}. The newest votes may be missing.",
                    icon="⚠️")
