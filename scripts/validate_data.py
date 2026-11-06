@@ -81,6 +81,17 @@ for cong in sorted(members["congress"].unique()):
             with np.load(path) as f:
                 check(f["votes"].shape[1] > 0, f"{path.name} has no roll calls")
 
+# Position flip data: every hand-listed debt vote found, and each category has votes under both parties' presidents
+flip_votes = pd.read_csv(DATA / "flip_votes.csv")
+flip_member_votes = pd.read_csv(DATA / "flip_member_votes.csv")
+debt_list = pd.read_csv(DATA / "flip_debt_limit_votes.csv", comment="#")
+found = (flip_votes["category"] == "Debt limit").sum()
+check(found == len(debt_list), f"only {found} of {len(debt_list)} listed debt limit votes were found in the roll-call data")
+for cat, grp in flip_votes.groupby("category"):
+    check(grp["president_party"].nunique() == 2, f"{cat}: votes under only one party's president")
+check(flip_member_votes["friendly"].isin([0, 1]).all(), "flip_member_votes has invalid 'friendly' values")
+check(len(flip_member_votes) > 20000, f"flip_member_votes looks too small ({len(flip_member_votes):,} rows)")
+
 # No sudden shrinkage compared with the last committed data
 for name, df in (("data/members_processed.csv", members), ("data/key_votes.csv", key_votes)):
     old = previous_version(name)

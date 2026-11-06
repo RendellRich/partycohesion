@@ -26,6 +26,8 @@ pages = [
     st.Page("pages/2_Member_Explorer.py", title="Member Explorer", icon="👤"),
     st.Page("pages/5_Key_Votes.py", title="Key Votes", icon="🗳️"),
     st.Page("pages/6_Compare.py", title="Compare Members", icon="⚖️"),
+    st.Page("pages/7_Position_Flips.py", title="Position Flips", icon="🔄"),
+    st.Page("pages/8_Ideology_Drift.py", title="Ideology Drift", icon="📈"),
     st.Page("pages/3_Methodology.py", title="Methodology", icon="📐"),
     st.Page("pages/4_About.py", title="About", icon="ℹ️"),
 ]

@@ -70,6 +70,22 @@ st.markdown("""
 Compare Members uses every roll call where both members actually voted Yea or Nay while serving in the same chamber during the same Congress. "Voted the same way" is the share of those votes where their votes matched. The same figure is shown for party-unity votes only. Members who never served in the same chamber at the same time can be compared on party unity but not vote by vote.
 """)
 
+st.header("Position Flips")
+st.markdown("""
+Position Flips looks at three kinds of votes that come up under presidents of both parties. For each, one side gives *whichever president is in office* more room ("president-friendly"):
+
+- **Debt limit:** Yea to raise or suspend the limit, or Nay on a resolution disapproving an increase. These votes are **listed by hand** in `data/flip_debt_limit_votes.csv`, because increases often rode on unrelated vehicle bills.
+- **Stopgap funding:** Yea on a government-wide continuing resolution that passed the chamber. One-agency "mini" bills and rival versions that failed are excluded.
+- **War powers limits:** Nay on a resolution directing the president to remove U.S. forces from hostilities.
+
+Each vote is matched to the president in office on its date. For every Democrat and Republican, the page compares how often they cast the president-friendly vote when their own party held the White House versus when the other party did. The difference in percentage points is the **shift**. Members need at least 2 votes under each party's president to be labeled. The bills in a category are not identical, so a changed vote can reflect a changed bill; every vote is listed on the page.
+""")
+
+st.header("Ideology Drift")
+st.markdown("""
+Ideology Drift uses Voteview's Nokken-Poole scores, which estimate each member's position separately for each Congress. A member's movement is compared with their party's median movement over the same Congresses in the same chamber. Changes under 0.10 are treated as noise. Because the scores only see Yea and Nay, a member who votes No for the opposite reason from the other party can appear to move toward the center.
+""")
+
 st.header("What This Site Does *Not* Do")
 st.markdown("""
 - It does not assign moral judgments (“good” or “bad” members).

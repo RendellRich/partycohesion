@@ -1,0 +1,198 @@
+"""Position Flips – does a member's vote on the same kind of question change depending on
+which party holds the White House?"""
+
+import pandas as pd
+import plotly.express as px
+import streamlit as st
+from pathlib import Path
+from chart_utils import show_chart, ordinal
+from flip_utils import flip_scores, MIN_VOTES_EACH_SIDE
+
+DATA_DIR = Path(__file__).parent.parent / "data"
+CATEGORIES = ["All categories", "Debt limit", "Stopgap funding", "War powers limits"]
+LABEL_ORDER = ["Consistent", "Partly changed", "Changed with the White House", "Opposite pattern"]
+LABEL_COLORS = {"Consistent": "#81b29a", "Partly changed": "#f2cc8f", "Changed with the White House": "#e07a5f",
+                "Opposite pattern": "#8d99ae"}
+FRIENDLY = {
+    "Debt limit": "Yea to raise or suspend the debt limit (Nay on resolutions disapproving an increase)",
+    "Stopgap funding": "Yea on a stopgap funding bill that passed the chamber",
+    "War powers limits": "Nay on a resolution directing the president to remove U.S. forces",
+}
+
+
+@st.cache_data
+def load():
+    members = pd.read_csv(DATA_DIR / "members_processed.csv")
+    votes = pd.read_csv(DATA_DIR / "flip_votes.csv")
+    member_votes = pd.read_csv(DATA_DIR / "flip_member_votes.csv")
+    votes["label"] = votes["note"].where(votes["note"].notna() & (votes["note"].astype(str).str.strip() != ""),
+                                         votes["vote_desc"].fillna(votes["bill_number"].fillna("")))
+    latest = members.sort_values("congress").groupby("icpsr").tail(1)[["icpsr", "name", "party", "state_abbrev", "chamber", "congress"]]
+    return members, votes, member_votes, latest
+
+
+members, votes, member_votes, latest = load()
+newest = int(members["congress"].max())
+
+st.title("Position Flips")
+st.markdown(
+    "Some questions come up under presidents of both parties: raising the debt limit, passing stopgap funding, and "
+    "limiting the president's power to keep troops in combat. This page checks whether a member's vote on those "
+    "questions **stays the same no matter who is president**, or **changes when the White House changes parties**."
+)
+
+with st.expander("How to read this page", expanded=False):
+    st.markdown(f"""
+For each type of vote, one side gives *whichever president is in office* more room:
+
+- **Debt limit:** {FRIENDLY["Debt limit"]}
+- **Stopgap funding:** {FRIENDLY["Stopgap funding"]}
+- **War powers limits:** {FRIENDLY["War powers limits"]}
+
+For every member, we compare how often they took that side **when their own party held the White House** versus
+**when the other party did**. The **shift** is the difference in percentage points:
+
+- **Consistent** (shift between −25 and +25): about the same position under both parties' presidents
+- **Partly changed** (+25 to +50) and **Changed with the White House** (+50 or more): more willing to give the president
+  room when it's their own party's president
+- **Opposite pattern** (−25 or less): more willing to give room to the *other* party's president
+
+A member needs at least {MIN_VOTES_EACH_SIDE} votes under each party's president to get a label. Only actual Yea and
+Nay votes count. Presidents are matched to each vote by its date.
+""")
+
+with st.expander("Limits of this measure", expanded=False):
+    st.markdown("""
+- **The bills are not identical.** Two debt limit or funding bills can carry different spending cuts, riders, or
+  conditions, so a changed vote can reflect a changed bill rather than a changed principle. Each member's votes are
+  listed below so you can judge for yourself.
+- **Congress matters too.** Stopgap bills are written by whichever party controls each chamber, which isn't always the
+  president's party.
+- **Debt limit votes are listed by hand** (see the full list at the bottom) because increases often rode on unrelated
+  "vehicle" bills. Increases passed without a direct roll call (such as the House rule in Oct. 2021) or folded into a
+  much larger bill (such as the 2025 reconciliation law) are not included.
+- **Independents are not scored**, because the data doesn't record which party they caucus with.
+""")
+
+# ---------------------------------------------------------------------------
+# Filters
+# ---------------------------------------------------------------------------
+f1, f2, f3, f4 = st.columns([2, 1, 1, 1])
+with f1:
+    category = st.selectbox("Type of vote", CATEGORIES, key="fl_cat")
+with f2:
+    chamber = st.selectbox("Chamber", ["Both", "House", "Senate"], key="fl_cham")
+with f3:
+    party = st.selectbox("Party", ["Both", "Democrat", "Republican"], key="fl_party")
+with f4:
+    current_only = st.toggle(f"Serving in the {ordinal(newest)} Congress", value=True, key="fl_current")
+
+scores = flip_scores(member_votes, category).merge(latest, on="icpsr")
+# Members are scored under the party they held when voting; show their most recent party
+view = scores.copy()
+if chamber != "Both":
+    view = view[view["chamber"] == chamber]
+if party != "Both":
+    view = view[view["party"] == party]
+if current_only:
+    view = view[view["congress"] == newest]
+scored = view[view["label"] != "Not enough votes"]
+
+# ---------------------------------------------------------------------------
+# Summary
+# ---------------------------------------------------------------------------
+st.subheader("How consistent are members?")
+if scored.empty:
+    st.info("No members in this selection have enough votes under both parties' presidents.")
+else:
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Members scored", f"{len(scored):,}", help=f"{len(view) - len(scored):,} more in this selection lack "
+              f"{MIN_VOTES_EACH_SIDE}+ votes under each party's president")
+    m2.metric("Consistent", f"{(scored['label'] == 'Consistent').mean() * 100:.0f}%")
+    m3.metric("Changed with the White House", f"{(scored['label'] == 'Changed with the White House').mean() * 100:.0f}%")
+
+    dist = (scored.groupby(["party", "label"]).size().reset_index(name="Members"))
+    dist["Share"] = dist["Members"] / dist.groupby("party")["Members"].transform("sum") * 100
+    fig = px.bar(dist, y="party", x="Share", color="label", orientation="h", text=dist["Share"].round(0).astype(int).astype(str) + "%",
+                 category_orders={"label": LABEL_ORDER, "party": ["Democrat", "Republican"]},
+                 color_discrete_map=LABEL_COLORS, labels={"party": "", "Share": "Share of members (%)", "label": ""},
+                 hover_data={"Members": True, "Share": ":.0f"})
+    fig.update_layout(height=260, barmode="stack", xaxis=dict(range=[0, 100]), legend=dict(orientation="h", y=-0.35))
+    show_chart(fig, f"Position consistency, {category.lower()}", f"position_flips_{category.lower().replace(' ', '_')}")
+
+    st.caption("Shift = how much more often a member gave the president room under their own party's president "
+               "than under the other party's, in percentage points.")
+    table = scored.sort_values(["shift", "name"], ascending=[False, True])
+    st.dataframe(
+        pd.DataFrame({
+            "Name": table["name"],
+            "Party-State": table["party"].str[0] + "-" + table["state_abbrev"],
+            "Chamber": table["chamber"],
+            "Own party's president": [f"{f:.0f} of {n:.0f} ({r:.0f}%)" for f, n, r in
+                                      zip(table["friendly_own"], table["n_own"], table["rate_own"])],
+            "Other party's president": [f"{f:.0f} of {n:.0f} ({r:.0f}%)" for f, n, r in
+                                        zip(table["friendly_other"], table["n_other"], table["rate_other"])],
+            "Shift": table["shift"].astype(int),
+            "Pattern": table["label"],
+        }),
+        width="stretch", hide_index=True, height=420,
+    )
+
+# ---------------------------------------------------------------------------
+# One member in detail
+# ---------------------------------------------------------------------------
+st.markdown("---")
+st.subheader("One member's votes")
+pool = scores if not current_only else scores[scores["congress"] == newest]
+labels = {f"{r.name} ({r.party[0]}-{r.state_abbrev}, {r.chamber})": r.icpsr for r in pool.sort_values("name").itertuples()}
+pick = st.selectbox("Member", list(labels), index=None, placeholder="Type a name…", key="fl_member")
+if pick:
+    icpsr = labels[pick]
+    rows = []
+    for cat in CATEGORIES[1:]:
+        s = flip_scores(member_votes[member_votes["icpsr"] == icpsr], cat)
+        if not s.empty:
+            r = s.iloc[0]
+            rows.append({"Type of vote": cat, "Own party's president": r["rate_own"], "Other party's president": r["rate_other"],
+                         "n_own": int(r["n_own"]), "n_other": int(r["n_other"]), "Shift": r["shift"], "Pattern": r["label"]})
+    detail = pd.DataFrame(rows)
+    if not detail.empty:
+        long = detail.melt(id_vars=["Type of vote"], value_vars=["Own party's president", "Other party's president"],
+                           var_name="White House", value_name="Gave the president room (%)").dropna()
+        fig2 = px.bar(long, x="Type of vote", y="Gave the president room (%)", color="White House", barmode="group",
+                      color_discrete_sequence=["#e07a5f", "#81b29a"], range_y=[0, 105])
+        fig2.update_layout(height=340, legend_title_text="")
+        name = pick.split(",")[0]
+        show_chart(fig2, f"{name}: votes under each party's president", f"position_flips_{name.lower().replace(' ', '_')}")
+        st.dataframe(detail.assign(**{
+            "Own party's president": [f"{v:.0f}% of {n}" if n else "—" for v, n in zip(detail["Own party's president"], detail["n_own"])],
+            "Other party's president": [f"{v:.0f}% of {n}" if n else "—" for v, n in zip(detail["Other party's president"], detail["n_other"])],
+        }).drop(columns=["n_own", "n_other"]), width="stretch", hide_index=True)
+
+    mine = member_votes[member_votes["icpsr"] == icpsr].merge(
+        votes[["congress", "chamber", "rollnumber", "date", "president", "label", "vote_result", "friendly_vote"]],
+        on=["congress", "chamber", "rollnumber"])
+    st.dataframe(
+        mine.sort_values("date", ascending=False).rename(columns={
+            "date": "Date", "category": "Type", "president": "President", "label": "Vote", "vote": "Their vote",
+            "friendly_vote": "President-friendly vote", "vote_result": "Result", "chamber": "Chamber"})[
+            ["Date", "Chamber", "President", "Type", "Vote", "Their vote", "President-friendly vote", "Result"]],
+        width="stretch", hide_index=True, column_config={"Vote": st.column_config.TextColumn(width="large")},
+    )
+
+# ---------------------------------------------------------------------------
+# Every vote used
+# ---------------------------------------------------------------------------
+st.markdown("---")
+with st.expander(f"All {len(votes)} votes used on this page"):
+    st.dataframe(
+        votes.sort_values("date", ascending=False).rename(columns={
+            "category": "Type", "date": "Date", "chamber": "Chamber", "rollnumber": "Roll Call", "president": "President",
+            "label": "Vote", "vote_result": "Result", "friendly_vote": "President-friendly vote", "selection": "Selected by"})[
+            ["Date", "Chamber", "Roll Call", "President", "Type", "Vote", "Result", "President-friendly vote", "Selected by"]],
+        width="stretch", hide_index=True, column_config={"Vote": st.column_config.TextColumn(width="large")},
+    )
+    st.caption("Selected by: rule = picked automatically by the written rule above; listed = on the hand-made debt limit list "
+               "in data/flip_debt_limit_votes.csv.")
+
+st.caption("Source: Voteview roll-call records. Only actual Yea and Nay floor votes are counted.")

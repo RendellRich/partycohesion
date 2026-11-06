@@ -333,6 +333,97 @@ def build_vote_matrices(members: pd.DataFrame) -> None:
     print(f"Wrote vote matrices to {MATRIX_DIR.name}/ ({size / 1e6:.1f} MB)")
 
 
+# ---------------------------------------------------------------------------
+# Position flips: recurring votes under presidents of both parties
+# ---------------------------------------------------------------------------
+# For each category, the "president-friendly" vote is the one that gives whoever is president
+# money, borrowing room, or a free hand. A member's flip score compares how often they cast that
+# vote when their own party held the White House versus when the other party did.
+
+PRESIDENTS = [  # (first day in office, name, party)
+    ("2001-01-20", "Bush", "Republican"),
+    ("2009-01-20", "Obama", "Democrat"),
+    ("2017-01-20", "Trump", "Republican"),
+    ("2021-01-20", "Biden", "Democrat"),
+    ("2025-01-20", "Trump", "Republican"),
+]
+
+# "On the Motion" is left out on purpose: in Senate records it can be a concurrence, a waiver, or an
+# unrelated deal riding in a stopgap bill's shell (e.g. the Dec. 2013 Ryan-Murray budget agreement).
+FLIP_FINAL_RE = (r"^On (?:Passage|Motion to Suspend the Rules and Pass|Motion to Concur|Agreeing to the Conference Report|"
+                 r"the Conference Report|the Joint Resolution|the Motion to Concur|Passage of the Bill)")
+PASSED_RE = r"Passed|Agreed to|Concurred"
+STOPGAP_RE = (r"continuing appropriations (?:and (?:other )?extensions )?for (?:the )?fiscal year|further continuing appropriations|"
+              r"Continuing Appropriations (?:and Extensions )?Act|Full-Year Continuing Appropriations")
+# One-agency "mini" stopgaps (e.g. 2013 bills funding only parks or NIH) are not government-wide funding
+STOPGAP_EXCLUDE_RE = (r"Providing for|Relating to consideration|disposition|disapproval|"
+                      r"continuing appropriations (?:of|for) (?!(?:the )?fiscal year)")
+WAR_POWERS_RE = r"(?:remove|removal of) (?:all |the )?(?:United States )?Armed Forces|War Powers Resolution"
+WAR_POWERS_QUESTION_RE = (r"^On (?:Passage|Agreeing to the Resolution|the Joint Resolution|the Concurrent Resolution|"
+                          r"Agreeing to the Concurrent Resolution|Motion to Suspend the Rules and Pass)")
+
+DEBT_LIST = DATA_DIR / "flip_debt_limit_votes.csv"
+FLIP_VOTES_FILE = DATA_DIR / "flip_votes.csv"
+FLIP_MEMBER_VOTES_FILE = DATA_DIR / "flip_member_votes.csv"
+
+
+def president_on(date: str):
+    name, party = None, None
+    for start, n, p in PRESIDENTS:
+        if date >= start:
+            name, party = n, p
+    return name, party
+
+
+def build_flip_data(members: pd.DataFrame) -> None:
+    debt = pd.read_csv(DEBT_LIST, comment="#")
+    vote_rows, member_rows = [], []
+    for cong in CONGRESSES:
+        for chamber, prefix in CHAMBERS.items():
+            rc = pd.read_csv(RAW_DIR / f"{prefix}{cong}_rollcalls.csv")
+            q, d = rc["vote_question"].fillna(""), rc["vote_desc"].fillna("")
+            picks = []
+            # Only stopgaps that passed the chamber: when rival versions fail (e.g. Sept. 2025 in the Senate),
+            # a vote for one and against the other reflects the bills' contents, not a position on funding.
+            stop = (q.str.contains(FLIP_FINAL_RE, regex=True) & d.str.contains(STOPGAP_RE, case=False, regex=True)
+                    & ~d.str.contains(STOPGAP_EXCLUDE_RE, case=False, regex=True)
+                    & rc["vote_result"].fillna("").str.contains(PASSED_RE, regex=True))
+            picks.append(rc[stop].assign(category="Stopgap funding", friendly_vote="Yea", selection="rule", note=""))
+            war = (q.str.contains(WAR_POWERS_QUESTION_RE, regex=True) & d.str.contains(WAR_POWERS_RE, case=False, regex=True)
+                   & ~d.str.contains(r"Providing for consideration|Consideration of", case=False, regex=True))
+            picks.append(rc[war].assign(category="War powers limits", friendly_vote="Nay", selection="rule", note=""))
+            listed = debt[(debt["congress"] == cong) & (debt["chamber"] == chamber)]
+            if not listed.empty:
+                picks.append(rc.merge(listed[["rollnumber", "friendly_vote", "note"]], on="rollnumber")
+                             .assign(category="Debt limit", selection="listed"))
+            chosen = pd.concat(picks, ignore_index=True)
+            if chosen.empty:
+                continue
+            chosen[["president", "president_party"]] = chosen["date"].apply(lambda x: pd.Series(president_on(x)))
+            vote_rows.append(chosen)
+
+            votes = pd.read_csv(RAW_DIR / f"{prefix}{cong}_votes.csv", usecols=["rollnumber", "icpsr", "cast_code"])
+            votes = votes[votes["rollnumber"].isin(chosen["rollnumber"]) & votes["cast_code"].isin(YEA_CODES | NAY_CODES)]
+            party = members.loc[(members["congress"] == cong) & (members["chamber"] == chamber), ["icpsr", "party"]].drop_duplicates("icpsr")
+            votes = votes.merge(party, on="icpsr", how="inner")
+            votes = votes[votes["party"].isin(["Democrat", "Republican"])]
+            mv = votes.merge(chosen[["rollnumber", "category", "friendly_vote", "president_party"]], on="rollnumber")
+            mv["vote"] = np.where(mv["cast_code"].isin(YEA_CODES), "Yea", "Nay")
+            mv["friendly"] = (mv["vote"] == mv["friendly_vote"]).astype(int)
+            mv["own_president"] = (mv["party"] == mv["president_party"]).astype(int)
+            member_rows.append(mv.assign(congress=cong, chamber=chamber)[
+                ["icpsr", "congress", "chamber", "rollnumber", "category", "party", "vote", "friendly", "own_president"]])
+
+    cols = ["category", "congress", "chamber", "rollnumber", "date", "president", "president_party", "bill_number",
+            "vote_question", "vote_desc", "vote_result", "yea_count", "nay_count", "friendly_vote", "selection", "note"]
+    flip_votes = pd.concat(vote_rows, ignore_index=True)[cols].sort_values(["category", "date", "chamber", "rollnumber"])
+    flip_member_votes = pd.concat(member_rows, ignore_index=True).sort_values(["icpsr", "category", "congress", "rollnumber"])
+    flip_votes.to_csv(FLIP_VOTES_FILE, index=False)
+    flip_member_votes.to_csv(FLIP_MEMBER_VOTES_FILE, index=False)
+    print(f"Wrote {FLIP_VOTES_FILE.name} ({len(flip_votes)} votes) and {FLIP_MEMBER_VOTES_FILE.name} ({len(flip_member_votes):,} member votes)")
+    print(flip_votes.groupby(["category", "president_party"]).size().unstack(fill_value=0))
+
+
 def process() -> None:
     print("Processing members…")
     members = load_members()
@@ -350,6 +441,9 @@ def process() -> None:
 
     print("\nBuilding vote matrices…")
     build_vote_matrices(members)
+
+    print("\nBuilding position flip data…")
+    build_flip_data(members)
 
 
 def main() -> None:

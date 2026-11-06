@@ -1,0 +1,33 @@
+# Debt limit votes used by the Position Flips page. Listed by hand because these increases often
+# rode on unrelated "vehicle" bills whose official titles don't mention the debt limit.
+# friendly_vote: the vote that lets any president keep borrowing (Yea to raise or suspend the limit,
+# Nay on resolutions disapproving an increase). Do not use the # character inside notes.
+congress,chamber,rollnumber,friendly_vote,note
+110,Senate,354,Yea,H.J.Res. 43: increase the debt limit (2007)
+111,Senate,411,Yea,H.J.Res. 45: increase the debt limit (2010)
+112,House,377,Yea,H.R. 1954: clean debt limit increase requested by the President (failed)
+112,House,686,Yea,Budget Control Act of 2011 (S. 365): raised the debt limit with spending caps
+112,Senate,123,Yea,Budget Control Act of 2011 (S. 365): raised the debt limit with spending caps
+112,House,702,Nay,H.J.Res. 77: disapproval of the August 2011 debt limit increase
+112,House,948,Nay,H.J.Res. 98: disapproval of the January 2012 debt limit increase
+113,House,29,Yea,No Budget No Pay Act (H.R. 325): suspended the debt limit to May 2013
+113,Senate,11,Yea,No Budget No Pay Act (H.R. 325): suspended the debt limit to May 2013
+113,House,549,Yea,Continuing Appropriations Act 2014 (H.R. 2775): ended the 2013 shutdown and suspended the debt limit
+113,Senate,219,Yea,Continuing Appropriations Act 2014 (H.R. 2775): ended the 2013 shutdown and suspended the debt limit
+113,House,569,Nay,H.J.Res. 99: disapproval of the October 2013 debt limit suspension
+113,House,700,Yea,Temporary Debt Limit Extension Act (S. 540)
+113,Senate,325,Yea,Temporary Debt Limit Extension Act (S. 540)
+114,House,577,Yea,Bipartisan Budget Act of 2015 (H.R. 1314): suspended the debt limit
+114,Senate,294,Yea,Bipartisan Budget Act of 2015 (H.R. 1314): suspended the debt limit
+115,House,479,Yea,H.R. 601 (Sept. 2017): hurricane relief and stopgap funding with a debt limit suspension
+115,Senate,192,Yea,H.R. 601 (Sept. 2017): hurricane relief and stopgap funding with a debt limit suspension
+115,House,776,Yea,Bipartisan Budget Act of 2018 (H.R. 1892): suspended the debt limit
+115,Senate,356,Yea,Bipartisan Budget Act of 2018 (H.R. 1892): suspended the debt limit
+116,House,510,Yea,Bipartisan Budget Act of 2019 (H.R. 3877): suspended the debt limit
+116,Senate,262,Yea,Bipartisan Budget Act of 2019 (H.R. 3877): suspended the debt limit
+117,House,309,Yea,S. 1301 (Sept. 2021): House bill to suspend the debt limit
+117,Senate,412,Yea,S. 1301 (Oct. 2021): short-term debt limit increase
+117,House,448,Yea,S.J.Res. 33 (Dec. 2021): debt limit increase
+117,Senate,498,Yea,S.J.Res. 33 (Dec. 2021): debt limit increase
+118,House,242,Yea,Fiscal Responsibility Act of 2023 (H.R. 3746): suspended the debt limit
+118,Senate,146,Yea,Fiscal Responsibility Act of 2023 (H.R. 3746): suspended the debt limit

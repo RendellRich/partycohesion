@@ -10,6 +10,8 @@ Neutral, data-first view of U.S. Congressional voting patterns and party cohesio
 - **Member Explorer** — Search any member, view party unity %, ideology score, and their unity rate across every Congress they served in
 - **Key Votes** — Party unity by Congress, plus high-profile vote series (funding bills, Cabinet confirmations, biggest party breaks) showing each party's split and every member who voted against their party
 - **Compare Members** — Two members side by side: party unity over time, vote-by-vote agreement while serving together, and key votes where they split
+- **Position Flips** — Whether members cast the same vote on debt limits, stopgap funding and war powers limits under presidents of both parties
+- **Ideology Drift** — How far each member's per-Congress ideology score moved compared with their party
 - **Methodology** — Clear definitions of party unity, DW-NOMINATE, and the cohesion proxy
 - **About** — Project purpose and independence statement
 
