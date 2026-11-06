@@ -128,6 +128,38 @@ for f in (DATA / "matrices").glob("*.npz"):
 check(len(all_votes) == n_matrix, f"all_votes.csv has {len(all_votes):,} roll calls but the vote matrices have {n_matrix:,}")
 check(not all_votes.duplicated(["congress", "chamber", "rollnumber"]).any(), "all_votes.csv has duplicate roll calls")
 
+# Platform Votes: every hand-listed roll call exists, every topic has a valid plank for each party from the
+# platform in force for its Congress, and each topic has at least one vote linked
+topics = pd.read_csv(DATA / "platform_topics.csv", comment="#")
+links = pd.read_csv(DATA / "platform_votes.csv", comment="#")
+in_force = {110: 2004, 111: 2008, 112: 2008, 113: 2012, 114: 2012, 115: 2016, 116: 2016, 117: 2020, 118: 2020, 119: 2024, 120: 2024}
+for t in topics.itertuples():
+    check(t.dem_platform == in_force.get(t.congress), f"platform topic {t.topic_id}: Democratic platform year is wrong")
+    check(t.rep_platform == (2016 if in_force.get(t.congress) == 2020 else in_force.get(t.congress)),
+          f"platform topic {t.topic_id}: Republican platform year is wrong")
+    check({t.dem_stance, t.rep_stance} == {"Supports", "Opposes"}, f"platform topic {t.topic_id}: stances must be opposite")
+    check((links["topic_id"] == t.topic_id).any(), f"platform topic {t.topic_id} has no linked vote")
+check(not topics["topic_id"].duplicated().any(), "platform_topics.csv has a duplicate topic_id")
+check(set(links["topic_id"]) <= set(topics["topic_id"]), "platform_votes.csv links to an unknown topic")
+check(set(links["link"]) <= {"direct", "related"} and set(links["procedural"]) <= {"yes", "no"},
+      "platform_votes.csv has an unknown link or procedural value")
+check(((links["dem_platform_vote"].isin(["Yea", "Nay"])) & (links["rep_platform_vote"].isin(["Yea", "Nay"]))
+       & (links["dem_platform_vote"] != links["rep_platform_vote"])).all(),
+      "platform_votes.csv: each vote needs opposite Yea/Nay platform votes for the two parties")
+found = links.merge(all_votes, on=["congress", "chamber", "rollnumber"], how="left", indicator=True)
+for r in found[found["_merge"] != "both"].itertuples():
+    check(False, f"platform vote {r.congress} {r.chamber} roll {r.rollnumber} is not in all_votes.csv")
+# A flipped Yea/Nay in the hand list would show up as most of a party "voting against its platform"
+for r in found[found["_merge"] == "both"].itertuples():
+    dem_most = "Yea" if r.dem_yea > r.dem_nay else "Nay"
+    rep_most = "Yea" if r.rep_yea > r.rep_nay else "Nay"
+    check(dem_most == r.dem_platform_vote and rep_most == r.rep_platform_vote,
+          f"platform vote {r.congress} {r.chamber} roll {r.rollnumber}: most of a party voted against the listed "
+          "platform vote; check the Yea/Nay direction")
+check(not links.duplicated(["congress", "chamber", "rollnumber"]).any(), "platform_votes.csv lists a roll call twice")
+same = links.merge(topics[["topic_id", "congress"]], on="topic_id", suffixes=("", "_topic"))
+check((same["congress"] == same["congress_topic"]).all(), "a platform vote is in a different Congress from its topic")
+
 # No sudden shrinkage compared with the last committed data
 for name, df in (("data/members_processed.csv", members), ("data/key_votes.csv", key_votes),
                  ("data/all_votes.csv", all_votes)):

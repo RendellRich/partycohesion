@@ -1,0 +1,54 @@
+# Roll calls linked to each topic in platform_topics.csv.
+# link: direct = a vote on exactly what the planks name; related = same topic, a different or broader measure (shown, not counted).
+# procedural: yes for cloture, budget waivers and similar motions (shown, not counted in the headline).
+# dem_platform_vote / rep_platform_vote: the vote that matches each party's platform on this roll call.
+topic_id,congress,chamber,rollnumber,measure,link,procedural,dem_platform_vote,rep_platform_vote,note
+aca_repeal_115,115,House,255,"American Health Care Act (H.R. 1628), House passage",direct,no,Nay,Yea,
+aca_repeal_115,115,Senate,179,"""Skinny repeal"" amendment to H.R. 1628",direct,no,Nay,Yea,The last Senate vote on repealing the law in 2017. It failed 49 to 51.
+tax_law_2017_115,115,House,636,"Tax Cuts and Jobs Act (H.R. 1), House passage",direct,no,Nay,Yea,
+tax_law_2017_115,115,Senate,303,"Tax Cuts and Jobs Act (H.R. 1), Senate passage",direct,no,Nay,Yea,
+tax_law_2017_115,115,Senate,323,"Tax Cuts and Jobs Act (H.R. 1), Senate final approval",direct,no,Nay,Yea,The Senate approved the final text by agreeing to the House version with an amendment.
+tax_law_2017_115,115,House,698,"Tax Cuts and Jobs Act (H.R. 1), House final approval",direct,no,Nay,Yea,
+min_wage_116,116,House,495,"Raise the Wage Act (H.R. 582), House passage",direct,no,Yea,Nay,
+dreamers_116,116,House,239,"American Dream and Promise Act (H.R. 6), House passage",direct,no,Yea,Nay,
+dc_statehood_116,116,House,821,"Washington, D.C. Admission Act (H.R. 51), House passage",direct,no,Yea,Nay,
+pro_act_117,117,House,69,"PRO Act (H.R. 842), House passage",direct,no,Yea,Nay,The bill would override state right-to-work laws.
+abortion_law_117,117,House,294,"Women's Health Protection Act (H.R. 3755), House passage",direct,no,Yea,Nay,
+abortion_law_117,117,House,807,"Women's Health Protection Act (H.R. 8296), House passage",direct,no,Yea,Nay,
+abortion_law_117,117,Senate,593,"Women's Health Protection Act (H.R. 3755), cloture on the motion to proceed",direct,yes,Yea,Nay,A procedural vote to start debate. It needed 60 votes.
+abortion_law_117,117,Senate,698,"Women's Health Protection Act (S. 4132), cloture on the motion to proceed",direct,yes,Yea,Nay,A procedural vote to start debate. It needed 60 votes.
+min_wage_117,117,Senate,74,Motion to waive the budget rules for a $15 minimum wage amendment to the American Rescue Plan,direct,yes,Yea,Nay,The only Senate roll call on the $15 wage in this Congress. Some senators who voted no cited the Senate's budget rules rather than the wage itself.
+dreamers_117,117,House,90,"American Dream and Promise Act (H.R. 6), House passage",direct,no,Yea,Nay,
+assault_weapons_117,117,House,857,"Assault Weapons Ban (H.R. 1808), House passage",direct,no,Yea,Nay,
+dc_statehood_117,117,House,131,"Washington, D.C. Admission Act (H.R. 51), House passage",direct,no,Yea,Nay,
+border_wall_118,118,House,208,"Secure the Border Act (H.R. 2), House passage",related,no,Nay,Yea,A broad border bill. Restarting wall construction is one part of it.
+tariffs_119,119,Senate,225,End the global tariff emergency (S.J.Res. 49),direct,no,Yea,Nay,A Yea vote was a vote to end the tariffs.
+tariffs_119,119,Senate,600,End the global tariff emergency (S.J.Res. 88),direct,no,Yea,Nay,A Yea vote was a vote to end the tariffs.
+tariffs_119,119,Senate,160,End the Canada tariff emergency (S.J.Res. 37),related,no,Yea,Nay,The Canada tariffs were tied to fentanyl rather than set as baseline tariffs.
+tariffs_119,119,Senate,594,End the Brazil tariff emergency (S.J.Res. 81),related,no,Yea,Nay,The Brazil tariffs were tied to Brazil's prosecution of its former president.
+tariffs_119,119,Senate,598,End the Canada tariff emergency (S.J.Res. 77),related,no,Yea,Nay,The Canada tariffs were tied to fentanyl rather than set as baseline tariffs.
+tariffs_119,119,House,425,End the Canada tariff emergency (H.J.Res. 72),related,no,Yea,Nay,The Canada tariffs were tied to fentanyl rather than set as baseline tariffs.
+tax_law_2025_119,119,House,144,"One Big Beautiful Bill Act (H.R. 1), House passage",direct,no,Nay,Yea,
+tax_law_2025_119,119,Senate,372,"One Big Beautiful Bill Act (H.R. 1), Senate passage",direct,no,Nay,Yea,The Vice President broke the 50 to 50 tie.
+tax_law_2025_119,119,House,189,"One Big Beautiful Bill Act (H.R. 1), House final approval",direct,no,Nay,Yea,
+stem_cells_110,110,House,19,"Stem Cell Research Enhancement Act (H.R. 3), House passage",direct,no,Yea,Nay,
+stem_cells_110,110,Senate,127,"Stem Cell Research Enhancement Act (S. 5), Senate passage",direct,no,Yea,Nay,
+stem_cells_110,110,House,437,"Stem Cell Research Enhancement Act (S. 5), House passage",direct,no,Yea,Nay,President Bush vetoed the bill.
+dadt_repeal_111,111,House,1621,"Don't Ask, Don't Tell Repeal Act of 2010, House passage",direct,no,Yea,Nay,Passed as an amendment to an unrelated bill (H.R. 2965).
+dadt_repeal_111,111,Senate,676,"Don't Ask, Don't Tell Repeal Act of 2010, cloture",direct,yes,Yea,Nay,A procedural vote to end debate. It needed 60 votes.
+dadt_repeal_111,111,Senate,678,"Don't Ask, Don't Tell Repeal Act of 2010, Senate final approval",direct,no,Yea,Nay,
+dreamers_111,111,House,1608,"DREAM Act, House passage",direct,no,Yea,Nay,Passed as an amendment to an unrelated bill (H.R. 5281).
+dreamers_111,111,Senate,675,"DREAM Act, cloture",direct,yes,Yea,Nay,A procedural vote to end debate. It needed 60 votes and failed.
+top_tax_rates_111,111,House,1587,"Middle Class Tax Relief Act, extending the tax cuts only for income under $250,000",direct,no,Yea,Nay,Passed as an amendment to H.R. 4853. A Yea vote let the cuts expire for higher incomes. Two weeks later Congress extended all the cuts for two years in a broader deal.
+aca_repeal_113,113,House,153,"Repeal of the Affordable Care Act (H.R. 45), House passage",direct,no,Nay,Yea,
+assault_weapons_113,113,Senate,101,Assault weapons ban amendment to S. 649,direct,no,Yea,Nay,Needed 60 votes and failed 40 to 60.
+assault_weapons_113,113,Senate,103,"Limit on large-capacity magazines, amendment to S. 649",direct,no,Yea,Nay,Needed 60 votes and failed 46 to 54.
+immigration_reform_113,113,Senate,168,"Border Security, Economic Opportunity, and Immigration Modernization Act (S. 744), Senate passage",direct,no,Yea,Nay,The bill also included large increases in border security spending.
+abortion_20_weeks_113,113,House,250,"Pain-Capable Unborn Child Protection Act (H.R. 1797), House passage",direct,no,Nay,Yea,"Voteview's title describes the bill as introduced (D.C. only). As passed, it applied nationwide."
+aca_repeal_114,114,House,57,"Repeal of the Affordable Care Act (H.R. 596), House passage",direct,no,Nay,Yea,
+aca_repeal_114,114,House,566,"Restoring Americans' Healthcare Freedom Reconciliation Act (H.R. 3762), House passage",direct,no,Nay,Yea,A budget bill repealing the law's main parts. It also cut Planned Parenthood funding for one year.
+aca_repeal_114,114,Senate,329,"Restoring Americans' Healthcare Freedom Reconciliation Act (H.R. 3762), Senate passage",direct,no,Nay,Yea,A budget bill repealing the law's main parts. It also cut Planned Parenthood funding for one year.
+aca_repeal_114,114,House,707,"Restoring Americans' Healthcare Freedom Reconciliation Act (H.R. 3762), House final approval",direct,no,Nay,Yea,President Obama vetoed the bill.
+aca_repeal_114,114,House,753,"Restoring Americans' Healthcare Freedom Reconciliation Act (H.R. 3762), vote to override the veto",direct,no,Nay,Yea,Needed two thirds and failed.
+abortion_20_weeks_114,114,House,222,"Pain-Capable Unborn Child Protection Act (H.R. 36), House passage",direct,no,Nay,Yea,
+abortion_20_weeks_114,114,Senate,268,"Pain-Capable Unborn Child Protection Act (H.R. 36), cloture on the motion to proceed",direct,yes,Nay,Yea,A procedural vote to start debate. It needed 60 votes.

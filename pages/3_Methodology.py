@@ -147,6 +147,26 @@ st.markdown("""
 Ideology Drift uses Voteview's Nokken-Poole scores, which estimate each member's position separately for each Congress. A member's movement is compared with their party's median movement over the same Congresses in the same chamber. Changes under 0.10 are treated as noise. Because the scores only see Yea and Nay, a member who votes No for the opposite reason from the other party can appear to move toward the center.
 """)
 
+st.header("Platform Votes")
+st.markdown("""
+Platform Votes compares members' votes with their **party's national platform**, the policy document each party
+adopts at its convention every four years. Members don't write or sign it, so the page says a member "voted against
+their party's platform", not that they broke a personal promise.
+
+- **Which platform:** the one adopted in the presidential election year before the vote (2004 for 2007 to 2008, 2008
+  for 2009 to 2012, 2012 for 2013 to 2016, 2016 for 2017 to 2020, 2020 for 2021 to 2024, 2024 for 2025 on). The
+  Republican Party re-adopted its 2016 platform in 2020.
+- **Which topics:** only actions both platforms address in opposite directions, such as a specific law or program,
+  with at least one roll call on exactly that action. Topics only one platform mentions are left out.
+- **Which votes count:** direct votes on the measure itself. Procedural votes and votes on broader, related measures
+  are shown but not counted.
+- **Independents** are compared with the platform of the party they caucus with.
+- Every plank is a paraphrase with a link to the platform text. The full list is in `data/platform_topics.csv` and
+  `data/platform_votes.csv`, and the rules are in `docs/platform-comparison-design.md`.
+- Vote Smart's candidate questionnaire was considered and not used: most incumbents don't answer it, and it fills in
+  answers for those who don't.
+""")
+
 st.header("Keeping It Neutral")
 st.markdown("""
 **Rules the site follows on every page**
@@ -157,7 +177,8 @@ st.markdown("""
   so no pattern reads as good or bad, and colors never carry meaning on their own.
 - The worked examples on How We Measure Consistency are the two parties' Senate leaders during the years they led at
   the same time (McConnell and Schumer, 2017 to 2024), one from each party. Readers can switch to any member.
-- Anything picked by hand (the debt limit, full-year funding and disaster aid lists, and Major Legislation) is
+- Anything picked by hand (the debt limit, full-year funding and disaster aid lists, Major Legislation, and the
+  Platform Votes topics) is
   labeled, and the full lists are public. The three Position Flips lists follow written rules that cover every
   president the same way.
 - Pages describe what the votes show. They do not call any vote right or wrong.
@@ -175,6 +196,15 @@ st.markdown("""
   votes, which fall almost entirely under one president, and in the Senate it runs the other way. An earlier version
   of the data, which was missing most Biden-era funding votes, showed a much larger gap, so treat any party-level
   summary as a description of the members, not a verdict on either party.
+
+**Known imbalances in the Platform Votes data**
+
+- The list has 24 topics: 1 from the Bush years (the data starts in 2007), 9 from the Obama years, 7 from the Trump
+  years and 7 from the Biden years. Every topic that qualifies under the rules is included rather than dropping some
+  to even out the count, and the page shows the split.
+- More of the topics are measures the Democratic platform backs, partly because House Democrats brought many of their
+  platform bills to the floor from 2007 to 2010 and 2019 to 2022. The two parties' totals depend heavily on which
+  topics qualify, so read them as a description of these votes, not a ranking.
 """)
 
 st.header("What This Site Does *Not* Do")
