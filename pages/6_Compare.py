@@ -11,7 +11,7 @@ import plotly.express as px
 import streamlit as st
 
 from chart_utils import PAIR_COLORS, ordinal, show_chart
-from flip_utils import flip_scores
+from flip_utils import add_chamber_control, flip_scores
 from ui import STATES, card, display_name, html_table, inject_css, intro, last_name, metric_card, party_tag, pattern_badge
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -27,7 +27,7 @@ def load():
     key_votes = pd.read_csv(DATA_DIR / "key_votes.csv")
     key_votes["label"] = key_votes["vote_desc"].fillna(key_votes["bill_number"].fillna("") + " " + key_votes["vote_question"].fillna(""))
     key_votes["label"] = key_votes["note"].where(key_votes["note"].notna() & (key_votes["note"].astype(str).str.strip() != ""), key_votes["label"])
-    flips = pd.read_csv(DATA_DIR / "flip_member_votes.csv")
+    flips = add_chamber_control(pd.read_csv(DATA_DIR / "flip_member_votes.csv"), members)
     return members, key_votes, flips
 
 
@@ -65,10 +65,10 @@ def flip_cell(icpsr: int, category: str) -> str:
     if s.empty:
         return '<span class="pc-body">No votes</span>'
     r = s.iloc[0]
-    n = int(r["n_own"] + r["n_other"])
+    n = int(r["matched_own"] + r["matched_other"])
     if r["label"] == "Not enough votes":
-        return f'<span class="pc-body">Not enough votes ({n})</span>'
-    return f'{pattern_badge(r["label"])} <span class="pc-body">{r["shift"]:+.0f} · {n} votes</span>'
+        return f'<span class="pc-body">Not enough matched votes ({n})</span>'
+    return f'{pattern_badge(r["label"])} <span class="pc-body">{r["shift"]:+.0f} · {n} votes compared</span>'
 
 
 def member_card(rows: pd.DataFrame, color: str, newest: int) -> None:
@@ -199,7 +199,8 @@ else:
 if flips["icpsr"].isin([a_id, b_id]).any():
     st.subheader("Same question, different president")
     st.markdown("Whether each member's vote on the same kind of bill changed when the White House changed parties. "
-                "The number is the shift in percentage points; near zero means the same vote under both parties' presidents.")
+                "The number is the shift in percentage points, comparing only matched votes (same type of vote, same position "
+                "in the chamber); near zero means the same vote under both parties' presidents.")
     html_table(["Type of vote", a_name, b_name],
                [["All five types" if c == "All categories" else c, flip_cell(a_id, c), flip_cell(b_id, c)]
                 for c in FLIP_CATEGORIES], raw_cols=(1, 2))

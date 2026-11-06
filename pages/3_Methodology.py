@@ -95,7 +95,22 @@ Funding and disaster votes are matched on the vote's description or on the title
 
 A step-by-step example with a real member's votes is on the **How We Measure Consistency** page.
 
-Each vote is matched to the president in office on its date. For every Democrat and Republican, the page compares how often they cast the president-friendly vote when their own party held the White House versus when the other party did. The difference in percentage points is the **shift**. Members need at least 2 votes under each party's president to be labeled. The bills in a category are not identical, so a changed vote can reflect a changed bill; every vote is listed on the page.
+Each vote is matched to the president in office on its date, and to which party ran the member's chamber that
+Congress (the party with more members, counting those who caucus with it; the evenly split 110th and 117th Senates
+are set to the Democrats, who organized both). For every Democrat and Republican, the page compares how often they
+cast the president-friendly vote when their own party held the White House versus when the other party did,
+**like for like**:
+
+1. Votes are grouped by **type of vote** and by **whether the member's party ran the chamber**.
+2. Inside each group, the rate under the other party's president is subtracted from the rate under their own party's
+   president. Groups with votes on only one side are set aside.
+3. The **shift** is the weighted average of those differences, with weight = own × other ÷ (own + other) votes, so
+   groups with more votes on both sides count more.
+
+Members need at least 2 compared votes under each party's president to be labeled. The **simple difference** (every
+vote, no grouping) is shown next to the shift. The grouping matters because the party running a chamber writes these
+bills, and members of both parties back the president far more often when their own party also runs the chamber. The
+bills in a category are not identical, so a changed vote can reflect a changed bill; every vote is listed on the page.
 """)
 
 st.header("The President's Stated Positions")
@@ -131,10 +146,13 @@ st.markdown("""
   Trump than under Bush or Biden, and some categories (full-year funding, disaster aid) have no Biden-era votes,
   partly because those bills often passed as unrelated vehicle bills that the rules cannot detect. The current counts
   are listed on the Position Flips page.
-- Members cast the president-friendly vote far more often when their own party controls the chamber, under presidents
-  of both parties, and that effect is about as large as the president's. Because each party held the House and
-  Senate majorities in different years, the share of each party's members in each pattern is not a fair comparison of
-  the two parties. The site shows members individually for this reason.
+- Members cast the president-friendly vote far more often when their own party runs the chamber, under presidents of
+  both parties, and that effect is about as large as the president's. The shift compares like with like to account
+  for this (see Position Flips above). The cost is that votes with no comparable match are set aside, so some members
+  are scored on a small share of their votes; every score shows how many votes it rests on.
+- Even compared like with like, scores differ by party and chamber: House Democrats shift more than House
+  Republicans, while in the Senate the difference is smaller and runs the other way. The gap also narrows among
+  members with longer records. Treat party-level summaries as descriptions of the members, not verdicts on either party.
 """)
 
 st.header("What This Site Does *Not* Do")

@@ -10,7 +10,7 @@ import plotly.express as px
 import streamlit as st
 
 from chart_utils import ACCENT, MUTED, PARTY_COLORS, ordinal, show_chart
-from flip_utils import flip_scores
+from flip_utils import add_chamber_control, flip_scores
 from ui import display_name, html_table, inject_css, intro, last_name, member_header, metric_row, pattern_badge
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -25,7 +25,7 @@ def load_members():
 
 @st.cache_data
 def load_flips():
-    return pd.read_csv(DATA_DIR / "flip_member_votes.csv")
+    return add_chamber_control(pd.read_csv(DATA_DIR / "flip_member_votes.csv"), load_members())
 
 
 @st.cache_data
@@ -104,9 +104,10 @@ if pick:
         flip = ("Position Flips", "No votes", "No votes in these categories")
     else:
         o = overall.iloc[0]
-        n = int(o["n_own"] + o["n_other"])
+        n = int(o["matched_own"] + o["matched_other"])
         flip = ("Position Flips", o["label"],
-                f"{o['shift']:+.0f} point shift, {n} votes" if o["label"] != "Not enough votes" else f"{n} votes so far")
+                f"{o['shift']:+.0f} point shift, {n} matched votes" if o["label"] != "Not enough votes"
+                else f"{int(o['n_own'] + o['n_other'])} votes, too few matched")
     ideo = member["nominate_dim1"]
     chambers = " and ".join(sorted(rows["chamber"].unique()))
     metric_row([
@@ -129,10 +130,13 @@ if pick:
         r = s.iloc[0]
         own = f"{r['rate_own']:.0f}% of {int(r['n_own'])}" if r["n_own"] else "None"
         other = f"{r['rate_other']:.0f}% of {int(r['n_other'])}" if r["n_other"] else "None"
-        table_rows.append([cat, own, other, pattern_badge(r["label"])])
+        shift = f"{r['shift']:+.0f}" if pd.notna(r["shift"]) else "None"
+        table_rows.append([cat, own, other, shift, pattern_badge(r["label"])])
     if table_rows:
-        html_table(["Type of vote", "Own party's president", "Other party's president", "Pattern"], table_rows,
-                   raw_cols=(3,), muted_cols=(1, 2))
+        html_table(["Type of vote", "Own party's president", "Other party's president", "Shift", "Pattern"], table_rows,
+                   raw_cols=(4,), muted_cols=(1, 2))
+        st.caption("The first two columns count every vote. The shift compares only matched votes: the same type of "
+                   "vote, cast when the member's party was in the same position in the chamber.")
         st.page_link("pages/9_How_It_Works.py", label="How this is measured →")
     else:
         st.caption("This member cast no Yea or Nay votes on debt limit, funding, disaster aid or war powers bills in this data.")

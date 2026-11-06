@@ -8,7 +8,7 @@ The question for every page: could a reasonable reader from either party say it 
 
 - **Wording:** clean. No loaded words (for example flip-flop, hypocrite, extreme, caved) on any page. Labels describe votes, not people.
 - **Visual choices:** clean. Party colors follow convention, and Position Flips patterns use one neutral hue so no label reads as good or bad.
-- **Data:** two real imbalances in Position Flips that could mislead if the two parties were compared directly. Both are now disclosed on the site. One of them should be fixed in the method before any public claim about the parties.
+- **Data:** two real imbalances in Position Flips that could mislead if the two parties were compared directly. Both are now disclosed on the site, and the bigger one (which party ran the chamber) is now built into the score. See section 6.
 - **Hand-picked content:** the Major Legislation list covers only 2025 and was chosen by hand. It is now labeled that way. It should be replaced with a rule.
 
 ## 1. Wording
@@ -26,7 +26,7 @@ The question for every page: could a reasonable reader from either party say it 
 | Checked | Found | Done |
 |---|---|---|
 | Party order | Democrat before Republican everywhere, which is alphabetical | Rule now stated on Methodology |
-| Explainer worked examples | Schumer was listed before McConnell, with no stated rule for the pick | Now listed alphabetically (McConnell, then Schumer). The rule is stated: the two parties' Senate leaders during the years both led (2017 to 2024). Their overall results are close (+34 and +37), so neither looks singled out |
+| Explainer worked examples | Schumer was listed before McConnell, with no stated rule for the pick | Now listed alphabetically (McConnell, then Schumer). The rule is stated: the two parties' Senate leaders during the years both led (2017 to 2024). Neither is singled out: both are labeled Consistent (+23 and 0 compared like for like; +34 and +37 as a simple difference) |
 | Default member pickers | Members, Compare and Position Flips start empty, so the site never chooses whom to show first | Nothing needed |
 | Home page findings | Computed from all current members by fixed rules, with no party comparison | Nothing needed |
 
@@ -74,7 +74,7 @@ Holding chamber control fixed, both parties give their own party's president mor
 
 **Done:** the Position Flips chart now has a caption saying to read it as a summary of members, not a verdict on either party. The Limits section, the explainer and Methodology now explain the chamber effect.
 
-**Still open (recommended next):** adjust the measure so a member's two piles are compared only within the same chamber-control situation, or show the shift separately when their party held the majority and when it didn't. This should happen before anything public compares the two parties.
+**Follow-up done:** the score now compares like with like. See section 6.
 
 ## 5. Hand-picked content
 
@@ -85,9 +85,34 @@ Holding chamber control fixed, both parties give their own party's president mor
 
 **Still open (recommended):** replace Major Legislation with a written rule applied to every Congress (for example, every bill signed into law that passed by roll call in both chambers and appears in a nonpartisan list of major laws), or drop the series.
 
+## 6. Follow-up: comparing like with like
+
+**What changed.** The shift now compares a member's votes only within groups of the same **type of vote** cast when their party was in the same **position in the chamber** (running it, or not). It then takes a weighted average of the differences, with weight = own × other ÷ (own + other) votes. The simple difference is still shown next to it. Chamber control comes from member counts, with the evenly split 110th and 117th Senates set to the Democrats, who organized both. The data check fails if a future chamber ties without an entry.
+
+**What it costs.** Votes with nothing comparable are set aside. Current members with a label went from 460 to 418, and every score now shows how many votes it rests on.
+
+**What it showed (current members, data through September 30, 2026):**
+
+| | Simple difference | Like for like |
+|---|---|---|
+| All members labeled Consistent | 20% | 32% |
+| Democrats labeled Consistent | 6% | 13% |
+| Republicans labeled Consistent | 34% | 50% |
+| Median shift, Democrats | 48 | 47 |
+| Median shift, Republicans | 32 | 23 |
+
+Checks on the like-for-like party gap:
+
+- **By chamber:** median shift in the House is 50 for Democrats and 24.5 for Republicans. In the Senate it is 11 for Democrats and 20 for Republicans, so the gap there is smaller and runs the other way.
+- **Leaving out one type of vote at a time:** the gap stays between 10 and 28 points whichever type is removed. The narrowest is 41 vs 31, without war powers votes.
+- **Members with longer records:** among members with 10 or more compared votes on each side, the medians are 35 and 23.
+- **Resampling members** (2,000 bootstrap draws): the 95% interval for the gap in median shift is 16 to 28 points.
+
+**Reading it fairly.** Members of both parties give their own party's president more room on the same kinds of votes. Among current members, House Democrats do so more than House Republicans, and that holds up under these checks. It doesn't hold in the Senate, and it's smaller for members with longer records. So the site describes members individually and does not state a party-level conclusion.
+
 ## How to repeat this review
 
 1. Search the page text for loaded words (the list in section 1).
 2. Check every default selection, example and ordering, and confirm that a stated rule explains each one.
-3. Recompute the two Position Flips tables above from `data/flip_votes.csv` and `data/flip_member_votes.csv`.
+3. Recompute the Position Flips tables above from `data/flip_votes.csv` and `data/flip_member_votes.csv`, including the like-for-like checks in section 6.
 4. Read every hand-picked list in `data/`.

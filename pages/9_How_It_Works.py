@@ -9,7 +9,8 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from chart_utils import ACCENT, BG, PATTERN_COLORS, show_chart
-from flip_utils import MIN_VOTES_EACH_SIDE, flip_scores
+from ui import html_table, inject_css
+from flip_utils import MIN_VOTES_EACH_SIDE, add_chamber_control, comparison_groups, flip_scores
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 CATEGORIES = ["All categories", "Debt limit", "Stopgap funding", "Full-year funding", "Disaster aid", "War powers limits"]
@@ -30,7 +31,7 @@ OTHER = "Choose another member"
 def load():
     members = pd.read_csv(DATA_DIR / "members_processed.csv")
     votes = pd.read_csv(DATA_DIR / "flip_votes.csv")
-    member_votes = pd.read_csv(DATA_DIR / "flip_member_votes.csv")
+    member_votes = add_chamber_control(pd.read_csv(DATA_DIR / "flip_member_votes.csv"), members)
     votes["label"] = votes["note"].where(votes["note"].notna() & (votes["note"].astype(str).str.strip() != ""),
                                          votes["vote_desc"].fillna(votes["bill_number"].fillna("")))
     latest = members.sort_values("congress").groupby("icpsr").tail(1)[["icpsr", "name", "party", "state_abbrev", "chamber"]]
@@ -57,13 +58,14 @@ def scale_chart(shift: float | None, name: str) -> go.Figure:
     return fig
 
 
+inject_css()
 votes, member_votes, latest = load()
 
 st.title("How We Measure Consistency")
 st.markdown(
     "PartyCohesion asks one question: **does a member vote the same way on the same kind of bill no matter which party "
-    "holds the White House?** This page walks through the exact math behind the Position Flips page, four steps, "
-    "using a real member's real votes. Nothing here is estimated or weighted. It is counting and one subtraction."
+    "holds the White House?** This page walks through the exact math behind the Position Flips page in five steps, "
+    "using a real member's real votes. Nothing here is estimated. It is counting, subtracting and one weighted average."
 )
 
 # ---------------------------------------------------------------------------
@@ -119,13 +121,15 @@ st.caption("When the White House published an official Statement of Administrati
 # Step 2
 # ---------------------------------------------------------------------------
 st.subheader("Step 2. Split their votes by who was president")
-own_party = mine["party"].iloc[0]
 st.markdown(
     f"Every vote is matched to the president in office on that date. Then each of {short}'s votes goes in one of two "
-    f"piles: votes cast when **their own party** held the White House, and votes cast when **the other party** did."
+    f"piles: votes cast when **their own party** held the White House, and votes cast when **the other party** did. "
+    f"We also note whether {short}'s party **ran their chamber** at the time, which matters in step 4."
 )
-show = mine.assign(**{"Matched president-friendly vote": mine["friendly"].map({1: "Yes", 0: "No"})}).sort_values("date")
-cols = ["date", "president", "category", "label", "vote", "friendly_vote", "Matched president-friendly vote"]
+show = mine.assign(**{"Matched president-friendly vote": mine["friendly"].map({1: "Yes", 0: "No"}),
+                      "Their party ran the chamber": mine["own_chamber"].map({1.0: "Yes", 0.0: "No"})}).sort_values("date")
+cols = ["date", "president", "Their party ran the chamber", "category", "label", "vote", "friendly_vote",
+        "Matched president-friendly vote"]
 names = {"date": "Date", "president": "President", "category": "Type", "label": "Bill", "vote": "Their vote",
          "friendly_vote": "President-friendly vote"}
 for flag, title in [(1, "Pile 1: their own party's president"), (0, "Pile 2: the other party's president")]:
@@ -140,7 +144,8 @@ for flag, title in [(1, "Pile 1: their own party's president"), (0, "Pile 2: the
 # ---------------------------------------------------------------------------
 # Step 3
 # ---------------------------------------------------------------------------
-s = flip_scores(mine.drop(columns=["date", "president", "president_party", "label", "friendly_vote", "position_source"]))
+scored_votes = mine.drop(columns=["date", "president", "president_party", "label", "friendly_vote", "position_source"])
+s = flip_scores(scored_votes)
 r = s.iloc[0]
 st.subheader("Step 3. Count the president-friendly votes in each pile")
 m1, m2 = st.columns(2)
@@ -152,24 +157,56 @@ m1.caption(f"{int(r['friendly_own'])} of {int(r['n_own'])} votes gave the presid
 m2.metric("Under the other party's president", other_txt,
           help=f"{int(r['friendly_other'])} president-friendly out of {int(r['n_other'])} votes")
 m2.caption(f"{int(r['friendly_other'])} of {int(r['n_other'])} votes gave the president room")
+if r["n_own"] and r["n_other"]:
+    st.markdown(
+        f"Subtracting gives a **simple difference of {r['raw_shift']:+.0f} points**. But the two piles can hold "
+        "different kinds of votes, cast in years when a different party ran the chamber. The party running a chamber "
+        "writes these bills, and members of both parties vote with it far more often, so the simple difference can "
+        "count that as a change of position. Step 4 fixes this."
+    )
 
 # ---------------------------------------------------------------------------
 # Step 4
 # ---------------------------------------------------------------------------
-st.subheader("Step 4. Subtract, and place the result on the scale")
+st.subheader("Step 4. Compare like with like")
+st.markdown(
+    "The votes are put in groups by **type of vote** and by **whether their party ran the chamber**. Inside each "
+    "group, the rate under the other party's president is subtracted from the rate under their own party's "
+    "president. A group with votes on only one side has nothing to compare against, so it is set aside."
+)
+groups = comparison_groups(scored_votes).sort_values(["compared", "category", "own_chamber"], ascending=[False, True, False])
+rows = []
+for g in groups.itertuples():
+    own = f"{g.friendly_own} of {g.n_own} ({g.rate_own:.0f}%)" if g.n_own else "None"
+    other = f"{g.friendly_other} of {g.n_other} ({g.rate_other:.0f}%)" if g.n_other else "None"
+    rows.append([g.category, "Yes" if g.own_chamber == 1 else "No", own, other,
+                 f"{g.difference:+.0f}" if g.compared else "Not compared",
+                 f"{g.weight:.1f}" if g.compared else "None"])
+html_table(["Type of vote", "Their party ran the chamber", "Own party's president", "Other party's president",
+            "Difference", "Weight"], rows, muted_cols=(2, 3))
+st.caption("Weight = own × other ÷ (own + other), using each side's number of votes. A group counts more when it has "
+           "more votes on both sides, so one lopsided group can't decide the result.")
+
+# ---------------------------------------------------------------------------
+# Step 5
+# ---------------------------------------------------------------------------
+st.subheader("Step 5. Average the differences, and place the result on the scale")
+used = groups[groups["compared"]]
 if r["label"] == "Not enough votes":
     st.markdown(
-        f"A member needs at least **{MIN_VOTES_EACH_SIDE} votes in each pile** to get a label, so one unusual vote can't "
-        f"decide it. {short} has {int(r['n_own'])} and {int(r['n_other'])}, so there is **no label** for "
-        f"{category.lower()}. Try \"All categories\" or another type of vote."
+        f"A member needs at least **{MIN_VOTES_EACH_SIDE} compared votes on each side** to get a label, so one unusual "
+        f"vote can't decide it. {short} has {int(r['matched_own'])} and {int(r['matched_other'])}, so there is "
+        f"**no label** for {category.lower()}. Try \"All categories\" or another type of vote."
     )
     shift = None
 else:
     shift = float(r["shift"])
+    parts = " + ".join(f"({d:+.0f} × {w:.1f})" for d, w in zip(used["difference"], used["weight"]))
     st.markdown(
-        f"**{r['rate_own']:.0f}% − {r['rate_other']:.0f}% = {shift:+.0f} points.** That is the *shift*: how much more "
-        f"often {short} gave the president room when it was their own party's president. It lands in "
-        f"**{r['label']}**."
+        f"**[{parts}] ÷ {used['weight'].sum():.1f} = {shift:+.0f} points.** That is the *shift*: how much more often "
+        f"{short} gave the president room when it was their own party's president, comparing like with like. It "
+        f"rests on {int(r['matched_own'] + r['matched_other'])} of {short}'s {int(r['n_own'] + r['n_other'])} votes "
+        f"and lands in **{r['label']}**. The simple difference from step 3 was {r['raw_shift']:+.0f}."
     )
 show_chart(scale_chart(shift, short), f"{short}, {category.lower()}: shift on the consistency scale",
            f"consistency_scale_{short.lower()}")
@@ -192,8 +229,10 @@ st.subheader("Why it works this way")
 st.markdown(f"""
 - **Same question, different president.** Comparing a member with themselves on the same kind of bill takes their
   ideology out of the picture. Liberal or conservative, the question is only whether the vote moved with the White House.
-- **The same rule for everyone.** Every member of both parties goes through these four steps with the same votes and
+- **The same rule for everyone.** Every member of both parties goes through these steps with the same votes and
   the same cutoffs. Independents are scored with the party they caucus with.
+- **Like with like.** A vote is only compared with votes of the same type, cast when the member's party held the same
+  position in the chamber, so a change in who runs Congress isn't counted as a change of position.
 - **A minimum number of votes.** At least {MIN_VOTES_EACH_SIDE} votes in each pile, so a single vote never sets a label.
 """)
 st.subheader("What it can't tell you")
@@ -202,8 +241,8 @@ st.markdown("""
   a changed bill rather than a changed principle. That is why every vote is listed, so you can judge for yourself.
 - **Congress matters too.** The party running each chamber writes these bills, and it isn't always the president's party.
 - **It covers five kinds of votes,** not a member's whole record. It is one lens, not a grade.
-- **Votes are not spread evenly across presidents,** and the party running each chamber moves votes about as much as
-  the president does. Compare members with each other, not the two parties as a whole. See Methodology.
+- **Votes are not spread evenly across presidents,** and matching sets aside votes with nothing comparable, so some
+  members are scored on a small share of their votes. The vote count is always shown. See Methodology.
 """)
 st.page_link("pages/7_Position_Flips.py", label="See every member's result on Position Flips →")
 st.page_link("pages/3_Methodology.py", label="Full methodology and data sources →")

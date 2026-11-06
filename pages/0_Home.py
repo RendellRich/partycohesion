@@ -9,7 +9,7 @@ import pandas as pd
 import streamlit as st
 
 from chart_utils import ordinal
-from flip_utils import flip_scores
+from flip_utils import add_chamber_control, flip_scores
 from ui import card, fmt_date, inject_css
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -22,7 +22,7 @@ def load():
     members = pd.read_csv(DATA_DIR / "members_processed.csv")
     summary = pd.read_csv(DATA_DIR / "unity_summary.csv")
     key_votes = pd.read_csv(DATA_DIR / "key_votes.csv")
-    flip_votes = pd.read_csv(DATA_DIR / "flip_member_votes.csv")
+    flip_votes = add_chamber_control(pd.read_csv(DATA_DIR / "flip_member_votes.csv"), members)
     return members, summary, key_votes, flip_votes
 
 
@@ -54,8 +54,8 @@ top = breaks.sort_values("broke", ascending=False).iloc[0] if len(breaks) else N
 c1, c2, c3 = st.columns(3, gap="medium")
 with c1:
     card("POSITION FLIPS", f"{pct_consistent:.0f}%",
-         f"of current members ({len(scored)} with enough votes) cast the same vote on debt limits, government funding, "
-         "disaster aid and war powers under presidents of both parties.")
+         f"of current members ({len(scored)} with enough comparable votes) cast the same vote on debt limits, "
+         "government funding, disaster aid and war powers under presidents of both parties, comparing like with like.")
     st.page_link("pages/7_Position_Flips.py", label="See every member →")
     st.page_link("pages/9_How_It_Works.py", label="How this is measured →")
 with c2:

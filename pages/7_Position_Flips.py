@@ -6,7 +6,7 @@ import plotly.express as px
 import streamlit as st
 from pathlib import Path
 from chart_utils import show_chart, ordinal, PATTERN_COLORS, ACCENT, MUTED
-from flip_utils import flip_scores, MIN_VOTES_EACH_SIDE
+from flip_utils import add_chamber_control, flip_scores, MIN_VOTES_EACH_SIDE
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 CATEGORIES = ["All categories", "Debt limit", "Stopgap funding", "Full-year funding", "Disaster aid", "War powers limits"]
@@ -25,7 +25,7 @@ FRIENDLY = {
 def load():
     members = pd.read_csv(DATA_DIR / "members_processed.csv")
     votes = pd.read_csv(DATA_DIR / "flip_votes.csv")
-    member_votes = pd.read_csv(DATA_DIR / "flip_member_votes.csv")
+    member_votes = add_chamber_control(pd.read_csv(DATA_DIR / "flip_member_votes.csv"), members)
     votes["label"] = votes["note"].where(votes["note"].notna() & (votes["note"].astype(str).str.strip() != ""),
                                          votes["vote_desc"].fillna(votes["bill_number"].fillna("")))
     latest = members.sort_values("congress").groupby("icpsr").tail(1)[["icpsr", "name", "party", "caucus", "state_abbrev", "chamber", "congress"]]
@@ -55,7 +55,11 @@ For each type of vote, one side gives *whichever president is in office* more ro
 - **War powers limits:** {FRIENDLY["War powers limits"]}
 
 For every member, we compare how often they took that side **when their own party held the White House** versus
-**when the other party did**. The **shift** is the difference in percentage points:
+**when the other party did**, like for like: a vote is only compared with votes of the **same type** cast when the
+member's party was in the **same position in their chamber** (running it, or not). The party running a chamber writes
+these bills and moves votes about as much as the president does, so this keeps that from being counted as a change.
+The **shift** is the average difference across those matched groups, in percentage points (groups with more votes on
+both sides count more):
 
 - **Consistent** (shift between −25 and +25): about the same position under both parties' presidents
 - **Partly changed** (+25 to +50) and **Changed with the White House** (+50 or more): more willing to give the president
@@ -67,8 +71,9 @@ hand-listed debt limit votes), the
 president's actual stated position is used** instead of the default (for example, Obama opposed the Sept. 2013 House
 stopgap that also defunded the Affordable Care Act, so voting No was the president-friendly vote there).
 
-A member needs at least {MIN_VOTES_EACH_SIDE} votes under each party's president to get a label. Only actual Yea and
-Nay votes count. Presidents are matched to each vote by its date.
+A member needs at least {MIN_VOTES_EACH_SIDE} matched votes under each party's president to get a label. Only actual
+Yea and Nay votes count. Presidents are matched to each vote by its date. The **simple difference**, using every vote
+with no matching, is shown next to the shift for comparison.
 """)
 
 _counts = votes.groupby("president").agg(n=("date", "size"), first=("date", "min")).sort_values("first")
@@ -84,9 +89,9 @@ with st.expander("Limits of this measure", expanded=False):
   much larger bill (such as the 2025 reconciliation law) are not included.
 - **Votes are not spread evenly across presidents.** {by_president} Some categories have no votes at all under some
   presidents, so members who served in different years are scored on different mixes of votes.
-- **Which party runs the chamber matters about as much as the president.** Members cast the president-friendly vote
-  far more often when their own party controls the chamber, under presidents of both parties. Because each party held
-  the majority in different years, compare individual members rather than the two parties as a whole.
+- **Matching leaves some votes out.** Votes with no match of the same type and chamber situation under the other
+  party's president can't be compared, so some members are scored on a small share of their votes. The table shows
+  how many votes each score rests on.
 - **Independents are scored with the party they caucus with** (for example, Sanders and King with the Democrats). Those
   who caucus with neither party are not scored.
 """)
@@ -139,10 +144,11 @@ else:
                       legend=dict(orientation="h", y=-0.22, x=0), margin=dict(b=70))
     show_chart(fig, f"Position consistency, {category.lower()}", f"position_flips_{category.lower().replace(' ', '_')}")
 
-    st.caption("Read this chart as a summary of members, not a verdict on either party: the votes are not spread "
-               "evenly across presidents, and the party running each chamber also moves these votes. See Limits above.")
-    st.caption("Shift = how much more often a member gave the president room under their own party's president "
-               "than under the other party's, in percentage points.")
+    st.caption("Read this chart as a summary of members, not a verdict on either party: votes are not spread evenly "
+               "across presidents, and members who served in different years are scored on different votes. See Limits above.")
+    st.caption("Shift = how much more often a member gave the president room under their own party's president than "
+               "under the other party's, comparing only matched votes (same type, same chamber situation). Simple "
+               "difference = the same comparison using every vote, with no matching.")
     # Ties are broken by how many votes back the result, so better-supported patterns come first
     table = scored.assign(total=scored["n_own"] + scored["n_other"]).sort_values(["shift", "total", "name"], ascending=[False, False, True])
     st.dataframe(
@@ -154,9 +160,11 @@ else:
                                       zip(table["friendly_own"], table["n_own"], table["rate_own"])],
             "Other party's president": [f"{f:.0f} of {n:.0f} ({r:.0f}%)" for f, n, r in
                                         zip(table["friendly_other"], table["n_other"], table["rate_other"])],
+            "Simple difference": table["raw_shift"].astype(int),
             "Shift": table["shift"].astype(int),
             "Pattern": table["label"],
-            "Votes": table["total"].astype(int),
+            "Votes compared": (table["matched_own"] + table["matched_other"]).astype(int),
+            "All votes": table["total"].astype(int),
         }),
         width="stretch", hide_index=True, height=420,
     )
@@ -177,7 +185,9 @@ if pick:
         if not s.empty:
             r = s.iloc[0]
             rows.append({"Type of vote": cat, "Own party's president": r["rate_own"], "Other party's president": r["rate_other"],
-                         "n_own": int(r["n_own"]), "n_other": int(r["n_other"]), "Shift": r["shift"], "Pattern": r["label"]})
+                         "n_own": int(r["n_own"]), "n_other": int(r["n_other"]), "Simple difference": r["raw_shift"],
+                         "Shift": r["shift"], "Votes compared": int(r["matched_own"] + r["matched_other"]),
+                         "Pattern": r["label"]})
     detail = pd.DataFrame(rows)
     if not detail.empty:
         long = detail.melt(id_vars=["Type of vote"], value_vars=["Own party's president", "Other party's president"],
@@ -195,12 +205,14 @@ if pick:
     mine = member_votes[member_votes["icpsr"] == icpsr].merge(
         votes[["category", "congress", "chamber", "rollnumber", "date", "president", "label", "vote_result", "friendly_vote", "position_source"]],
         on=["category", "congress", "chamber", "rollnumber"])  # one vote can count in two categories
+    mine["Their party ran the chamber"] = mine["own_chamber"].map({1.0: "Yes", 0.0: "No"})
     st.dataframe(
         mine.sort_values("date", ascending=False).rename(columns={
             "date": "Date", "category": "Type", "president": "President", "label": "Vote", "vote": "Their vote",
             "friendly_vote": "President-friendly vote", "vote_result": "Result", "chamber": "Chamber",
             "position_source": "Based on"})[
-            ["Date", "Chamber", "President", "Type", "Vote", "Their vote", "President-friendly vote", "Based on", "Result"]],
+            ["Date", "Chamber", "President", "Their party ran the chamber", "Type", "Vote", "Their vote",
+             "President-friendly vote", "Based on", "Result"]],
         width="stretch", hide_index=True, column_config={"Vote": st.column_config.TextColumn(width="large")},
     )
 
