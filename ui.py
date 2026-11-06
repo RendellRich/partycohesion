@@ -7,7 +7,7 @@ from html import escape
 import pandas as pd
 import streamlit as st
 
-from chart_utils import ACCENT, MUTED, PARTY_COLORS, PATTERN_COLORS
+from chart_utils import ACCENT, MUTED, PARTY_COLORS, PATTERN_COLORS, VOTE_COLORS
 
 SURFACE = "#21201D"
 BORDER = "#3A3733"
@@ -152,3 +152,35 @@ def fmt_date(value) -> str:
     """e.g. Sep 30, 2026 (portable: %-d is not supported on Windows)."""
     ts = pd.Timestamp(value)
     return f"{ts:%b} {ts.day}, {ts.year}"
+
+
+def vote_card(v: pd.Series, broke: pd.DataFrame, link: str | None = None) -> None:
+    """One vote: what it was, how each party split, and who broke with their party. broke needs name, party and
+    state_abbrev columns. link, if given, is shown at the bottom (e.g. the vote's full record on Voteview)."""
+    parties = [("Democrat", v["dem_yea"], v["dem_nay"]), ("Republican", v["rep_yea"], v["rep_nay"]),
+               ("Independent", v["other_yea"], v["other_nay"])]
+    widest = max(y + n for _, y, n in parties) or 1
+    bars = ""
+    for party, y, n in parties:
+        if y + n == 0:
+            continue
+        seg = "".join(f'<span style="width:{max(cnt / widest * 100, 1.2 if cnt else 0):.1f}%;background:{VOTE_COLORS[k]}"></span>'
+                      for cnt, k in ((y, "Yea"), (n, "Nay")) if cnt)
+        bars += f'<div>{party_tag(party)}</div><div class="pc-bar">{seg}</div>' \
+                f'<div class="pc-body">{int(y)} Yea · {int(n)} Nay</div>'
+    legend = " ".join(f'<span class="pc-tag" style="margin-right:14px"><span class="pc-dot" style="border-radius:2px;'
+                      f'background:{VOTE_COLORS[k]}"></span>{k}</span>' for k in ("Yea", "Nay"))
+    eyebrow = f"{v['chamber']} · {fmt_date(v['date'])} · roll call {int(v['rollnumber'])}"
+    result = f"{v['vote_question']} · {v['vote_result']}, {int(v['yea_count'])} Yea to {int(v['nay_count'])} Nay"
+    if broke.empty:
+        who = '<div class="pc-body" style="margin-top:12px">No Democrat or Republican voted against their party\'s majority.</div>'
+    else:
+        names = [f"{last_name(r.name)} ({r.party[0]}-{r.state_abbrev})" for r in broke.sort_values(["party", "name"]).itertuples()]
+        who = (f'<div style="margin-top:14px;font-weight:600">{len(broke)} member{"s" if len(broke) != 1 else ""} voted '
+               f"against their party's majority</div>{chips(names)}")
+    source = (f'<div style="margin-top:14px"><a href="{escape(link)}" target="_blank" rel="noopener" '
+              f'style="color:{ACCENT}">Full record on Voteview →</a></div>') if link else ""
+    st.markdown(f'<div class="pc-card"><div class="pc-eyebrow">{escape(eyebrow)}</div>'
+                f'<div style="font-size:1.4rem;font-weight:600;margin:6px 0 4px 0">{escape(str(v["label"]))}</div>'
+                f'<div class="pc-body">{escape(result)}</div><div class="pc-bars">{bars}</div>'
+                f'<div class="pc-body" style="font-size:0.85rem">{legend}</div>{who}{source}</div>', unsafe_allow_html=True)

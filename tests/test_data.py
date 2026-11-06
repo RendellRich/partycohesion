@@ -47,3 +47,12 @@ def test_hand_listed_funding_votes_follow_their_rules():
     # Both categories have votes under presidents of both parties
     for cat in ("Full-year funding", "Disaster aid"):
         assert v.loc[v["category"] == cat, "president_party"].nunique() == 2
+
+
+def test_all_votes_index_matches_vote_counts():
+    v = pd.read_csv(DATA / "all_votes.csv")
+    assert len(v) > 19000
+    assert not v.duplicated(["congress", "chamber", "rollnumber"]).any()
+    # party splits add up to the official totals on nearly every roll call (the rest are VP tie-breaks etc.)
+    parts = v["dem_yea"] + v["rep_yea"] + v["other_yea"]
+    assert (parts == v["yea_count"]).mean() > 0.97

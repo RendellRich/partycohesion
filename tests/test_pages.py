@@ -92,3 +92,28 @@ def test_position_flips_member_detail():
     box = at.selectbox(key="fl_member")
     box.set_value(box.options[0]).run()
     assert not at.exception
+
+
+def test_all_votes_search_and_card():
+    at = open_page("pages/10_All_Votes.py")
+    at.text_input(key="av_q").set_value("S. 5").run()
+    assert not at.exception
+    found = at.dataframe[0].value
+    assert set(found["Chamber"]) == {"House", "Senate"}  # a bill number finds the bill in both chambers
+    assert (found["Bill"] == "S5").all()
+    text = html(at)
+    assert '<div class="pc-bars">' in text and "voteview.com/rollcall/" in text
+    at.text_input(key="av_q").set_value("no such words anywhere zzz").run()
+    assert any("No votes match" in i.value for i in at.info)
+
+
+def test_member_voting_record():
+    at = open_page("pages/2_Member_Explorer.py")
+    box = at.selectbox(key="me_member")
+    box.set_value(option(box, "Murkowski, Lisa")).run()
+    assert "Voting record" in [s.value for s in at.subheader]
+    record = at.dataframe[0].value
+    assert len(record) > 100 and set(record["Their vote"]) <= {"Yea", "Nay", "Did not vote"}
+    at.toggle(key="me_rec_against").set_value(True).run()
+    assert not at.exception
+    assert (at.dataframe[0].value["Against party"] == "Yes").all()
