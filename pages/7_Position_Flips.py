@@ -117,12 +117,14 @@ else:
                  category_orders={"label": LABEL_ORDER, "party": ["Democrat", "Republican"]},
                  color_discrete_map=LABEL_COLORS, labels={"party": "", "Share": "Share of members (%)", "label": ""},
                  hover_data={"Members": True, "Share": ":.0f"})
-    fig.update_layout(height=260, barmode="stack", xaxis=dict(range=[0, 100]), legend=dict(orientation="h", y=-0.35))
+    fig.update_layout(height=280, barmode="stack", xaxis=dict(range=[0, 100], title=None, ticksuffix="%"),
+                      legend=dict(orientation="h", y=-0.22, x=0), margin=dict(b=70))
     show_chart(fig, f"Position consistency, {category.lower()}", f"position_flips_{category.lower().replace(' ', '_')}")
 
     st.caption("Shift = how much more often a member gave the president room under their own party's president "
                "than under the other party's, in percentage points.")
-    table = scored.sort_values(["shift", "name"], ascending=[False, True])
+    # Ties are broken by how many votes back the result, so better-supported patterns come first
+    table = scored.assign(total=scored["n_own"] + scored["n_other"]).sort_values(["shift", "total", "name"], ascending=[False, False, True])
     st.dataframe(
         pd.DataFrame({
             "Name": table["name"],
@@ -134,6 +136,7 @@ else:
                                         zip(table["friendly_other"], table["n_other"], table["rate_other"])],
             "Shift": table["shift"].astype(int),
             "Pattern": table["label"],
+            "Votes": table["total"].astype(int),
         }),
         width="stretch", hide_index=True, height=420,
     )
