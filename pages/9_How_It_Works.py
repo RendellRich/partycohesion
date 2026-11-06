@@ -233,7 +233,7 @@ st.markdown(f"""
   the same cutoffs. Independents are scored with the party they caucus with.
 - **Like with like.** A vote is only compared with votes of the same type, cast when the member's party held the same
   position in the chamber, so a change in who runs Congress isn't counted as a change of position.
-- **A minimum number of votes.** At least {MIN_VOTES_EACH_SIDE} votes in each pile, so a single vote never sets a label.
+- **A minimum number of votes.** At least {MIN_VOTES_EACH_SIDE} compared votes on each side, so a single vote never sets a label.
 """)
 st.subheader("What it can't tell you")
 st.markdown("""
