@@ -72,11 +72,15 @@ Compare Members uses every roll call where both members actually voted Yea or Na
 
 st.header("Position Flips")
 st.markdown("""
-Position Flips looks at three kinds of votes that come up under presidents of both parties. For each, one side gives *whichever president is in office* more room ("president-friendly"):
+Position Flips looks at five kinds of votes that come up under presidents of both parties. For each, one side gives *whichever president is in office* more room ("president-friendly"):
 
 - **Debt limit:** Yea to raise or suspend the limit, or Nay on a resolution disapproving an increase. These votes are **listed by hand** in `data/flip_debt_limit_votes.csv`, because increases often rode on unrelated vehicle bills.
 - **Stopgap funding:** Yea on a government-wide continuing resolution that passed the chamber. One-agency "mini" bills and rival versions that failed are excluded.
 - **War powers limits:** Nay on a resolution directing the president to remove U.S. forces from hostilities.
+- **Full-year funding:** Yea on an omnibus or consolidated appropriations package that passed the chamber.
+- **Disaster aid:** Yea on a spending bill that explicitly funds disaster relief and passed the chamber. Generic "emergency supplemental" bills are excluded because the same wording was used for war, border and pandemic funding.
+
+Funding and disaster votes are matched on the vote's description or on the title of a linked White House statement, because these bills often ride on unrelated "vehicle" bills.
 
 Each vote is matched to the president in office on its date. For every Democrat and Republican, the page compares how often they cast the president-friendly vote when their own party held the White House versus when the other party did. The difference in percentage points is the **shift**. Members need at least 2 votes under each party's president to be labeled. The bills in a category are not identical, so a changed vote can reflect a changed bill; every vote is listed on the page.
 """)
@@ -85,7 +89,7 @@ st.header("The President's Stated Positions")
 st.markdown("""
 The White House's Office of Management and Budget issues **Statements of Administration Policy** giving the president's official position on bills before a floor vote. The site reads every statement from 2009 on (from the public archive maintained by the @unitedstates project) and records whether the president **supported** or **opposed** the bill, based on the statement's own wording ("The Administration strongly supports…", or a veto threat against the bill as written). Statements that take no clear position are not used.
 
-Each statement is linked to final floor votes on the same bill, in the same chamber, within 30 days and before any newer statement on that bill. Position Flips uses these positions for stopgap and war powers votes where a statement exists.
+Each statement is linked to final floor votes on the same bill, in the same chamber, within 30 days and before any newer statement on that bill. Position Flips uses these positions for every rule-selected vote where a statement exists (the hand-listed debt limit votes keep their listed direction).
 
 **Why this isn't used to score every bill:** comparing how often a member agrees with presidents of different parties *across different bills* would mostly measure ideology, not consistency. A conservative who agrees with a Republican president's bills and disagrees with a Democratic president's bills hasn't changed position. Position Flips only compares the *same kind of question* asked under both parties' presidents.
 """)

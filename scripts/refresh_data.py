@@ -414,6 +414,14 @@ STOPGAP_RE = (r"continuing appropriations (?:and (?:other )?extensions )?for (?:
 # One-agency "mini" stopgaps (e.g. 2013 bills funding only parks or NIH) are not government-wide funding
 STOPGAP_EXCLUDE_RE = (r"Providing for|Relating to consideration|disposition|disapproval|"
                       r"continuing appropriations (?:of|for) (?!(?:the )?fiscal year)")
+# Disaster aid: spending bills that explicitly fund disaster relief. Generic "emergency supplemental"
+# bills are left out because the same wording covered war (2007), border (2019) and COVID (2020) funding.
+DISASTER_RE = (r"appropriations.{0,120}(?:disaster|hurricane|wildfire|tornado)|(?:disaster|hurricane).{0,60}appropriations|"
+               r"Disaster Relief Appropriations")
+# Full-year funding packages (omnibus / consolidated appropriations), excluding later bills that merely amend one
+OMNIBUS_RE = (r"Consolidated Appropriations Act|Further Consolidated Appropriations|Consolidated and Further Continuing Appropriations|"
+              r"Omnibus Appropriations|making (?:further )?consolidated appropriations")
+OMNIBUS_EXCLUDE_RE = r"^To amend"
 WAR_POWERS_RE = r"(?:remove|removal of) (?:all |the )?(?:United States )?Armed Forces|War Powers Resolution"
 WAR_POWERS_QUESTION_RE = (r"^On (?:Passage|Agreeing to the Resolution|the Joint Resolution|the Concurrent Resolution|"
                           r"Agreeing to the Concurrent Resolution|Motion to Suspend the Rules and Pass)")
@@ -486,6 +494,20 @@ def build_flip_data(members: pd.DataFrame, positions: pd.DataFrame) -> None:
             war = (q.str.contains(WAR_POWERS_QUESTION_RE, regex=True) & d.str.contains(WAR_POWERS_RE, case=False, regex=True)
                    & ~d.str.contains(r"Providing for consideration|Consideration of", case=False, regex=True))
             picks.append(rc[war].assign(category="War powers limits", friendly_vote="Nay", selection="rule", note=""))
+            # Disaster aid and full-year funding: matched on the vote description or, because these often ride on
+            # vehicle bills with unrelated titles, on the title of the White House statement linked to the vote
+            title = rc[["rollnumber"]].merge(positions[(positions["congress"] == cong) & (positions["chamber"] == chamber)]
+                                             [["rollnumber", "statement_title"]], on="rollnumber", how="left")["statement_title"] \
+                if not positions.empty else pd.Series("", index=rc.index)
+            title = pd.Series(title.fillna("").to_numpy(), index=rc.index)
+            passed_final = q.str.contains(FLIP_FINAL_RE, regex=True) & rc["vote_result"].fillna("").str.contains(PASSED_RE, regex=True)
+            not_rule = ~d.str.contains(r"Providing for consideration|Relating to consideration", case=False, regex=True)
+            disaster = passed_final & not_rule & (d.str.contains(DISASTER_RE, case=False, regex=True)
+                                                  | title.str.contains(DISASTER_RE, case=False, regex=True))
+            picks.append(rc[disaster].assign(category="Disaster aid", friendly_vote="Yea", selection="rule", note=""))
+            omnibus = passed_final & not_rule & ~d.str.contains(OMNIBUS_EXCLUDE_RE, regex=True) & (
+                d.str.contains(OMNIBUS_RE, case=False, regex=True) | title.str.contains(OMNIBUS_RE, case=False, regex=True))
+            picks.append(rc[omnibus].assign(category="Full-year funding", friendly_vote="Yea", selection="rule", note=""))
             listed = debt[(debt["congress"] == cong) & (debt["chamber"] == chamber)]
             if not listed.empty:
                 picks.append(rc.merge(listed[["rollnumber", "friendly_vote", "note"]], on="rollnumber")

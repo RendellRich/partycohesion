@@ -9,7 +9,7 @@ from chart_utils import show_chart, ordinal
 from flip_utils import flip_scores, MIN_VOTES_EACH_SIDE
 
 DATA_DIR = Path(__file__).parent.parent / "data"
-CATEGORIES = ["All categories", "Debt limit", "Stopgap funding", "War powers limits"]
+CATEGORIES = ["All categories", "Debt limit", "Stopgap funding", "Full-year funding", "Disaster aid", "War powers limits"]
 LABEL_ORDER = ["Consistent", "Partly changed", "Changed with the White House", "Opposite pattern"]
 LABEL_COLORS = {"Consistent": "#81b29a", "Partly changed": "#f2cc8f", "Changed with the White House": "#e07a5f",
                 "Opposite pattern": "#8d99ae"}
@@ -17,6 +17,8 @@ FRIENDLY = {
     "Debt limit": "Yea to raise or suspend the debt limit (Nay on resolutions disapproving an increase)",
     "Stopgap funding": "Yea on a stopgap funding bill that passed the chamber",
     "War powers limits": "Nay on a resolution directing the president to remove U.S. forces",
+    "Full-year funding": "Yea on a full-year funding package (omnibus) that passed the chamber",
+    "Disaster aid": "Yea on a disaster relief spending bill that passed the chamber",
 }
 
 
@@ -36,8 +38,8 @@ newest = int(members["congress"].max())
 
 st.title("Position Flips")
 st.markdown(
-    "Some questions come up under presidents of both parties: raising the debt limit, passing stopgap funding, and "
-    "limiting the president's power to keep troops in combat. This page checks whether a member's vote on those "
+    "Some questions come up under presidents of both parties: raising the debt limit, funding the government, paying "
+    "for disaster relief, and limiting the president's power to keep troops in combat. This page checks whether a member's vote on those "
     "questions **stays the same no matter who is president**, or **changes when the White House changes parties**."
 )
 
@@ -47,6 +49,8 @@ For each type of vote, one side gives *whichever president is in office* more ro
 
 - **Debt limit:** {FRIENDLY["Debt limit"]}
 - **Stopgap funding:** {FRIENDLY["Stopgap funding"]}
+- **Full-year funding:** {FRIENDLY["Full-year funding"]}
+- **Disaster aid:** {FRIENDLY["Disaster aid"]}
 - **War powers limits:** {FRIENDLY["War powers limits"]}
 
 For every member, we compare how often they took that side **when their own party held the White House** versus
@@ -57,7 +61,8 @@ For every member, we compare how often they took that side **when their own part
   room when it's their own party's president
 - **Opposite pattern** (−25 or less): more willing to give room to the *other* party's president
 
-**Where the White House issued an official Statement of Administration Policy on a stopgap or war powers vote, the
+**Where the White House issued an official Statement of Administration Policy on one of these votes (other than the
+hand-listed debt limit votes), the
 president's actual stated position is used** instead of the default (for example, Obama opposed the Sept. 2013 House
 stopgap that also defunded the Affordable Care Act, so voting No was the president-friendly vote there).
 
@@ -73,7 +78,8 @@ with st.expander("Limits of this measure", expanded=False):
 - **Congress matters too.** Stopgap bills are written by whichever party controls each chamber, which isn't always the
   president's party.
 - **Debt limit votes are listed by hand** (see the full list at the bottom) because increases often rode on unrelated
-  "vehicle" bills. Increases passed without a direct roll call (such as the House rule in Oct. 2021) or folded into a
+  "vehicle" bills. Funding and disaster bills that rode on unrelated vehicle bills are only caught when a White House
+  statement names them, so some (such as Biden-era omnibus packages) are missing. Increases passed without a direct roll call (such as the House rule in Oct. 2021) or folded into a
   much larger bill (such as the 2025 reconciliation law) are not included.
 - **Independents are scored with the party they caucus with** (for example, Sanders and King with the Democrats). Those
   who caucus with neither party are not scored.

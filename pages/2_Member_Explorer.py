@@ -1,6 +1,7 @@
 """Member Explorer – look up individual members."""
 
 import streamlit as st
+import numpy as np
 import pandas as pd
 import plotly.express as px
 from pathlib import Path
@@ -14,6 +15,42 @@ def load_members():
     return pd.read_csv(DATA_PATH)
 
 df = load_members()
+
+DATA_DIR = DATA_PATH.parent
+PREFIX = {"House": "H", "Senate": "S"}
+
+
+@st.cache_data
+def load_matrix(congress: int, chamber: str):
+    path = DATA_DIR / "matrices" / f"{PREFIX[chamber]}{congress}.npz"
+    if not path.exists():
+        return None
+    with np.load(path) as f:
+        return f["icpsr"], f["rollnumber"], f["votes"]
+
+
+@st.cache_data
+def president_support(congress: int, chamber: str) -> pd.DataFrame:
+    """Every member's agreement with the president's stated position on votes with a White House statement."""
+    pv = pd.read_csv(DATA_DIR / "president_position_votes.csv")
+    pv = pv[(pv["congress"] == congress) & (pv["chamber"] == chamber)]
+    mat = load_matrix(congress, chamber)
+    if mat is None or pv.empty:
+        return pd.DataFrame()
+    icpsr, rolls, votes = mat
+    col = {r: i for i, r in enumerate(rolls)}
+    pv = pv[pv["rollnumber"].isin(col)]
+    sub = votes[:, [col[r] for r in pv["rollnumber"]]]
+    target = np.where(pv["president_vote"].to_numpy() == "Yea", 1, -1)
+    voted = sub != 0
+    agree = (sub == target) & voted
+    out = []
+    for pres in pv["president"].unique():
+        m = (pv["president"] == pres).to_numpy()
+        out.append(pd.DataFrame({"icpsr": icpsr, "president": pres,
+                                 "president_party": pv.loc[pv["president"] == pres, "president_party"].iloc[0],
+                                 "votes": voted[:, m].sum(axis=1), "agreed": agree[:, m].sum(axis=1)}))
+    return pd.concat(out, ignore_index=True)
 
 st.title("Member Explorer")
 st.markdown("Search any member of Congress from the 110th (2007) to the present and see how often they voted with their own party, where they sit ideologically, and how that changed over time.")
@@ -123,6 +160,35 @@ if len(filtered) > 0:
         fig_h.for_each_trace(lambda t: t.update(name=names.get(t.name, t.name)))
         fig_h.update_layout(height=360, margin=dict(l=40, r=40, t=50, b=40), xaxis=dict(dtick=1))
         show_chart(fig_h, f"Party unity across Congresses: {selected}", f"party_unity_history_{selected.split(',')[0].lower().replace(' ', '_')}")
+
+    # How often they voted with each president's stated position (White House statements, 2009 on)
+    rows = []
+    for (cong, cham), _ in df[df["icpsr"] == member["icpsr"]].groupby(["congress", "chamber"]):
+        ps = president_support(int(cong), cham)
+        if ps.empty:
+            continue
+        ps = ps.merge(df[(df["congress"] == cong) & (df["chamber"] == cham)][["icpsr", "caucus"]], on="icpsr", how="left")
+        mine = ps[ps["icpsr"] == member["icpsr"]]
+        same = ps[(ps["caucus"] == member.get("caucus")) & (ps["votes"] > 0)]
+        for pres, grp in mine.groupby("president", sort=False):
+            peers = same[same["president"] == pres]
+            rows.append({"president": pres, "president_party": grp["president_party"].iloc[0], "votes": int(grp["votes"].sum()),
+                         "agreed": int(grp["agreed"].sum()), "peer_votes": int(peers["votes"].sum()), "peer_agreed": int(peers["agreed"].sum())})
+    if rows:
+        sup = pd.DataFrame(rows).groupby(["president", "president_party"], sort=False).sum().reset_index()
+        sup = sup[sup["votes"] > 0]
+    if rows and not sup.empty:
+        st.markdown("**Voted with the president's stated position**")
+        st.caption("On bills where the White House issued an official position before the vote (2009 on). This shows whose "
+                   "positions a member sided with. It is **not** a consistency score: agreeing more with one party's presidents "
+                   "can simply reflect a member's views. For consistency on the same question, see Position Flips.")
+        st.dataframe(pd.DataFrame({
+            "President": sup["president"] + " (" + sup["president_party"].str[0] + ")",
+            "Votes with a White House position": sup["votes"],
+            "Voted with the president": [f"{a} ({a / v * 100:.0f}%)" for a, v in zip(sup["agreed"], sup["votes"])],
+            f"{member.get('caucus') or member['party']} average": [f"{a / v * 100:.0f}%" if v else "—"
+                                                                  for a, v in zip(sup["peer_agreed"], sup["peer_votes"])],
+        }), width="stretch", hide_index=True)
 
     # Context: where this member sits relative to their party
     party_members = df[
