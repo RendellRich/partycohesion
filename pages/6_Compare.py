@@ -1,12 +1,17 @@
-"""Compare Members – two members side by side: party unity over time, how often they voted
-the same way while serving together, and the key votes where they split."""
+"""Compare Members: two members side by side. How often they voted the same way while serving together,
+their party unity over time, and the key votes where they split. Layout follows the "Compare" mockup in
+the PartyCohesion Figma design system."""
+
+from html import escape
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from pathlib import Path
-from chart_utils import show_chart, ordinal, PAIR_COLORS
+
+from chart_utils import PAIR_COLORS, ordinal, show_chart
+from ui import STATES, card, display_name, inject_css, intro, last_name, metric_card, party_tag
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 MATRIX_DIR = DATA_DIR / "matrices"
@@ -50,11 +55,35 @@ def unity_rollcalls(congress: int, chamber: str) -> np.ndarray:
     return (d != 0) & (r != 0) & (d != r)
 
 
+def member_card(rows: pd.DataFrame, color: str, newest: int) -> None:
+    last = rows.iloc[-1]
+    first_c, last_c = int(rows["congress"].min()), int(rows["congress"].max())
+    end = "now" if last_c == newest else str(2 * last_c + 1788)
+    place = (f"{STATES.get(last['state_abbrev'], last['state_abbrev'])} · {', '.join(sorted(rows['chamber'].unique()))} · "
+             f"{ordinal(first_c)} to {ordinal(last_c)} Congress ({2 * first_c + 1787} to {end})")
+    scored = rows.dropna(subset=["party_unity_pct"])
+    if scored.empty:
+        label, value, note = "Party unity", "None", "No party-line votes scored"
+    else:
+        u = scored.iloc[-1]
+        label = f"Party unity, {ordinal(u['congress'])} Congress"
+        value = f"{u['party_unity_pct']:.1f}%"
+        note = f"{int(u['votes_with_party']):,} of {int(u['unity_votes_cast']):,} party-line votes"
+    st.markdown(
+        f'<div class="pc-card" style="border-top: 4px solid {color}">'
+        f'<div class="pc-name">{escape(display_name(last["name"]))} {party_tag(last["party"])}</div>'
+        f'<div class="pc-place">{escape(place)}</div>'
+        f'<div class="pc-metric-label">{escape(label)}</div><div class="pc-metric-value">{escape(value)}</div>'
+        f'<div class="pc-metric-note">{escape(note)}</div></div>', unsafe_allow_html=True)
+
+
+inject_css()
 members, key_votes = load()
+newest = int(members["congress"].max())
 
 st.title("Compare Members")
-st.markdown("Pick any two members to see their party unity side by side, how often they voted the same way "
-            "while serving together, and the key votes where they split.")
+intro("Pick any two members to see how often they voted the same way while serving together, their party unity side "
+      "by side, and the key votes where they split.")
 
 # One entry per person (Voteview ID), labeled with their most recent party, state and chamber
 latest = members.sort_values("congress").groupby("icpsr").tail(1)
@@ -80,53 +109,23 @@ if a_label == b_label:
 a_id, b_id = options[a_label], options[b_label]
 a_rows = members[members["icpsr"] == a_id].sort_values("congress")
 b_rows = members[members["icpsr"] == b_id].sort_values("congress")
-a_name, b_name = a_rows["name"].iloc[-1].split(",")[0], b_rows["name"].iloc[-1].split(",")[0]
+a_name, b_name = last_name(a_rows["name"].iloc[-1]), last_name(b_rows["name"].iloc[-1])
 if a_name == b_name:
-    a_name, b_name = a_label.split(" (")[0], b_label.split(" (")[0]
+    a_name, b_name = display_name(a_rows["name"].iloc[-1]), display_name(b_rows["name"].iloc[-1])
 
-# ---------------------------------------------------------------------------
-# Party unity side by side
-# ---------------------------------------------------------------------------
 m1, m2 = st.columns(2)
-for col, rows, name in ((m1, a_rows, a_name), (m2, b_rows, b_name)):
-    last = rows.iloc[-1]
-    with col:
-        st.markdown(f"**{last['name']}**  \n{last['party']}, {last['state_abbrev']} · "
-                    f"{', '.join(sorted(rows['chamber'].unique()))} · "
-                    f"{ordinal(rows['congress'].min())}–{ordinal(rows['congress'].max())} Congress")
-        scored = rows.dropna(subset=["party_unity_pct"])
-        if scored.empty:
-            st.metric("Party unity, latest Congress", "—")
-        else:
-            st.metric(f"Party unity, {ordinal(scored['congress'].iloc[-1])} Congress",
-                      f"{scored['party_unity_pct'].iloc[-1]:.1f}%",
-                      help=f"Average across all Congresses shown: {scored['party_unity_pct'].mean():.1f}%")
-
-history = pd.concat([
-    a_rows.assign(Member=a_name), b_rows.assign(Member=b_name)
-]).dropna(subset=["party_unity_pct"])
-if not history.empty:
-    fig = px.line(history, x="congress", y="party_unity_pct", color="Member", markers=True,
-                  hover_data={"chamber": True, "party": True},
-                  color_discrete_sequence=PAIR_COLORS,
-                  labels={"congress": "Congress", "party_unity_pct": "Party Unity %"})
-    fig.update_layout(height=380, xaxis=dict(dtick=1), legend_title_text="")
-    show_chart(fig, f"Party unity across Congresses: {a_name} vs. {b_name}",
-               f"compare_unity_{a_name.lower()}_{b_name.lower()}".replace(" ", "_"))
+with m1:
+    member_card(a_rows, PAIR_COLORS[0], newest)
+with m2:
+    member_card(b_rows, PAIR_COLORS[1], newest)
+st.write("")
 
 # ---------------------------------------------------------------------------
 # Votes while serving together
 # ---------------------------------------------------------------------------
-st.markdown("---")
-st.subheader("When they served together")
-
 shared = a_rows.merge(b_rows, on=["congress", "chamber"], suffixes=("_a", "_b"))[["congress", "chamber"]]
-if shared.empty:
-    st.info(f"{a_name} and {b_name} never served in the same chamber during the same Congress in this data, "
-            "so their individual votes can't be compared. The party unity chart above still applies.")
-    st.stop()
-
-summary_rows, splits = [], []
+per_congress, splits = [], []
+tot_both = tot_same = tot_unity = tot_unity_same = 0
 for cong, cham in shared.itertuples(index=False):
     mat = load_matrix(cong, cham)
     if mat is None:
@@ -138,13 +137,15 @@ for cong, cham in shared.itertuples(index=False):
     va, vb = votes[ia[0]], votes[ib[0]]
     both = (va != 0) & (vb != 0)
     unity = unity_rollcalls(cong, cham)
-    summary_rows.append({
-        "Congress": ordinal(cong),
-        "Chamber": cham,
-        "Votes both cast": int(both.sum()),
-        "Voted the same way": f"{(va[both] == vb[both]).mean() * 100:.1f}%" if both.any() else "—",
-        "Party-unity votes both cast": int((both & unity).sum()),
-        "Same way on party-unity votes": f"{(va[both & unity] == vb[both & unity]).mean() * 100:.1f}%" if (both & unity).any() else "—",
+    same, u_both = int((va[both] == vb[both]).sum()), both & unity
+    u_same = int((va[u_both] == vb[u_both]).sum())
+    tot_both, tot_same, tot_unity, tot_unity_same = (tot_both + int(both.sum()), tot_same + same,
+                                                     tot_unity + int(u_both.sum()), tot_unity_same + u_same)
+    per_congress.append({
+        "Congress": ordinal(cong), "Chamber": cham, "Votes both cast": int(both.sum()),
+        "Voted the same way": f"{same / both.sum() * 100:.1f}%" if both.any() else "None",
+        "Party-line votes both cast": int(u_both.sum()),
+        "Same way on party-line votes": f"{u_same / u_both.sum() * 100:.1f}%" if u_both.any() else "None",
     })
     kv = key_votes[(key_votes["congress"] == cong) & (key_votes["chamber"] == cham)].drop_duplicates("rollnumber")
     col = {r: i for i, r in enumerate(rolls)}
@@ -158,18 +159,49 @@ for cong, cham in shared.itertuples(index=False):
             splits.append({"Date": v["date"], "Chamber": cham, "Vote": v["label"], "Series": series,
                            a_name: VOTE_WORD[int(va[i])], b_name: VOTE_WORD[int(vb[i])], "Result": v["vote_result"]})
 
-st.dataframe(pd.DataFrame(summary_rows), width="stretch", hide_index=True)
-st.caption("Counts only roll calls where both members actually voted Yea or Nay. A party-unity vote is one where "
-           "most Democrats and most Republicans voted on opposite sides.")
-
-st.subheader("Key votes where they split")
-if splits:
-    st.caption(f"{len(splits)} key votes where {a_name} and {b_name} voted on opposite sides. "
-               "Key votes are the series listed on the Key Votes page.")
-    st.dataframe(pd.DataFrame(splits).sort_values("Date", ascending=False), width="stretch", hide_index=True,
-                 column_config={"Vote": st.column_config.TextColumn(width="large")})
+if tot_both:
+    n_cong = len(per_congress)
+    g1, g2 = st.columns(2)
+    with g1:
+        card("When they served together", f"{tot_same / tot_both * 100:.0f}%",
+             f"of the {tot_both:,} roll calls they both voted on, {a_name} and {b_name} voted the same way. They served "
+             f"together in {n_cong} Congress{'es' if n_cong != 1 else ''}.")
+    with g2:
+        metric_card("Same way on party-line votes",
+                    f"{tot_unity_same / tot_unity * 100:.1f}%" if tot_unity else "None",
+                    f"{tot_unity:,} party-line votes both cast")
+        st.write("")
+        metric_card("Key votes where they split", str(len(splits)), "Listed below" if splits else "None in this data")
 else:
-    st.caption("They voted the same way on every key vote they both cast while serving together.")
+    st.info(f"{a_name} and {b_name} never served in the same chamber during the same Congress in this data, so their "
+            "individual votes can't be compared. Their party unity is shown below.")
+
+# ---------------------------------------------------------------------------
+# Party unity side by side
+# ---------------------------------------------------------------------------
+history = pd.concat([a_rows.assign(Member=a_name), b_rows.assign(Member=b_name)]).dropna(subset=["party_unity_pct"])
+if not history.empty:
+    st.subheader("Party unity across Congresses")
+    fig = px.line(history, x="congress", y="party_unity_pct", color="Member", markers=True,
+                  hover_data={"chamber": True, "party": True}, color_discrete_sequence=PAIR_COLORS,
+                  labels={"congress": "Congress", "party_unity_pct": "Party Unity %"})
+    fig.update_layout(height=360, xaxis=dict(dtick=1), legend_title_text="")
+    show_chart(fig, f"Party unity across Congresses: {a_name} vs. {b_name}",
+               f"compare_unity_{a_name.lower()}_{b_name.lower()}".replace(" ", "_"))
+
+if tot_both:
+    st.subheader("Key votes where they split")
+    if splits:
+        st.caption(f"Key votes where {a_name} and {b_name} voted on opposite sides. Key votes are the series listed on "
+                   "the Key Votes page.")
+        st.dataframe(pd.DataFrame(splits).sort_values("Date", ascending=False), width="stretch", hide_index=True,
+                     column_config={"Vote": st.column_config.TextColumn(width="large")})
+    else:
+        st.caption("They voted the same way on every key vote they both cast while serving together.")
+    with st.expander("Agreement in each Congress they served together"):
+        st.dataframe(pd.DataFrame(per_congress), width="stretch", hide_index=True)
+        st.caption("Counts only roll calls where both members actually voted Yea or Nay. A party-line vote is one where "
+                   "most Democrats and most Republicans voted on opposite sides.")
 
 st.markdown("---")
 st.caption("Source: Voteview roll-call records. Only actual Yea and Nay floor votes are counted.")
