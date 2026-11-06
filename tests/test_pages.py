@@ -51,6 +51,8 @@ def test_compare_pair():
     assert not at.exception, [e.value for e in at.exception]
     text = html(at)
     assert "When they served together" in text and "roll calls they both voted on" in text
+    assert "Same question, different president" in [h.value for h in at.subheader]
+    assert text.count('class="pc-badge"') >= 2  # each member has at least one Position Flips label
 
 
 def test_compare_never_served_together():

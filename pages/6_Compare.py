@@ -11,12 +11,14 @@ import plotly.express as px
 import streamlit as st
 
 from chart_utils import PAIR_COLORS, ordinal, show_chart
-from ui import STATES, card, display_name, inject_css, intro, last_name, metric_card, party_tag
+from flip_utils import flip_scores
+from ui import STATES, card, display_name, html_table, inject_css, intro, last_name, metric_card, party_tag, pattern_badge
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 MATRIX_DIR = DATA_DIR / "matrices"
 PREFIX = {"House": "H", "Senate": "S"}
 VOTE_WORD = {1: "Yea", -1: "Nay", 0: "Did not vote"}
+FLIP_CATEGORIES = ["All categories", "Debt limit", "Stopgap funding", "Full-year funding", "Disaster aid", "War powers limits"]
 
 
 @st.cache_data
@@ -25,7 +27,8 @@ def load():
     key_votes = pd.read_csv(DATA_DIR / "key_votes.csv")
     key_votes["label"] = key_votes["vote_desc"].fillna(key_votes["bill_number"].fillna("") + " " + key_votes["vote_question"].fillna(""))
     key_votes["label"] = key_votes["note"].where(key_votes["note"].notna() & (key_votes["note"].astype(str).str.strip() != ""), key_votes["label"])
-    return members, key_votes
+    flips = pd.read_csv(DATA_DIR / "flip_member_votes.csv")
+    return members, key_votes, flips
 
 
 @st.cache_data
@@ -41,7 +44,7 @@ def load_matrix(congress: int, chamber: str):
 def unity_rollcalls(congress: int, chamber: str) -> np.ndarray:
     """Boolean mask over the matrix columns: True where a majority of voting Democrats
     opposed a majority of voting Republicans."""
-    members, _ = load()
+    members = load()[0]
     icpsr, _, votes = load_matrix(congress, chamber)
     party = members[(members["congress"] == congress) & (members["chamber"] == chamber)].set_index("icpsr")["party"]
     p = party.reindex(icpsr).to_numpy()
@@ -53,6 +56,19 @@ def unity_rollcalls(congress: int, chamber: str) -> np.ndarray:
 
     d, r = position(p == "Democrat"), position(p == "Republican")
     return (d != 0) & (r != 0) & (d != r)
+
+
+def flip_cell(icpsr: int, category: str) -> str:
+    """Pattern badge plus the shift and vote count, for one member and one kind of vote."""
+    mv = flips[flips["icpsr"] == icpsr]
+    s = flip_scores(mv, category)
+    if s.empty:
+        return '<span class="pc-body">No votes</span>'
+    r = s.iloc[0]
+    n = int(r["n_own"] + r["n_other"])
+    if r["label"] == "Not enough votes":
+        return f'<span class="pc-body">Not enough votes ({n})</span>'
+    return f'{pattern_badge(r["label"])} <span class="pc-body">{r["shift"]:+.0f} · {n} votes</span>'
 
 
 def member_card(rows: pd.DataFrame, color: str, newest: int) -> None:
@@ -79,7 +95,7 @@ def member_card(rows: pd.DataFrame, color: str, newest: int) -> None:
 
 
 inject_css()
-members, key_votes = load()
+members, key_votes, flips = load()
 newest = int(members["congress"].max())
 
 st.title("Compare Members")
@@ -176,6 +192,18 @@ if tot_both:
 else:
     st.info(f"{a_name} and {b_name} never served in the same chamber during the same Congress in this data, so their "
             "individual votes can't be compared. Their party unity is shown below.")
+
+# ---------------------------------------------------------------------------
+# Position Flips side by side
+# ---------------------------------------------------------------------------
+if flips["icpsr"].isin([a_id, b_id]).any():
+    st.subheader("Same question, different president")
+    st.markdown("Whether each member's vote on the same kind of bill changed when the White House changed parties. "
+                "The number is the shift in percentage points; near zero means the same vote under both parties' presidents.")
+    html_table(["Type of vote", a_name, b_name],
+               [["All five types" if c == "All categories" else c, flip_cell(a_id, c), flip_cell(b_id, c)]
+                for c in FLIP_CATEGORIES], raw_cols=(1, 2))
+    st.page_link("pages/9_How_It_Works.py", label="How this is measured →")
 
 # ---------------------------------------------------------------------------
 # Party unity side by side
