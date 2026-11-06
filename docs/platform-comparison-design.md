@@ -1,6 +1,6 @@
 # Comparing votes with what members ran on: design and pilot
 
-**Status:** built. Decisions A to D were settled on November 6, 2026 (section 5), and 33 topics from 2007 to 2026 are on the Platform Votes page (section 6).
+**Status:** built. Decisions A to D were settled on November 6, 2026 (section 5), and 34 topics from 2007 to 2026 are on the Platform Votes page (section 6).
 **Date:** November 6, 2026. Data through September 30, 2026.
 
 The goal: show where members voted against what they ran on, without the site taking a side. This document covers which sources can support that, a set of written rules, a two-topic pilot run under those rules, what the pilot taught, and the decisions needed before anything is built.
@@ -77,7 +77,7 @@ Ren asked for whichever options gave the most and best data, and the recommended
 
 ## 6. Topic list (built)
 
-Thirty-three topics: 1 from the Bush years, 14 from the Obama years, 11 from the Trump years and 7 from the Biden years. The data starts in 2007, so the Bush years cover only the 110th Congress, which is judged against the 2004 platforms. Rule 5 was applied as "include every topic that qualifies and publish the split" rather than dropping qualifying topics to make the counts even. Every plank is in `data/platform_topics.csv` and every roll call in `data/platform_votes.csv`; `scripts/validate_data.py` checks that each roll call exists, that each party's platform year follows rule 1, and that most of each party voted the way its listed platform vote says (a guard against a flipped Yea/Nay).
+Thirty-four topics: 1 from the Bush years, 14 from the Obama years, 11 from the Trump years and 8 from the Biden years. The data starts in 2007, so the Bush years cover only the 110th Congress, which is judged against the 2004 platforms. Rule 5 was applied as "include every topic that qualifies and publish the split" rather than dropping qualifying topics to make the counts even. Every plank is in `data/platform_topics.csv` and every roll call in `data/platform_votes.csv`; `scripts/validate_data.py` checks that each roll call exists, that each party's platform year follows rule 1, and that most of each party voted the way its listed platform vote says (a guard against a flipped Yea/Nay).
 
 | Congress | Topic | Counted votes | Shown only |
 |---|---|---|---|
@@ -112,6 +112,7 @@ Thirty-three topics: 1 from the Bush years, 14 from the Obama years, 11 from the
 | 117th | Banning assault weapons | House 857 | |
 | 117th | Statehood for Washington D.C. | House 131 | |
 | 118th | A wall on the southern border | | House 208 (related: a broad border bill) |
+| 118th | A permanent ban on federal funding for abortion | | House 299 (related: the Jackson amendment ending Pentagon payment of abortion travel costs) |
 | 119th | Across-the-board tariffs | Senate 225 and 600 | Senate 160, 594, 598; House 425 (related) |
 | 119th | Making the 2017 tax cuts permanent | House 144 and 189, Senate 372 | |
 
