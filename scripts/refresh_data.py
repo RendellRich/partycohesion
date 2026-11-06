@@ -410,23 +410,18 @@ FLIP_FINAL_RE = (r"^On (?:Passage|Motion to Suspend the Rules and Pass|Motion to
                  r"the Conference Report|the Joint Resolution|the Motion to Concur|Passage of the Bill)")
 PASSED_RE = r"Passed|Agreed to|Concurred"
 STOPGAP_RE = (r"continuing appropriations (?:and (?:other )?extensions )?for (?:the )?fiscal year|further continuing appropriations|"
-              r"Continuing Appropriations (?:and Extensions )?Act|Full-Year Continuing Appropriations")
+              r"Continuing Appropriations (?:and Extensions )?Act")
 # One-agency "mini" stopgaps (e.g. 2013 bills funding only parks or NIH) are not government-wide funding
-STOPGAP_EXCLUDE_RE = (r"Providing for|Relating to consideration|disposition|disapproval|"
+# Full-year continuing resolutions fund the government for the rest of the year, so they are listed as full-year
+# funding (data/flip_funding_votes.csv), not counted as stopgaps
+STOPGAP_EXCLUDE_RE = (r"Providing for|Relating to consideration|disposition|disapproval|Full-Year Continuing|"
                       r"continuing appropriations (?:of|for) (?!(?:the )?fiscal year)")
-# Disaster aid: spending bills that explicitly fund disaster relief. Generic "emergency supplemental"
-# bills are left out because the same wording covered war (2007), border (2019) and COVID (2020) funding.
-DISASTER_RE = (r"appropriations.{0,120}(?:disaster|hurricane|wildfire|tornado)|(?:disaster|hurricane).{0,60}appropriations|"
-               r"Disaster Relief Appropriations")
-# Full-year funding packages (omnibus / consolidated appropriations), excluding later bills that merely amend one
-OMNIBUS_RE = (r"Consolidated Appropriations Act|Further Consolidated Appropriations|Consolidated and Further Continuing Appropriations|"
-              r"Omnibus Appropriations|making (?:further )?consolidated appropriations")
-OMNIBUS_EXCLUDE_RE = r"^To amend"
 WAR_POWERS_RE = r"(?:remove|removal of) (?:all |the )?(?:United States )?Armed Forces|War Powers Resolution"
 WAR_POWERS_QUESTION_RE = (r"^On (?:Passage|Agreeing to the Resolution|the Joint Resolution|the Concurrent Resolution|"
                           r"Agreeing to the Concurrent Resolution|Motion to Suspend the Rules and Pass)")
 
 DEBT_LIST = DATA_DIR / "flip_debt_limit_votes.csv"
+FUNDING_LIST = DATA_DIR / "flip_funding_votes.csv"  # full-year funding and disaster aid, listed by written rule
 POSITIONS_FILE = DATA_DIR / "president_positions.csv"
 POSITION_VOTES_FILE = DATA_DIR / "president_position_votes.csv"
 POSITION_WINDOW_DAYS = 30  # a statement covers final votes on its bill within this many days (or until the next statement)
@@ -479,6 +474,7 @@ def link_president_positions() -> pd.DataFrame:
 
 def build_flip_data(members: pd.DataFrame, positions: pd.DataFrame) -> None:
     debt = pd.read_csv(DEBT_LIST, comment="#")
+    funding = pd.read_csv(FUNDING_LIST, comment="#")
     vote_rows, member_rows = [], []
     for cong in CONGRESSES:
         for chamber, prefix in CHAMBERS.items():
@@ -494,20 +490,14 @@ def build_flip_data(members: pd.DataFrame, positions: pd.DataFrame) -> None:
             war = (q.str.contains(WAR_POWERS_QUESTION_RE, regex=True) & d.str.contains(WAR_POWERS_RE, case=False, regex=True)
                    & ~d.str.contains(r"Providing for consideration|Consideration of", case=False, regex=True))
             picks.append(rc[war].assign(category="War powers limits", friendly_vote="Nay", selection="rule", note=""))
-            # Disaster aid and full-year funding: matched on the vote description or, because these often ride on
-            # vehicle bills with unrelated titles, on the title of the White House statement linked to the vote
-            title = rc[["rollnumber"]].merge(positions[(positions["congress"] == cong) & (positions["chamber"] == chamber)]
-                                             [["rollnumber", "statement_title"]], on="rollnumber", how="left")["statement_title"] \
-                if not positions.empty else pd.Series("", index=rc.index)
-            title = pd.Series(title.fillna("").to_numpy(), index=rc.index)
-            passed_final = q.str.contains(FLIP_FINAL_RE, regex=True) & rc["vote_result"].fillna("").str.contains(PASSED_RE, regex=True)
-            not_rule = ~d.str.contains(r"Providing for consideration|Relating to consideration", case=False, regex=True)
-            disaster = passed_final & not_rule & (d.str.contains(DISASTER_RE, case=False, regex=True)
-                                                  | title.str.contains(DISASTER_RE, case=False, regex=True))
-            picks.append(rc[disaster].assign(category="Disaster aid", friendly_vote="Yea", selection="rule", note=""))
-            omnibus = passed_final & not_rule & ~d.str.contains(OMNIBUS_EXCLUDE_RE, regex=True) & (
-                d.str.contains(OMNIBUS_RE, case=False, regex=True) | title.str.contains(OMNIBUS_RE, case=False, regex=True))
-            picks.append(rc[omnibus].assign(category="Full-year funding", friendly_vote="Yea", selection="rule", note=""))
+            # Full-year funding and disaster aid are listed by hand (see the rules in data/flip_funding_votes.csv),
+            # because these laws usually pass as vehicle bills whose titles have nothing to do with funding.
+            fund = funding[(funding["congress"] == cong) & (funding["chamber"] == chamber)]
+            if not fund.empty:
+                picks.append(rc.merge(fund[["rollnumber", "category", "note"]], on="rollnumber")
+                             .assign(friendly_vote="Yea", selection="listed"))
+                full_year_cr = fund.loc[fund["kind"] == "full-year CR", "rollnumber"]
+                picks[0] = picks[0][~picks[0]["rollnumber"].isin(full_year_cr)]  # not also a stopgap
             listed = debt[(debt["congress"] == cong) & (debt["chamber"] == chamber)]
             if not listed.empty:
                 picks.append(rc.merge(listed[["rollnumber", "friendly_vote", "note"]], on="rollnumber")
@@ -525,7 +515,7 @@ def build_flip_data(members: pd.DataFrame, positions: pd.DataFrame) -> None:
                                   president_position=None, president_vote=None, statement_title=None)
             use = chosen["president_vote"].notna() & (chosen["category"] != "Debt limit")
             chosen["position_source"] = np.where(use, "president's statement",
-                                                 np.where(chosen["category"] == "Debt limit", "listed", "default rule"))
+                                                 np.where(chosen["selection"] == "listed", "listed", "default rule"))
             chosen.loc[use, "friendly_vote"] = chosen.loc[use, "president_vote"]
             vote_rows.append(chosen)
 

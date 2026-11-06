@@ -8,7 +8,7 @@ The question for every page: could a reasonable reader from either party say it 
 
 - **Wording:** clean. No loaded words (for example flip-flop, hypocrite, extreme, caved) on any page. Labels describe votes, not people.
 - **Visual choices:** clean. Party colors follow convention, and Position Flips patterns use one neutral hue so no label reads as good or bad.
-- **Data:** two real imbalances in Position Flips that could mislead if the two parties were compared directly. Both are now disclosed on the site, and the bigger one (which party ran the chamber) is now built into the score. See section 6.
+- **Data:** two real imbalances in Position Flips that could mislead if the two parties were compared directly. Both are now disclosed on the site. Chamber control is built into the score (section 6), and the missing Biden-era funding votes are filled in by written rules (section 7). With both fixed, the two parties' scores are close.
 - **Hand-picked content:** the Major Legislation list covers only 2025 and was chosen by hand. It is now labeled that way. It should be replaced with a rule.
 
 ## 1. Wording
@@ -26,7 +26,7 @@ The question for every page: could a reasonable reader from either party say it 
 | Checked | Found | Done |
 |---|---|---|
 | Party order | Democrat before Republican everywhere, which is alphabetical | Rule now stated on Methodology |
-| Explainer worked examples | Schumer was listed before McConnell, with no stated rule for the pick | Now listed alphabetically (McConnell, then Schumer). The rule is stated: the two parties' Senate leaders during the years both led (2017 to 2024). Neither is singled out: both are labeled Consistent (+23 and 0 compared like for like; +34 and +37 as a simple difference) |
+| Explainer worked examples | Schumer was listed before McConnell, with no stated rule for the pick | Now listed alphabetically (McConnell, then Schumer). The rule is stated: the two parties' Senate leaders during the years both led (2017 to 2024). Neither is singled out: both are labeled Consistent (+22 and +3 compared like for like, as of section 7) |
 | Default member pickers | Members, Compare and Position Flips start empty, so the site never chooses whom to show first | Nothing needed |
 | Home page findings | Computed from all current members by fixed rules, with no party comparison | Nothing needed |
 
@@ -91,7 +91,7 @@ Holding chamber control fixed, both parties give their own party's president mor
 
 **What it costs.** Votes with nothing comparable are set aside. Current members with a label went from 460 to 418, and every score now shows how many votes it rests on.
 
-**What it showed (current members, data through September 30, 2026):**
+**What it showed (current members, data through September 30, 2026, before the vote list was completed; see section 7 for the current results):**
 
 | | Simple difference | Like for like |
 |---|---|---|
@@ -109,6 +109,42 @@ Checks on the like-for-like party gap:
 - **Resampling members** (2,000 bootstrap draws): the 95% interval for the gap in median shift is 16 to 28 points.
 
 **Reading it fairly.** Members of both parties give their own party's president more room on the same kinds of votes. Among current members, House Democrats do so more than House Republicans, and that holds up under these checks. It doesn't hold in the Senate, and it's smaller for members with longer records. So the site describes members individually and does not state a party-level conclusion.
+
+## 7. Follow-up: completing the vote list
+
+**What changed.** Full-year funding and disaster aid were selected by keyword, which missed most packages passed as unrelated "vehicle" bills (every Biden-era package among them) and caught some bills that never became law. Both are now hand-listed in `data/flip_funding_votes.csv` by written rules that treat every president the same way:
+
+- **Full-year funding:** every enacted law that gave full-year funding to two or more of the twelve regular appropriations bills at once, fiscal year 2008 on, using the final vote in each chamber. Full-year continuing resolutions count here, not as stopgaps.
+- **Disaster aid:** every enacted law containing a disaster relief supplemental of $10 billion or more, as listed by CBO, using the same vote rule.
+
+All 73 listed votes were checked against the roll-call record for the right bill, a passing result and the final vote. The data check now fails if any listed vote goes missing.
+
+**Votes by president, all five categories:**
+
+| | Bush | Obama | Trump | Biden | Total |
+|---|---|---|---|---|---|
+| Before | 5 | 49 | 57 | 18 | 129 |
+| After | 11 | 55 | 76 | 33 | 175 |
+
+Full-year funding went from 0 to 9 Biden-era votes, and disaster aid from 0 to 6.
+
+**What it showed (current members, compared like with like):**
+
+| | Before | After |
+|---|---|---|
+| Members with a label | 418 | 441 |
+| Median votes behind each score | 30 | 51 |
+| Labeled Consistent, all | 32% | 34% |
+| Labeled Consistent, Democrats | 13% | 24% |
+| Labeled Consistent, Republicans | 50% | 44% |
+| Median shift, Democrats | 47 | 35 |
+| Median shift, Republicans | 23 | 27 |
+
+- The 95% interval for the gap in median shift is now 3 to 13.5 points (it was 16 to 28).
+- Leaving out war powers votes, the medians are 31 and 30. Most of the remaining gap comes from war powers votes, 20 of which fall under Trump and 2 under Biden.
+- By chamber: the House median is 40 for Democrats and 29 for Republicans; the Senate median is 9 and 19.5.
+
+**Reading it fairly.** Section 6's larger party gap came mostly from missing Biden-era votes, not from the members. With the vote list completed, members of both parties still give their own party's president more room on the same kinds of votes, by similar amounts. The site makes no party-level claim, and this result shows why that rule matters.
 
 ## How to repeat this review
 

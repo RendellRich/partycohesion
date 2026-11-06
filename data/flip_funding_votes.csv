@@ -1,0 +1,86 @@
+# Full-year funding and disaster aid votes used by the Position Flips page, listed by hand because these laws
+# usually pass as "vehicle" bills whose official titles have nothing to do with funding. Rules:
+# Full-year funding: every enacted law that gave full-year funding to two or more of the twelve regular
+#   appropriations bills at once (omnibus, minibus, consolidated, or full-year continuing appropriations), fiscal
+#   year 2008 on. Listed: the last vote in each chamber approving the final text. When the House split one
+#   package into two votes, both are listed. A chamber that passed the final text by voice vote has no row.
+# Disaster aid: every enacted law containing a disaster relief supplemental appropriations act of $10 billion or
+#   more (CBO, "Supplemental Appropriations Enacted Since Fiscal Year 2000"), with the same vote rule.
+# friendly_vote is Yea for every row (the vote that funds whichever president is in office); where the White House
+# issued a statement on the vote, the president's stated position is used instead. kind: omnibus, minibus,
+# full-year CR (counted here instead of as a stopgap), minibus + CR, or the disaster law's title.
+# Do not use the # character inside notes. Check new rows with: python scripts/validate_data.py
+category,congress,chamber,rollnumber,kind,note
+Full-year funding,110,House,1177,omnibus,Consolidated Appropriations Act 2008 (H.R. 2764)
+Full-year funding,110,Senate,441,omnibus,Consolidated Appropriations Act 2008 (H.R. 2764)
+Full-year funding,110,House,1807,minibus + CR,Consolidated Security Disaster Assistance and Continuing Appropriations Act 2009 (H.R. 2638)
+Full-year funding,110,Senate,650,minibus + CR,Consolidated Security Disaster Assistance and Continuing Appropriations Act 2009 (H.R. 2638)
+Full-year funding,111,House,85,omnibus,Omnibus Appropriations Act 2009 (H.R. 1105); the Senate passed it by voice vote
+Full-year funding,111,House,947,omnibus,Consolidated Appropriations Act 2010 (H.R. 3288)
+Full-year funding,111,Senate,374,omnibus,Consolidated Appropriations Act 2010 (H.R. 3288)
+Full-year funding,112,House,266,full-year CR,Department of Defense and Full-Year Continuing Appropriations Act 2011 (H.R. 1473)
+Full-year funding,112,Senate,61,full-year CR,Department of Defense and Full-Year Continuing Appropriations Act 2011 (H.R. 1473)
+Full-year funding,112,House,853,minibus + CR,Consolidated and Further Continuing Appropriations Act 2012 (H.R. 2112)
+Full-year funding,112,Senate,208,minibus + CR,Consolidated and Further Continuing Appropriations Act 2012 (H.R. 2112)
+Full-year funding,112,House,937,omnibus,Consolidated Appropriations Act 2012 (H.R. 2055)
+Full-year funding,112,Senate,235,omnibus,Consolidated Appropriations Act 2012 (H.R. 2055)
+Full-year funding,113,House,88,full-year CR,Consolidated and Further Continuing Appropriations Act 2013 (H.R. 933)
+Full-year funding,113,Senate,44,full-year CR,Consolidated and Further Continuing Appropriations Act 2013 (H.R. 933)
+Full-year funding,113,House,660,omnibus,Consolidated Appropriations Act 2014 (H.R. 3547)
+Full-year funding,113,Senate,304,omnibus,Consolidated Appropriations Act 2014 (H.R. 3547)
+Full-year funding,113,House,1201,omnibus,Consolidated and Further Continuing Appropriations Act 2015 (H.R. 83)
+Full-year funding,113,Senate,645,omnibus,Consolidated and Further Continuing Appropriations Act 2015 (H.R. 83)
+Full-year funding,114,House,702,omnibus,Consolidated Appropriations Act 2016 (H.R. 2029)
+Full-year funding,114,Senate,339,omnibus,Consolidated Appropriations Act 2016 (H.R. 2029)
+Full-year funding,115,House,248,omnibus,Consolidated Appropriations Act 2017 (H.R. 244)
+Full-year funding,115,Senate,121,omnibus,Consolidated Appropriations Act 2017 (H.R. 244)
+Full-year funding,115,House,834,omnibus,Consolidated Appropriations Act 2018 (H.R. 1625)
+Full-year funding,115,Senate,388,omnibus,Consolidated Appropriations Act 2018 (H.R. 1625)
+Full-year funding,115,House,1106,minibus,Energy and Water Legislative Branch and Military Construction-VA Appropriations Act 2019 (H.R. 5895)
+Full-year funding,115,Senate,532,minibus,Energy and Water Legislative Branch and Military Construction-VA Appropriations Act 2019 (H.R. 5895)
+Full-year funding,115,House,1112,minibus + CR,Defense and Labor-HHS-Education Appropriations Act 2019 and Continuing Appropriations (H.R. 6157)
+Full-year funding,115,Senate,537,minibus + CR,Defense and Labor-HHS-Education Appropriations Act 2019 and Continuing Appropriations (H.R. 6157)
+Full-year funding,116,House,86,omnibus,Consolidated Appropriations Act 2019 (H.J.Res. 31)
+Full-year funding,116,Senate,26,omnibus,Consolidated Appropriations Act 2019 (H.J.Res. 31)
+Full-year funding,116,House,689,minibus,Consolidated Appropriations Act 2020 (H.R. 1158)
+Full-year funding,116,Senate,428,minibus,Consolidated Appropriations Act 2020 (H.R. 1158)
+Full-year funding,116,House,688,omnibus,Further Consolidated Appropriations Act 2020 (H.R. 1865)
+Full-year funding,116,Senate,415,omnibus,Further Consolidated Appropriations Act 2020 (H.R. 1865)
+Full-year funding,116,House,949,omnibus,Consolidated Appropriations Act 2021 (H.R. 133): divisions B C E and F
+Full-year funding,116,House,950,omnibus,Consolidated Appropriations Act 2021 (H.R. 133): remaining divisions
+Full-year funding,116,Senate,717,omnibus,Consolidated Appropriations Act 2021 (H.R. 133)
+Full-year funding,117,House,512,omnibus,Consolidated Appropriations Act 2022 (H.R. 2471): security divisions
+Full-year funding,117,House,513,omnibus,Consolidated Appropriations Act 2022 (H.R. 2471): remaining divisions
+Full-year funding,117,Senate,606,omnibus,Consolidated Appropriations Act 2022 (H.R. 2471)
+Full-year funding,117,House,996,omnibus,Consolidated Appropriations Act 2023 (H.R. 2617)
+Full-year funding,117,Senate,949,omnibus,Consolidated Appropriations Act 2023 (H.R. 2617)
+Full-year funding,118,House,782,minibus,Consolidated Appropriations Act 2024 (H.R. 4366)
+Full-year funding,118,Senate,436,minibus,Consolidated Appropriations Act 2024 (H.R. 4366)
+Full-year funding,118,House,820,minibus,Further Consolidated Appropriations Act 2024 (H.R. 2882)
+Full-year funding,118,Senate,466,minibus,Further Consolidated Appropriations Act 2024 (H.R. 2882)
+Full-year funding,119,House,69,full-year CR,Full-Year Continuing Appropriations and Extensions Act 2025 (H.R. 1968)
+Full-year funding,119,Senate,133,full-year CR,Full-Year Continuing Appropriations and Extensions Act 2025 (H.R. 1968)
+Full-year funding,119,House,284,minibus + CR,Continuing Appropriations and Extensions Act 2026 (H.R. 5371) with full-year Agriculture Legislative Branch and Military Construction-VA funding
+Full-year funding,119,Senate,618,minibus + CR,Continuing Appropriations and Extensions Act 2026 (H.R. 5371) with full-year Agriculture Legislative Branch and Military Construction-VA funding
+Full-year funding,119,House,367,minibus,Commerce-Justice-Science Energy and Water and Interior Appropriations Act 2026 (H.R. 6938)
+Full-year funding,119,Senate,670,minibus,Commerce-Justice-Science Energy and Water and Interior Appropriations Act 2026 (H.R. 6938)
+Full-year funding,119,House,413,omnibus,Consolidated Appropriations Act 2026 (H.R. 7148)
+Full-year funding,119,Senate,679,omnibus,Consolidated Appropriations Act 2026 (H.R. 7148)
+Disaster aid,110,House,1807,Disaster Relief and Recovery Supplemental Appropriations Act 2008,H.R. 2638: $22.9 billion
+Disaster aid,110,Senate,650,Disaster Relief and Recovery Supplemental Appropriations Act 2008,H.R. 2638: $22.9 billion
+Disaster aid,113,House,22,Disaster Relief Appropriations Act 2013,H.R. 152 (Hurricane Sandy): $50.5 billion
+Disaster aid,113,Senate,4,Disaster Relief Appropriations Act 2013,H.R. 152 (Hurricane Sandy): $50.5 billion
+Disaster aid,115,House,479,Supplemental Appropriations for Disaster Relief Requirements Act 2017,H.R. 601 (Hurricanes Harvey and Irma): $15.3 billion
+Disaster aid,115,Senate,192,Supplemental Appropriations for Disaster Relief Requirements Act 2017,H.R. 601 (Hurricanes Harvey and Irma): $15.3 billion
+Disaster aid,115,House,565,Additional Supplemental Appropriations for Disaster Relief Requirements Act 2017,H.R. 2266 (House vote on H.Res. 569): $36.5 billion
+Disaster aid,115,Senate,248,Additional Supplemental Appropriations for Disaster Relief Requirements Act 2017,H.R. 2266: $36.5 billion
+Disaster aid,115,House,776,Further Additional Supplemental Appropriations for Disaster Relief Requirements Act 2018,H.R. 1892 (Bipartisan Budget Act of 2018): $84.4 billion
+Disaster aid,115,Senate,356,Further Additional Supplemental Appropriations for Disaster Relief Requirements Act 2018,H.R. 1892 (Bipartisan Budget Act of 2018): $84.4 billion
+Disaster aid,116,House,231,Additional Supplemental Appropriations for Disaster Relief Act 2019,H.R. 2157: $19.1 billion
+Disaster aid,116,Senate,129,Additional Supplemental Appropriations for Disaster Relief Act 2019,H.R. 2157: $19.1 billion
+Disaster aid,117,House,310,Disaster Relief Supplemental Appropriations Act 2022,H.R. 5305 (Hurricane Ida): $28.6 billion
+Disaster aid,117,Senate,397,Disaster Relief Supplemental Appropriations Act 2022,H.R. 5305 (Hurricane Ida): $28.6 billion
+Disaster aid,117,House,996,Disaster Relief Supplemental Appropriations Act 2023,H.R. 2617 division N: $38.2 billion
+Disaster aid,117,Senate,949,Disaster Relief Supplemental Appropriations Act 2023,H.R. 2617 division N: $38.2 billion
+Disaster aid,118,House,1235,Disaster Relief Supplemental Appropriations Act 2025,H.R. 10545 (American Relief Act 2025): about $100 billion
+Disaster aid,118,Senate,691,Disaster Relief Supplemental Appropriations Act 2025,H.R. 10545 (American Relief Act 2025): about $100 billion
