@@ -74,11 +74,9 @@ if len(filtered) > 0:
 
     member = filtered[filtered["name"] == selected].iloc[0]
 
-    d1, d2, d3, d4, d5 = st.columns(5)
-    with d1:
-        st.metric("Party", member["party"])
+    d2, d3, d4, d5 = st.columns(4)
     with d2:
-        st.metric("State", member["state_abbrev"])
+        st.metric("Party-State", f"{member['party'][0]}-{member['state_abbrev']}", help=member["party"])
     with d3:
         st.metric("Party Unity %", f"{member['party_unity_pct']:.1f}%" if pd.notna(member["party_unity_pct"]) else "—")
     with d4:
@@ -88,12 +86,12 @@ if len(filtered) > 0:
 
     if pd.notna(member["party_unity_pct"]):
         st.markdown(
-            f"**Chamber:** {member['chamber']}  |  Voted with the {member['party']} majority on "
+            f"**{member['party']}, {member['chamber']}**  |  Voted with the {member['party']} majority on "
             f"**{int(member['votes_with_party'])} of {int(member['unity_votes_cast'])}** party-unity votes."
         )
     else:
         st.markdown(
-            f"**Chamber:** {member['chamber']}  |  No party unity rate: only Democrats and Republicans are scored, "
+            f"**{member['party']}, {member['chamber']}**  |  No party unity rate: only Democrats and Republicans are scored, "
             "and the member must have cast at least one party-unity vote."
         )
 

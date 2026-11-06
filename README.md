@@ -8,7 +8,7 @@ Neutral, data-first view of U.S. Congressional voting patterns and party cohesio
 
 - **Overview** — Party unity rates, ideology distributions, cohesion proxy, and party trends across Congresses 110–119
 - **Member Explorer** — Search any member, view party unity %, ideology score, and their unity rate across every Congress they served in
-- **Key Votes** — 119th Congress party unity by party, members who break with their party most often, and a framework for high-profile vote series
+- **Key Votes** — Party unity by Congress, plus high-profile vote series (funding bills, Cabinet confirmations, biggest party breaks) showing each party's split and every member who voted against their party
 - **Methodology** — Clear definitions of party unity, DW-NOMINATE, and the cohesion proxy
 - **About** — Project purpose and independence statement
 
@@ -32,7 +32,18 @@ From the project root:
 python scripts/refresh_data.py
 ```
 
-This downloads the latest Voteview member file and the House and Senate roll-call vote files for Congresses 110–119, then rebuilds `data/members_processed.csv` and `data/unity_summary.csv`. Raw downloads are cached in `data/raw/` (git-ignored). Commit the updated CSVs and Streamlit Cloud redeploys automatically.
+This downloads the latest Voteview member file and the House and Senate roll-call vote files for Congresses 110–119, then rebuilds `data/members_processed.csv` and `data/unity_summary.csv`. It also rebuilds the key vote series in `data/key_votes.csv` and `data/key_vote_defectors.csv`. Raw downloads are cached in `data/raw/` (git-ignored). Commit the updated CSVs and Streamlit Cloud redeploys automatically.
+
+## Add Your Own Key Votes
+
+To add a hand-picked series (for example, signature legislation), add rows to `data/key_votes_custom.csv`:
+
+```csv
+series,congress,chamber,rollnumber,note
+Signature Legislation,119,House,123,Final passage
+```
+
+The roll call number is shown in the **Roll Call** column on the Key Votes page. Then run `python scripts/refresh_data.py` and commit the updated data files.
 
 ## Deploy to Streamlit Community Cloud (Free)
 

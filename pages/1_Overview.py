@@ -125,6 +125,7 @@ fig_ut = px.line(
     color_discrete_map={"Democrat": "#2E86AB", "Republican": "#A23B72"},
     labels={"party_unity_pct": "Mean Party Unity %", "congress": "Congress"},
 )
+fig_ut.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
 fig_ut.update_layout(height=400, margin=dict(l=40, r=40, t=40, b=40))
 st.plotly_chart(fig_ut, width="stretch")
 
@@ -167,6 +168,7 @@ fig3 = px.line(
     color_discrete_map={"Democrat": "#2E86AB", "Republican": "#A23B72"},
     labels={"nominate_dim1": "Median Dim 1", "congress": "Congress"},
 )
+fig3.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
 fig3.update_layout(height=400, margin=dict(l=40, r=40, t=40, b=40))
 st.plotly_chart(fig3, width="stretch")
 

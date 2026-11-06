@@ -9,21 +9,7 @@ import streamlit as st
 import pandas as pd
 from pathlib import Path
 
-st.markdown("""
-<style>
-    .main-header {
-        font-size: 2.4rem;
-        font-weight: 700;
-        margin-bottom: 0.2rem;
-    }
-    .sub-header {
-        font-size: 1.1rem;
-        opacity: 0.75;
-        margin-bottom: 1.5rem;
-    }
-    footer {visibility: hidden;}
-</style>
-""", unsafe_allow_html=True)
+
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "members_processed.csv"
 
@@ -33,11 +19,8 @@ def load_members():
     return df
 
 def main():
-    st.markdown('<p class="main-header">PartyCohesion</p>', unsafe_allow_html=True)
-    st.markdown(
-        '<p class="sub-header">U.S. Congressional voting patterns and party cohesion — primary data, minimal spin.</p>',
-        unsafe_allow_html=True
-    )
+    st.title("PartyCohesion")
+    st.markdown("U.S. congressional voting patterns and party cohesion. Primary data, minimal spin.")
 
     try:
         df = load_members()
@@ -70,7 +53,7 @@ and where they sit on the primary liberal–conservative dimension of voting beh
 
 - **Overview** — Chamber-level and party-level patterns  
 - **Member Explorer** — Look up any member’s party-unity rate, ideology score, and how they changed across Congresses  
-- **Key Votes** — Party-unity rates by party and the members who break with their party most often  
+- **Key Votes** — Party splits on funding bills, Cabinet confirmations and the biggest party breaks, with every member who broke ranks  
 - **Methodology** — Exact definitions and data sources  
 - **About** — Project purpose and neutrality statement  
 

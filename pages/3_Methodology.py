@@ -32,7 +32,7 @@ st.header("Party Unity Rate")
 st.markdown("""
 The **party unity rate** is the classic measure of how often a member votes with their own party.
 
-1. For every roll call in a Congress and chamber, count only Yea and Nay votes (present and not voting are excluded).
+1. For every roll call in a Congress and chamber, count only actual Yea and Nay floor votes. Present, not voting, and "paired" or "announced" positions are excluded, which matches the official clerk totals.
 2. Find the majority position of Democrats and of Republicans. Roll calls where a party splits exactly 50/50 are excluded.
 3. A **party-unity vote** is a roll call where a majority of Democrats opposed a majority of Republicans.
 4. A member's **party unity %** is the share of the party-unity votes they cast on which they sided with their own party's majority.
@@ -50,6 +50,19 @@ A second, ideology-based measure shows who sits near the center of their party v
 3. Convert the rank into a 0–100 score (100 = closest to the party median; lower scores = further toward the ideological wing).
 
 A member can have a high party unity rate and still sit toward their party's wing. The two measures answer different questions.
+""")
+
+st.header("Key Vote Series")
+st.markdown("""
+The Key Votes page groups high-profile roll calls into series. Each series is chosen by a fixed rule, not by hand:
+
+- **Funding & Appropriations**: final passage votes (including votes to concur in the other chamber's changes) on appropriations bills and continuing resolutions. Procedural rule votes and authorization bills are excluded.
+- **Cabinet Confirmations**: Senate confirmation votes for the heads of the 15 executive departments and the Attorney General. Nominees confirmed by voice vote have no roll call.
+- **Biggest Party Breaks**: in each chamber, the 10 party-unity votes on final passage or nominations where the most Democrats and Republicans combined voted against their own party's majority.
+
+Additional series can be added by listing roll calls in `data/key_votes_custom.csv`. Any such series is labeled as hand-picked.
+
+For every vote, the page shows the Yea–Nay split for each party and lists each Democrat or Republican who voted against their party's majority. If a party splits exactly evenly, it has no majority position and none of its members are counted as breaking with it.
 """)
 
 st.header("What This Site Does *Not* Do")

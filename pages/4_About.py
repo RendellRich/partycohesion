@@ -26,8 +26,7 @@ st.markdown("""
 - The 110th through 119th Congresses  
 - Party unity rates computed from individual roll-call votes, plus DW-NOMINATE ideology scores and a cohesion proxy  
 - Interactive exploration of members and chamber-level patterns  
-
-Future iterations will add selected high-profile vote series.
+- High-profile vote series (funding bills, Cabinet confirmations, biggest party breaks) with every member who broke ranks
 """)
 
 st.header("Independence")

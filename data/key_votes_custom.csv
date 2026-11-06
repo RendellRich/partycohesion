@@ -1,0 +1,5 @@
+# Your hand-picked key votes. Add one row per roll call, then run: python scripts/refresh_data.py
+# series: any group name you want shown on the Key Votes page (e.g. "Signature Legislation")
+# congress: 110-119   chamber: House or Senate   rollnumber: Voteview roll call number (shown on Key Votes)
+# note: optional short neutral description. Do not use the # character in notes.
+series,congress,chamber,rollnumber,note
