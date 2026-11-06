@@ -87,6 +87,12 @@ flip_member_votes = pd.read_csv(DATA / "flip_member_votes.csv")
 debt_list = pd.read_csv(DATA / "flip_debt_limit_votes.csv", comment="#")
 found = (flip_votes["category"] == "Debt limit").sum()
 check(found == len(debt_list), f"only {found} of {len(debt_list)} listed debt limit votes were found in the roll-call data")
+funding_list = pd.read_csv(DATA / "flip_funding_votes.csv", comment="#")
+k = ["category", "congress", "chamber", "rollnumber"]
+missing = funding_list[k].merge(flip_votes[k], on=k, how="left", indicator=True).query("_merge == 'left_only'")
+check(missing.empty, f"{len(missing)} listed full-year funding or disaster aid votes were not found: "
+                     + ", ".join(f"{r.congress}th {r.chamber} {r.rollnumber}" for r in missing.itertuples()))
+check(funding_list["kind"].notna().all(), "flip_funding_votes.csv has rows without a kind")
 for cat, grp in flip_votes.groupby("category"):
     check(grp["president_party"].nunique() == 2, f"{cat}: votes under only one party's president")
 check(flip_member_votes["friendly"].isin([0, 1]).all(), "flip_member_votes has invalid 'friendly' values")
