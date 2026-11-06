@@ -117,3 +117,18 @@ def test_member_voting_record():
     at.toggle(key="me_rec_against").set_value(True).run()
     assert not at.exception
     assert (at.dataframe[0].value["Against party"] == "Yes").all()
+
+
+def test_platform_votes_member_lookup():
+    at = open_page("pages/11_Platform_Votes.py")
+    text = html(at)
+    assert "voted against their own party" in text and "Platform text" in text
+    box = at.selectbox(key="pv_member")
+    box.set_value(option(box, "Susan Collins")).run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert "voted against the Republican platform on" in html(at)
+    at.selectbox(key="pv_cong").set_value(117).run()
+    assert not at.exception, [e.value for e in at.exception]
+    headings = [m.value for m in at.markdown if m.value.startswith("#### ")]
+    assert "#### The PRO Act and right-to-work laws" in headings
+    assert "#### Repealing the Affordable Care Act" not in headings  # a 115th Congress topic

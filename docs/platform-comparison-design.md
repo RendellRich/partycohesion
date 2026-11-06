@@ -1,6 +1,6 @@
 # Comparing votes with what members ran on: design and pilot
 
-**Status:** proposal for review. Nothing here is on the site yet.
+**Status:** built. Decisions A to D were settled on November 6, 2026 (section 5), and the first 14 topics are live on the Platform Votes page (section 6).
 **Date:** November 6, 2026. Data through September 30, 2026.
 
 The goal: show where members voted against what they ran on, without the site taking a side. This document covers which sources can support that, a set of written rules, a two-topic pilot run under those rules, what the pilot taught, and the decisions needed before anything is built.
@@ -35,7 +35,7 @@ Both topics were run under the rules above, using every relevant recorded vote i
 ### Topic A: tariffs (119th Congress, tests the 2024 Republican platform)
 
 - **Republican platform (2024):** supports "baseline Tariffs on Foreign-made goods" and the Trump Reciprocal Trade Act. A vote to keep across-the-board tariffs in place is consistent with it.
-- **Democratic platform (2024):** calls a 10% across-the-board tariff on imports from every country reckless and estimates it would cost families about $1,500 a year. It supports targeted tariffs, for example on China. A vote to end across-the-board tariffs is consistent with it.
+- **Democratic platform (2024):** criticizes sweeping import tariffs as making life more expensive for families. A vote to end across-the-board tariffs is consistent with it. *(An earlier draft of this document described this plank from a secondary source; it was rechecked against the platform text for the build.)*
 
 | Vote | Link | Result | Against their own party's platform |
 |---|---|---|---|
@@ -66,15 +66,45 @@ This is the only Senate roll call in the 117th Congress data whose description m
 3. **Direct tests are rare.** Six tariff votes produced two direct links. The minimum wage produced one, and it was procedural. A credible feature needs roughly 10 to 15 paired topics, which means 20 to 30 topics in all. Each needs the plank found, the votes found, and the link written and reviewed by hand. That's careful research work, not a quick build.
 4. **The results are still informative.** Both topics show the same small groups of members repeatedly voting against their party's platform: Collins, Murkowski, Paul and McConnell on tariffs, and a bloc of Democratic senators on the minimum wage. That's exactly what a reader would want to see, as long as the reasons caveat sits right beside it.
 
-## 5. Decisions needed before building
+## 5. Decisions (settled November 6, 2026)
+
+Ren asked for whichever options gave the most and best data, and the recommended option was used on each: **A** the platform from the election before each vote; **B** procedural votes shown but not counted; **C** topics picked by the written rule (both platforms opposite, at least one direct roll call); **D** Vote Smart not used. The original questions are kept below for the record.
 
 - **A. Which platform applies.** Use the platform from the election before each vote (proposed), or always each party's latest platform (simpler, but it judges 2021 votes against 2024 promises)?
 - **B. Procedural votes.** Leave them out of the headline (proposed), or count them when they're the only vote on the topic, as with the minimum wage, with a label?
 - **C. Starting topic list.** About 10 to 15 pairs, picked by a written rule (proposed: planks that both platforms address in opposite directions and that got at least one direct roll call in the matching Congresses), or a list you choose?
 - **D. Vote Smart.** Skip it (proposed), or add Political Courage Test answers for the minority of members who gave them, labeled as their own answers?
 
+## 6. First topic list (built)
+
+Fourteen topics, 7 from Congresses under Trump and 7 under Biden. Every plank is in `data/platform_topics.csv` and every roll call in `data/platform_votes.csv`; `scripts/validate_data.py` checks that each roll call exists, that each party's platform year follows rule 1, and that most of each party voted the way its listed platform vote says (a guard against a flipped Yea/Nay).
+
+| Congress | Topic | Counted votes | Shown only |
+|---|---|---|---|
+| 115th | Repealing the Affordable Care Act | House 255, Senate 179 | |
+| 115th | The 2017 tax law | House 636 and 698, Senate 303 and 323 | |
+| 116th | $15 federal minimum wage | House 495 | |
+| 116th | Path to citizenship for Dreamers | House 239 | |
+| 116th | Statehood for Washington D.C. | House 821 | |
+| 117th | The PRO Act and right-to-work laws | House 69 | |
+| 117th | A federal law protecting abortion access | House 294 and 807 | Senate 593 and 698 (cloture) |
+| 117th | $15 federal minimum wage | | Senate 74 (budget waiver) |
+| 117th | Path to citizenship for Dreamers | House 90 | |
+| 117th | Banning assault weapons | House 857 | |
+| 117th | Statehood for Washington D.C. | House 131 | |
+| 118th | A wall on the southern border | | House 208 (related: a broad border bill) |
+| 119th | Across-the-board tariffs | Senate 225 and 600 | Senate 160, 594, 598; House 425 (related) |
+| 119th | Making the 2017 tax cuts permanent | House 144 and 189, Senate 372 | |
+
+**Checked and left out** because only one platform takes a position: the Respect for Marriage Act (2022; the 2020 Democratic platform doesn't mention marriage), expanded gun background checks (2019 and 2021; the Republican platform doesn't mention them), the Equality Act (the Republican platform doesn't name it), and the 2019 votes to end the border wall emergency (the 2016 Democratic platform criticizes the wall only as Trump's idea, without its own position).
+
+**How the wording was checked.** Most planks were read in the platform text on The American Presidency Project. Three were confirmed another way, and the data file says so for each: the 2016 Republican call to repeal the Affordable Care Act (quoted in news reports), and the 2020 Democratic planks on citizenship and the border wall (the Democratic Party's own copy of the platform). The 2020 Democratic section on D.C. statehood was confirmed from the platform's table of contents.
+
+**First results** (counted votes): 11 of 400 Democrats and 47 of 469 Republicans voted against their party's platform at least once. More than half of the Republican votes against came on the 2017 tax law and the Affordable Care Act repeal. More of the topics are bills the Democratic platform backs, so the party totals are a description of these votes, not a ranking.
+
 ## Sources
 
-- Platforms: [2024 Republican platform trade section](https://ielp.worldtradelaw.net/2024/07/the-trade-section-of-the-gop-2024-platform/); [2024 Democratic platform tariff language, as excerpted](https://www.protectingtaxpayers.org/election/grading-the-2024-dnc-platform); [2016 Republican platform minimum wage language, as reported](https://www.kcur.org/2018-10-16/supporters-hope-minimum-wage-votes-will-push-democratic-turnout); [2020 Democratic platform $15 minimum wage](https://www.foxbusiness.com/politics/democrats-2020-agenda-biden-harris-working-people-ed-rensi). Before building, each link would cite the official platform PDF and page.
+- Platform texts: The American Presidency Project, [2016 Democratic](https://www.presidency.ucsb.edu/documents/2016-democratic-party-platform), [2016 Republican](https://www.presidency.ucsb.edu/documents/2016-republican-party-platform), [2020 Democratic](https://www.presidency.ucsb.edu/documents/2020-democratic-party-platform), [2024 Democratic](https://www.presidency.ucsb.edu/documents/2024-democratic-party-platform), [2024 Republican](https://www.presidency.ucsb.edu/documents/2024-republican-party-platform). Democratic Party's copy of the 2020 platform: [immigration section](https://democrats.org/?p=1010862). News quote of the 2016 Republican repeal plank: [Medical Economics](https://www.medicaleconomics.com/view/2016-gop-platform-calls-obamacare-repeal-reform-medicare).
+- Platforms as first researched for the pilot: [2024 Republican platform trade section](https://ielp.worldtradelaw.net/2024/07/the-trade-section-of-the-gop-2024-platform/); [2024 Democratic platform tariff language, as excerpted](https://www.protectingtaxpayers.org/election/grading-the-2024-dnc-platform); [2016 Republican platform minimum wage language, as reported](https://www.kcur.org/2018-10-16/supporters-hope-minimum-wage-votes-will-push-democratic-turnout); [2020 Democratic platform $15 minimum wage](https://www.foxbusiness.com/politics/democrats-2020-agenda-biden-harris-working-people-ed-rensi). Before building, each link would cite the official platform PDF and page.
 - Votes: Voteview roll-call records (this site's data), and for H.J.Res. 72, [KPMG summary of the House vote](https://kpmg.com/us/en/taxnewsflash/news/2026/02/tnf-house-passes-joint-resolution-to-terminate-tariffs-on-canada.html).
 - Vote Smart: [2020 Political Courage Test results](https://www.blog.votesmart.org/post/76-of-congressional-candidates-flunk-courage-test); [1992 to 2012 response study](https://votesmart.org/blog-archive/2012/oct/29/candidates-flunk-20-year-study-of-political); [2024 response rate, as reported](https://www.coloradopolitics.com/2026/09/10/should-we-always-blame-voters-for-low-civic-participation-in-elections-guest-column/); [how Vote Smart fills in non-responders](https://justfacts.votesmart.org/candidate/political-courage-test/16553/darrell-issa); [API](https://votesmart.org/share/api).

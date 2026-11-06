@@ -25,6 +25,7 @@ pages = {
     "": [st.Page("pages/0_Home.py", title="Home", icon="🏠", default=True)],
     "Findings": [
         st.Page("pages/7_Position_Flips.py", title="Position Flips", icon="🔄"),
+        st.Page("pages/11_Platform_Votes.py", title="Platform Votes", icon="📜"),
         st.Page("pages/5_Key_Votes.py", title="Key Votes", icon="🗳️"),
         st.Page("pages/8_Ideology_Drift.py", title="Ideology Drift", icon="📈"),
     ],

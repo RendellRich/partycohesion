@@ -122,7 +122,10 @@ def display_name(name: str) -> str:
     last, given = parts[0], parts[1]
     nick = re.search(r"\(([^)]+)\)", given)
     first = nick.group(1) if nick else given.split()[0] if given.split() else ""
-    suffix = f" {parts[2]}" if len(parts) > 2 and parts[2] else ""
+    tail = parts[2] if len(parts) > 2 else ""
+    if tail.lower() in {"ii", "iii", "iv"}:  # Voteview writes "Iii"
+        tail = tail.upper()
+    suffix = f" {tail}" if tail else ""
     return f"{first} {last}{suffix}".strip()
 
 
