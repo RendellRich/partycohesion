@@ -1,2 +1,5 @@
 [theme]
 base = "dark"
+# Pinned so chart backgrounds (chart_utils.BG) always match the page, including in downloaded PNGs.
+backgroundColor = "#171614"
+secondaryBackgroundColor = "#21201d"

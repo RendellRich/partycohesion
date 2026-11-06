@@ -1,5 +1,7 @@
 """Key Votes – party unity rates plus high-profile vote series with party splits and members who broke ranks."""
 
+import textwrap
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -145,7 +147,7 @@ else:
                            color_discrete_map={"Yea": "#8ecae6", "Nay": "#577590"},
                            category_orders={"Party": ["Democrat", "Republican", "Independent"], "Vote": ["Yea", "Nay"]})
             fig_v.update_layout(height=230, margin=dict(l=40, r=40, t=10, b=30), legend_title_text="")
-            show_chart(fig_v, f"{v['label'][:70]} ({v['chamber']}, {v['date']})", f"vote_{v['chamber'].lower()}_{congress}_{int(v['rollnumber'])}", key=f"kv_chart_{name}")
+            show_chart(fig_v, f"{textwrap.shorten(v['label'], 70, placeholder='…')} ({v['chamber']}, {v['date']})", f"vote_{v['chamber'].lower()}_{congress}_{int(v['rollnumber'])}", key=f"kv_chart_{name}")
 
             broke = defectors[(defectors["congress"] == congress) & (defectors["chamber"] == v["chamber"])
                               & (defectors["rollnumber"] == v["rollnumber"])]
