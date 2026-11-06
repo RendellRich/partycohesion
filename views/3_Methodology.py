@@ -84,6 +84,11 @@ party that split exactly evenly has no majority). Searching by bill number, such
 roll call on that bill in both chambers; other searches match words in the bill's official title, and Senate records
 often use the formal title rather than the short name.
 
+Voteview has no description for most House amendment votes. For those, the site uses the House Clerk's official
+record of the roll call, which names the amendment's sponsor (for example "Jackson of Texas Amendment No. 5 to H.R.
+2670"), so they can be found by the sponsor's name. The Clerk's record names the sponsor, not what the amendment did.
+A few dozen votes from late 2007 have no Clerk record online and stay unnamed.
+
 Each member's profile has their full voting record. A vote is flagged **against their party** when they voted Yea or
 Nay and their party's majority voted the other way. Independents are compared with the party they caucus with. This
 counts every roll call where the party took a side, including lopsided and procedural votes, so it is a broader

@@ -160,6 +160,17 @@ check(not links.duplicated(["congress", "chamber", "rollnumber"]).any(), "platfo
 same = links.merge(topics[["topic_id", "congress"]], on="topic_id", suffixes=("", "_topic"))
 check((same["congress"] == same["congress_topic"]).all(), "a platform vote is in a different Congress from its topic")
 
+# House amendment labels from the Clerk: one row per roll call, every row a real House roll call, and nearly every
+# House amendment vote named
+labels = pd.read_csv(DATA / "house_vote_labels.csv")
+check(not labels.duplicated(["congress", "rollnumber"]).any(), "house_vote_labels.csv has a duplicate roll call")
+house = all_votes[all_votes["chamber"] == "House"]
+known = labels.merge(house, on=["congress", "rollnumber"], how="left", indicator=True)
+check((known["_merge"] == "both").all(), "house_vote_labels.csv has a roll call that isn't in all_votes.csv")
+amend = house[house["vote_question"] == "On Agreeing to the Amendment"]
+unnamed = amend["vote_desc"].isna().mean()
+check(unnamed < 0.02, f"{unnamed:.1%} of House amendment votes have no description (expected under 2%)")
+
 # No sudden shrinkage compared with the last committed data
 for name, df in (("data/members_processed.csv", members), ("data/key_votes.csv", key_votes),
                  ("data/all_votes.csv", all_votes)):

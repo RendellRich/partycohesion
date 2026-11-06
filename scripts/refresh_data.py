@@ -24,6 +24,8 @@ import urllib.request
 import pandas as pd
 import numpy as np
 
+from house_vote_labels import apply_labels, fetch_missing
+
 # Paths
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
@@ -310,6 +312,8 @@ def build_key_votes(members: pd.DataFrame) -> None:
     for cong in CONGRESSES:
         for chamber, prefix in CHAMBERS.items():
             rc = pd.read_csv(RAW_DIR / f"{prefix}{cong}_rollcalls.csv")
+            if chamber == "House":  # Voteview leaves most House amendment votes without a description
+                rc = apply_labels(rc.assign(congress=cong, chamber=chamber))
             splits, defectors = vote_splits(cong, chamber, members)
             rc = rc.merge(splits, on="rollnumber", how="inner")
             all_frames.append(rc.assign(congress=cong, chamber=chamber))
@@ -577,6 +581,10 @@ def process() -> None:
 def main() -> None:
     try:
         download_raw()
+        try:
+            fetch_missing()
+        except Exception as e:  # the Clerk's site being down shouldn't stop the refresh
+            print(f"Skipped House Clerk records this time: {e}")
         process()
         print("\nRefresh complete. Commit the updated files in data/ and the app will pick them up.")
     except Exception as e:
