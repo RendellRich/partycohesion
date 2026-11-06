@@ -60,7 +60,8 @@ def member_card(rows: pd.DataFrame, color: str, newest: int) -> None:
     first_c, last_c = int(rows["congress"].min()), int(rows["congress"].max())
     end = "now" if last_c == newest else str(2 * last_c + 1788)
     place = (f"{STATES.get(last['state_abbrev'], last['state_abbrev'])} · {', '.join(sorted(rows['chamber'].unique()))} · "
-             f"{ordinal(first_c)} to {ordinal(last_c)} Congress ({2 * first_c + 1787} to {end})")
+             f"{ordinal(first_c)} to {ordinal(last_c)} Congress ({2 * first_c + 1787} to {end})"
+             + (" · data starts in 2007" if first_c == int(members["congress"].min()) else ""))
     scored = rows.dropna(subset=["party_unity_pct"])
     if scored.empty:
         label, value, note = "Party unity", "None", "No party-line votes scored"

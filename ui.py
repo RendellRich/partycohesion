@@ -139,7 +139,7 @@ def congress_years(first: int, last: int, newest: int) -> str:
 def member_header(name: str, party: str, state: str, chamber: str, first: int, last: int, newest: int) -> None:
     from chart_utils import ordinal
     place = f"{STATES.get(state, state)} · {chamber} · {ordinal(first)} to {ordinal(last)} Congress " \
-            f"({congress_years(first, last, newest)})"
+            f"({congress_years(first, last, newest)})" + (" · data starts in 2007" if int(first) == 110 else "")
     st.markdown(f'<div class="pc-name">{escape(display_name(name))} {party_tag(party)}</div>'
                 f'<div class="pc-place">{escape(place)}</div>', unsafe_allow_html=True)
 

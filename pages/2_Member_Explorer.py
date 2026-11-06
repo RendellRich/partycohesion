@@ -112,8 +112,9 @@ if pick:
     metric_row([
         unity, flip,
         ("Ideology score", f"{ideo:.2f}" if pd.notna(ideo) else "None", "−1 liberal to +1 conservative"),
-        ("In Congress since", str(2 * int(rows["congress"].min()) + 1787),
-         f"{rows['congress'].nunique()} Congress{'es' if rows['congress'].nunique() > 1 else ''}, {chambers}"),
+        ("In this data since", str(2 * int(rows["congress"].min()) + 1787),
+         f"{rows['congress'].nunique()} Congress{'es' if rows['congress'].nunique() > 1 else ''}, {chambers}"
+         + (" (data starts in 2007)" if int(rows["congress"].min()) == int(df["congress"].min()) else "")),
     ])
 
     # Same question, different president
