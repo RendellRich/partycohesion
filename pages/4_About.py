@@ -2,7 +2,6 @@
 
 import streamlit as st
 
-st.set_page_config(page_title="About | PartyCohesion", page_icon="ℹ️", layout="wide")
 
 st.title("About PartyCohesion")
 
@@ -24,10 +23,11 @@ st.markdown("""
 st.header("Current Scope")
 st.markdown("""
 - U.S. House and Senate  
-- Recent Congresses (117–119) with ideology scores and a cohesion proxy  
+- The 110th through 119th Congresses  
+- Party unity rates computed from individual roll-call votes, plus DW-NOMINATE ideology scores and a cohesion proxy  
 - Interactive exploration of members and chamber-level patterns  
 
-Future iterations will add classic party-unity percentages from full roll-call matrices and selected high-profile vote series.
+Future iterations will add selected high-profile vote series.
 """)
 
 st.header("Independence")

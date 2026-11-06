@@ -6,10 +6,10 @@ Neutral, data-first view of U.S. Congressional voting patterns and party cohesio
 
 ## Features
 
-- **Overview** — Ideology distributions, cohesion proxy, and party median trends across Congresses 110–119
-- **Member Explorer** — Search any member, view ideology score + cohesion proxy, see them in context of their party
-- **Key Votes** — Framework for high-profile vote series (structure ready; full roll-call linkage next)
-- **Methodology** — Clear definitions of DW-NOMINATE and the cohesion proxy
+- **Overview** — Party unity rates, ideology distributions, cohesion proxy, and party trends across Congresses 110–119
+- **Member Explorer** — Search any member, view party unity %, ideology score, and their unity rate across every Congress they served in
+- **Key Votes** — 119th Congress party unity by party, members who break with their party most often, and a framework for high-profile vote series
+- **Methodology** — Clear definitions of party unity, DW-NOMINATE, and the cohesion proxy
 - **About** — Project purpose and independence statement
 
 ## Quick Start (Local)
@@ -32,7 +32,7 @@ From the project root:
 python scripts/refresh_data.py
 ```
 
-This downloads the latest Voteview member ideology file and rebuilds `data/members_processed.csv`. Restart the Streamlit app afterward.
+This downloads the latest Voteview member file and the House and Senate roll-call vote files for Congresses 110–119, then rebuilds `data/members_processed.csv` and `data/unity_summary.csv`. Raw downloads are cached in `data/raw/` (git-ignored). Commit the updated CSVs and Streamlit Cloud redeploys automatically.
 
 ## Deploy to Streamlit Community Cloud (Free)
 
@@ -42,7 +42,7 @@ This downloads the latest Voteview member ideology file and rebuilds `data/membe
 4. Select your repository, branch (`main`), and main file path: `app.py`.
 5. Click **Deploy**.
 
-Your app will be live at a URL like `https://partycohesion-xxxx.streamlit.app`.
+The live app is at **https://partycohesion.streamlit.app**.
 
 You can embed it elsewhere by appending `?embed=true` to the URL.
 
@@ -64,7 +64,8 @@ Then follow the Streamlit Cloud steps above.
 ## Data Notes
 
 - **Ideology**: DW-NOMINATE Dimension 1 (negative ≈ more liberal, positive ≈ more conservative).
-- **Cohesion proxy**: Within each Congress + chamber + party, members are ranked by absolute distance from the party median on Dimension 1. Score of 100 = closest to the party median; lower scores = further toward the ideological wing. This is a transparent proxy. Classic party-unity percentages (% of votes with the party majority) will be added when full roll-call matrices are processed.
+- **Party unity %**: For each Congress and chamber, a party-unity vote is a roll call where a majority of voting Democrats opposed a majority of voting Republicans. A member's rate is the share of those votes (Yea/Nay only) on which they sided with their own party's majority. Only Democrats and Republicans are scored.
+- **Cohesion proxy**: Within each Congress + chamber + party, members are ranked by absolute distance from the party median on Dimension 1. Score of 100 = closest to the party median; lower scores = further toward the ideological wing.
 - Coverage: House and Senate, Congresses 110–119.
 
 ## Project Principles

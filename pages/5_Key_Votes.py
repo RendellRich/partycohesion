@@ -5,15 +5,19 @@ import pandas as pd
 import plotly.express as px
 from pathlib import Path
 
-st.set_page_config(page_title="Key Votes | PartyCohesion", page_icon="🗳️", layout="wide")
 
-DATA_PATH = Path(__file__).parent.parent / "data" / "members_processed.csv"
+DATA_DIR = Path(__file__).parent.parent / "data"
 
 @st.cache_data
 def load_members():
-    return pd.read_csv(DATA_PATH)
+    return pd.read_csv(DATA_DIR / "members_processed.csv")
+
+@st.cache_data
+def load_summary():
+    return pd.read_csv(DATA_DIR / "unity_summary.csv")
 
 df = load_members()
+n_unity_votes = int(load_summary().query("congress == 119")["party_unity_votes"].sum())
 
 st.title("Key Votes & Party Unity")
 st.markdown(
@@ -29,7 +33,7 @@ st.subheader("119th Congress — Party Unity Rates")
 st.caption(
     "Party-unity votes are those where a majority of Democrats opposed a majority of Republicans. "
     "The rate is the percentage of times a member voted with their own party’s majority on those votes. "
-    "Computed from Voteview roll-call data (1,314 party-unity votes identified)."
+    f"Computed from Voteview roll-call data ({n_unity_votes:,} party-unity votes identified across both chambers)."
 )
 
 if "party_unity_pct" in current.columns and current["party_unity_pct"].notna().any():
@@ -56,7 +60,7 @@ if "party_unity_pct" in current.columns and current["party_unity_pct"].notna().a
         title="Distribution of Party Unity Rates — 119th Congress",
     )
     fig.update_layout(showlegend=False, height=420, margin=dict(l=40, r=40, t=50, b=40))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.subheader("Members with lower party-unity rates")
     st.caption("These members voted against their party majority more often on party-unity votes.")
@@ -66,7 +70,7 @@ if "party_unity_pct" in current.columns and current["party_unity_pct"].notna().a
         "name": "Name", "chamber": "Chamber", "state_abbrev": "State",
         "party": "Party", "party_unity_pct": "Unity %", "nominate_dim1": "Ideology (Dim 1)"
     })
-    st.dataframe(low, use_container_width=True, hide_index=True, height=360)
+    st.dataframe(low, width="stretch", hide_index=True, height=360)
 else:
     st.info("Party unity percentages for the 119th Congress are being prepared.")
 
