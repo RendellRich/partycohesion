@@ -20,8 +20,8 @@ SERIES_RULES = {
                              "General. Nominees confirmed by voice vote have no roll call and do not appear.",
     "Biggest Party Breaks": "The 10 party-line votes in each chamber (final passage or nomination votes only) where the "
                             "most members voted against their own party's majority.",
-    "Major Legislation": "Hand-picked votes on widely covered bills, listed with their source in "
-                         "data/key_votes_custom.csv.",
+    "Major Legislation": "Hand-picked votes on widely covered bills, listed in data/key_votes_custom.csv. Unlike the "
+                         "other series this list is chosen by hand, and so far it covers only the 119th Congress.",
 }
 
 

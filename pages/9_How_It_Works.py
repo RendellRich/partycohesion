@@ -20,9 +20,9 @@ FRIENDLY = {
     "Disaster aid": ("Emergency spending after hurricanes, fires and floods", "Yea"),
     "War powers limits": ("Resolutions ordering the president to withdraw U.S. forces", "Nay"),
 }
-# The two worked examples are the longest-serving Senate leaders of each party in the data, so the page does not
-# pick a side. Their overall results happen to be close (+37 and +34), which makes the math easy to compare.
-EXAMPLES = {"Chuck Schumer (D-NY)": "Schumer, Charles", "Mitch McConnell (R-KY)": "McConnell, Addison"}
+# The two worked examples are the parties' Senate leaders during the years they led at the same time (2017 to 2024),
+# one from each party, listed alphabetically. Readers can switch to any member.
+EXAMPLES = {"Mitch McConnell (R-KY)": "McConnell, Addison", "Chuck Schumer (D-NY)": "Schumer, Charles"}  # alphabetical
 OTHER = "Choose another member"
 
 
@@ -202,6 +202,8 @@ st.markdown("""
   a changed bill rather than a changed principle. That is why every vote is listed, so you can judge for yourself.
 - **Congress matters too.** The party running each chamber writes these bills, and it isn't always the president's party.
 - **It covers five kinds of votes,** not a member's whole record. It is one lens, not a grade.
+- **Votes are not spread evenly across presidents,** and the party running each chamber moves votes about as much as
+  the president does. Compare members with each other, not the two parties as a whole. See Methodology.
 """)
 st.page_link("pages/7_Position_Flips.py", label="See every member's result on Position Flips →")
 st.page_link("pages/3_Methodology.py", label="Full methodology and data sources →")

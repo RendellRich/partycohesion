@@ -71,17 +71,22 @@ A member needs at least {MIN_VOTES_EACH_SIDE} votes under each party's president
 Nay votes count. Presidents are matched to each vote by its date.
 """)
 
+_counts = votes.groupby("president").agg(n=("date", "size"), first=("date", "min")).sort_values("first")
+by_president = "Across all categories: " + ", ".join(f"{r.n} under {p}" for p, r in _counts.iterrows()) + "."
 with st.expander("Limits of this measure", expanded=False):
-    st.markdown("""
+    st.markdown(f"""
 - **The bills are not identical.** Two debt limit or funding bills can carry different spending cuts, riders, or
   conditions, so a changed vote can reflect a changed bill rather than a changed principle. Each member's votes are
   listed below so you can judge for yourself.
-- **Congress matters too.** Stopgap bills are written by whichever party controls each chamber, which isn't always the
-  president's party.
 - **Debt limit votes are listed by hand** (see the full list at the bottom) because increases often rode on unrelated
   "vehicle" bills. Funding and disaster bills that rode on unrelated vehicle bills are only caught when a White House
   statement names them, so some (such as Biden-era omnibus packages) are missing. Increases passed without a direct roll call (such as the House rule in Oct. 2021) or folded into a
   much larger bill (such as the 2025 reconciliation law) are not included.
+- **Votes are not spread evenly across presidents.** {by_president} Some categories have no votes at all under some
+  presidents, so members who served in different years are scored on different mixes of votes.
+- **Which party runs the chamber matters about as much as the president.** Members cast the president-friendly vote
+  far more often when their own party controls the chamber, under presidents of both parties. Because each party held
+  the majority in different years, compare individual members rather than the two parties as a whole.
 - **Independents are scored with the party they caucus with** (for example, Sanders and King with the Democrats). Those
   who caucus with neither party are not scored.
 """)
@@ -134,6 +139,8 @@ else:
                       legend=dict(orientation="h", y=-0.22, x=0), margin=dict(b=70))
     show_chart(fig, f"Position consistency, {category.lower()}", f"position_flips_{category.lower().replace(' ', '_')}")
 
+    st.caption("Read this chart as a summary of members, not a verdict on either party: the votes are not spread "
+               "evenly across presidents, and the party running each chamber also moves these votes. See Limits above.")
     st.caption("Shift = how much more often a member gave the president room under their own party's president "
                "than under the other party's, in percentage points.")
     # Ties are broken by how many votes back the result, so better-supported patterns come first

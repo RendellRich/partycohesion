@@ -31,7 +31,7 @@ if chamber != "Both":
     filtered = filtered[filtered["chamber"] == chamber]
 
 # Key metrics
-st.subheader(f"{congress}th Congress — {chamber}")
+st.subheader(f"{ordinal(congress)} Congress: {chamber_label(chamber)}")
 
 party_counts = filtered["party"].value_counts()
 dem = filtered[filtered["party"] == "Democrat"]
