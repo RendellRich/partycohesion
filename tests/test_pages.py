@@ -132,3 +132,19 @@ def test_platform_votes_member_lookup():
     headings = [m.value for m in at.markdown if m.value.startswith("#### ")]
     assert "#### The PRO Act and right-to-work laws" in headings
     assert "#### Repealing the Affordable Care Act" not in headings  # a 115th Congress topic
+
+
+def test_platform_record_on_member_and_compare_pages():
+    at = open_page("pages/2_Member_Explorer.py")
+    box = at.selectbox(key="me_member")
+    box.set_value(option(box, "Collins, Susan")).run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert "Votes on their party's platform" in [s.value for s in at.subheader]
+    assert "Against party platform" in html(at) and "Skinny repeal" in html(at)
+    at = open_page("pages/6_Compare.py")
+    for key, name in (("cmp_a", "Collins, Susan"), ("cmp_b", "Murkowski, Lisa")):
+        box = at.selectbox(key=key)
+        box.set_value(option(box, name)).run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert "Votes on their party's platform" in [s.value for s in at.subheader]
+    assert "(against platform)" in html(at)

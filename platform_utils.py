@@ -88,3 +88,22 @@ def member_summary(mv: pd.DataFrame) -> pd.DataFrame:
     g = counted.groupby("icpsr").agg(name=("name", "last"), side=("side", "last"), state_abbrev=("state_abbrev", "last"),
                                      cast=("against", "size"), against=("against", "sum")).reset_index()
     return g.sort_values(["against", "cast"], ascending=[False, False])
+
+
+@st.cache_data
+def all_member_platform_votes() -> pd.DataFrame:
+    """Every member's Yea/Nay votes on the linked roll calls, with the topic and measure names, for the member pages."""
+    members = pd.read_csv(DATA_DIR / "members_processed.csv")
+    topics, links = load_platform()
+    mv = member_platform_votes(links, members)
+    mv = mv.merge(links[["congress", "chamber", "rollnumber", "measure", "date"]],
+                  on=["congress", "chamber", "rollnumber"])
+    return mv.merge(topics[["topic_id", "topic"]], on="topic_id").sort_values(["date", "rollnumber"])
+
+
+def platform_record(icpsr: int) -> tuple[pd.DataFrame, int, int]:
+    """One member's platform votes, plus how many counted votes they cast and how many went against their platform."""
+    mv = all_member_platform_votes()
+    mine = mv[mv["icpsr"] == icpsr]
+    counted = mine[mine["counts"]]
+    return mine, len(counted), int(counted["against"].sum())

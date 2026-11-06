@@ -12,7 +12,8 @@ import streamlit as st
 
 from chart_utils import PAIR_COLORS, ordinal, show_chart
 from flip_utils import add_chamber_control, flip_scores
-from ui import STATES, card, display_name, html_table, inject_css, intro, last_name, metric_card, party_tag, pattern_badge
+from platform_utils import platform_record
+from ui import STATES, card, display_name, fmt_date, html_table, inject_css, intro, last_name, metric_card, party_tag, pattern_badge
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 MATRIX_DIR = DATA_DIR / "matrices"
@@ -205,6 +206,30 @@ if flips["icpsr"].isin([a_id, b_id]).any():
                [["All five types" if c == "All categories" else c, flip_cell(a_id, c), flip_cell(b_id, c)]
                 for c in FLIP_CATEGORIES], raw_cols=(1, 2))
     st.page_link("pages/9_How_It_Works.py", label="How this is measured →")
+
+# ---------------------------------------------------------------------------
+# Platform Votes side by side
+# ---------------------------------------------------------------------------
+a_plat, a_cast, a_against = platform_record(a_id)
+b_plat, b_cast, b_against = platform_record(b_id)
+if a_cast or b_cast:
+    st.subheader("Votes on their party's platform")
+    st.markdown("On topics where the Democratic and Republican platforms take opposite positions, how often each member "
+                "voted against their own party's platform. Counted votes only.")
+    html_table(["Member", "Against their party's platform", "Counted votes cast"],
+               [[nm, str(ag) if c else "None", str(c)] for nm, ag, c in ((a_name, a_against, a_cast),
+                                                                          (b_name, b_against, b_cast))],
+               muted_cols=(2,))
+    both = a_plat[a_plat["counts"]].merge(b_plat[b_plat["counts"]], on=["congress", "chamber", "rollnumber"],
+                                          suffixes=("_a", "_b"))
+    if not both.empty:
+        html_table(["Date", "Vote", a_name, b_name],
+                   [[fmt_date(x.date_a), x.measure_a,
+                     f"{x.vote_a}{' (against platform)' if x.against_a else ''}",
+                     f"{x.vote_b}{' (against platform)' if x.against_b else ''}"]
+                    for x in both.sort_values("date_a", ascending=False).itertuples()], muted_cols=(0,))
+        st.caption("Counted votes both members cast. Each is compared with their own party's platform.")
+    st.page_link("pages/11_Platform_Votes.py", label="See every topic and the rules →")
 
 # ---------------------------------------------------------------------------
 # Party unity side by side
