@@ -1,6 +1,6 @@
 # Comparing votes with what members ran on: design and pilot
 
-**Status:** built. Decisions A to D were settled on November 6, 2026 (section 5), and 29 topics from 2007 to 2026 are on the Platform Votes page (section 6).
+**Status:** built. Decisions A to D were settled on November 6, 2026 (section 5), and 33 topics from 2007 to 2026 are on the Platform Votes page (section 6).
 **Date:** November 6, 2026. Data through September 30, 2026.
 
 The goal: show where members voted against what they ran on, without the site taking a side. This document covers which sources can support that, a set of written rules, a two-topic pilot run under those rules, what the pilot taught, and the decisions needed before anything is built.
@@ -77,7 +77,7 @@ Ren asked for whichever options gave the most and best data, and the recommended
 
 ## 6. Topic list (built)
 
-Twenty-nine topics: 1 from the Bush years, 14 from the Obama years, 7 from the Trump years and 7 from the Biden years. The data starts in 2007, so the Bush years cover only the 110th Congress, which is judged against the 2004 platforms. Rule 5 was applied as "include every topic that qualifies and publish the split" rather than dropping qualifying topics to make the counts even. Every plank is in `data/platform_topics.csv` and every roll call in `data/platform_votes.csv`; `scripts/validate_data.py` checks that each roll call exists, that each party's platform year follows rule 1, and that most of each party voted the way its listed platform vote says (a guard against a flipped Yea/Nay).
+Thirty-three topics: 1 from the Bush years, 14 from the Obama years, 11 from the Trump years and 7 from the Biden years. The data starts in 2007, so the Bush years cover only the 110th Congress, which is judged against the 2004 platforms. Rule 5 was applied as "include every topic that qualifies and publish the split" rather than dropping qualifying topics to make the counts even. Every plank is in `data/platform_topics.csv` and every roll call in `data/platform_votes.csv`; `scripts/validate_data.py` checks that each roll call exists, that each party's platform year follows rule 1, and that most of each party voted the way its listed platform vote says (a guard against a flipped Yea/Nay).
 
 | Congress | Topic | Counted votes | Shown only |
 |---|---|---|---|
@@ -96,7 +96,11 @@ Twenty-nine topics: 1 from the Bush years, 14 from the Obama years, 7 from the T
 | 114th | A nationwide ban on abortion after 20 weeks | House 222 | Senate 268 (cloture) |
 | 114th | Deferred action for Dreamers (DACA) | House 29 | House 28 (related: aimed at the 2014 programs) |
 | 114th | A permanent ban on federal funding for abortion | House 44 | |
-| 115th | Repealing the Affordable Care Act | House 255, Senate 179 | |
+| 115th | Repealing the Affordable Care Act | House 255, Senate 169 and 179 | Senate 168 (budget waiver) |
+| 115th | A permanent ban on federal funding for abortion | House 64 | |
+| 115th | A nationwide ban on abortion after 20 weeks | House 548 | Senate 350 (cloture) |
+| 115th | Net neutrality rules for internet providers | Senate 422 | |
+| 115th | Path to citizenship for Dreamers | | Senate 358 (cloture) |
 | 115th | The 2017 tax law | House 636 and 698, Senate 303 and 323 | |
 | 116th | $15 federal minimum wage | House 495 | |
 | 116th | Path to citizenship for Dreamers | House 239 | |
@@ -115,7 +119,7 @@ Twenty-nine topics: 1 from the Bush years, 14 from the Obama years, 7 from the T
 
 **How the wording was checked.** Most planks were read in the platform text on The American Presidency Project. Four were confirmed another way, and the data file says so for each: the 2004 Republican stem cell plank and the 2016 Republican call to repeal the Affordable Care Act (both quoted in news reports), and the 2020 Democratic planks on citizenship and the border wall (the Democratic Party's own copy of the platform). The 2020 Democratic section on D.C. statehood was confirmed from the platform's table of contents.
 
-**Results** (counted votes, 2007 to 2026): 92 of 606 Democrats and 132 of 684 Republicans voted against their party's platform at least once. The single largest group is the 91 Republican votes for expanding stem cell research funding in 2007. On 16 topics the vote was on a measure the Democratic platform backs, on 11 a measure the Republican platform backs, and on 1 both, so the party totals are a description of these votes, not a ranking.
+**Results** (counted votes, 2007 to 2026): 92 of 607 Democrats and 134 of 684 Republicans voted against their party's platform at least once. The single largest group is the 91 Republican votes for expanding stem cell research funding in 2007. On 18 topics the vote was on a measure the Democratic platform backs, on 13 a measure the Republican platform backs, and on 1 both, so the party totals are a description of these votes, not a ranking.
 
 ## Sources
 

@@ -61,3 +61,10 @@ abortion_funding_113,113,House,669,"No Taxpayer Funding for Abortion Act (H.R. 7
 daca_114,114,House,29,"Amendment to end DACA (to the 2015 homeland security funding bill, H.R. 240)",direct,no,Nay,Yea,
 daca_114,114,House,28,Amendment to block the 2014 deferred action programs (to H.R. 240),related,no,Nay,Yea,"Aimed mainly at the 2014 programs, which came after the 2012 platforms."
 abortion_funding_114,114,House,44,"No Taxpayer Funding for Abortion Act (H.R. 7), House passage",direct,no,Nay,Yea,
+aca_repeal_115,115,Senate,168,"Better Care Reconciliation Act (Senate repeal-and-replace), motion to waive the budget rules",direct,yes,Nay,Yea,Needed 60 votes and failed 43 to 57.
+aca_repeal_115,115,Senate,169,"Repeal-only amendment to H.R. 1628 (repeal most of the law, replace later)",direct,no,Nay,Yea,Failed 45 to 55.
+abortion_funding_115,115,House,64,"No Taxpayer Funding for Abortion Act (H.R. 7), House passage",direct,no,Nay,Yea,
+abortion_20_weeks_115,115,House,548,"Pain-Capable Unborn Child Protection Act (H.R. 36), House passage",direct,no,Nay,Yea,
+abortion_20_weeks_115,115,Senate,350,"Pain-Capable Unborn Child Protection Act (S. 2311), cloture on the motion to proceed",direct,yes,Nay,Yea,A procedural vote to start debate. It needed 60 votes.
+net_neutrality_115,115,Senate,422,Resolution to restore the FCC's net neutrality rules (S.J.Res. 52),direct,no,Yea,Nay,A Yea vote was a vote to keep the 2015 rules. It passed the Senate; the House didn't vote on it.
+dreamers_115,115,Senate,358,"McCain-Coons amendment: path to citizenship for Dreamers, cloture",direct,yes,Yea,Nay,A procedural vote. It needed 60 votes and failed 52 to 47.
