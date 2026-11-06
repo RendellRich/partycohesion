@@ -81,7 +81,7 @@ st.title("Key Votes")
 intro("The highest-profile votes in each Congress, how each party split, and exactly who voted against their own "
       "party. Every series is picked by a published rule.")
 
-f1, f2, _ = st.columns([1, 1, 1])
+f1, f2, _ = st.columns([1.2, 1, 0.8])
 with f1:
     congress = st.selectbox("Congress", sorted(members["congress"].unique(), reverse=True), key="kv_cong",
                             format_func=congress_label)

@@ -148,7 +148,7 @@ if pick:
                         color_discrete_sequence=[ACCENT, MUTED])
         names = {"party_unity_pct": short, "party_avg": f"{compare_party} average, same chamber"}
         fig_h.for_each_trace(lambda t: t.update(name=names.get(t.name, t.name)))
-        fig_h.update_layout(height=340, xaxis=dict(dtick=1))
+        fig_h.update_layout(height=360, xaxis=dict(dtick=1), legend=dict(orientation="h", y=-0.25, x=0))
         show_chart(fig_h, f"Party unity across Congresses: {display_name(member['name'])}",
                    f"party_unity_history_{short.lower().replace(' ', '_')}")
 

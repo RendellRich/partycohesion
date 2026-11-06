@@ -35,6 +35,7 @@ CSS = f"""
 .pc-stat {{ font-size: 2.4rem; font-weight: 700; line-height: 1.2; margin: 6px 0 8px 0; }}
 .pc-body {{ color: {MUTED}; font-size: 1rem; line-height: 1.5; }}
 .pc-metric {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 10px; padding: 14px 16px; height: 100%; }}
+.pc-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 4px 0 16px 0; }}
 .pc-metric-label {{ color: {MUTED}; font-size: 0.85rem; font-weight: 600; }}
 .pc-metric-value {{ font-size: 2rem; line-height: 1.25; margin: 4px 0; }}
 .pc-metric-value.pc-long {{ font-size: 1.35rem; padding: 6px 0 5px 0; }}
@@ -72,18 +73,20 @@ def card(eyebrow: str, stat: str, body: str) -> None:
                 unsafe_allow_html=True)
 
 
-def metric_card(label: str, value: str, note: str = "", border: str | None = None) -> None:
+def metric_html(label: str, value: str, note: str = "") -> str:
     long = " pc-long" if len(value) > 12 else ""
-    style = f' style="border-top: 4px solid {border};"' if border else ""
-    st.markdown(f'<div class="pc-metric"{style}><div class="pc-metric-label">{escape(label)}</div>'
-                f'<div class="pc-metric-value{long}">{escape(value)}</div>'
-                f'<div class="pc-metric-note">{escape(note)}</div></div>', unsafe_allow_html=True)
+    return (f'<div class="pc-metric"><div class="pc-metric-label">{escape(label)}</div>'
+            f'<div class="pc-metric-value{long}">{escape(value)}</div>'
+            f'<div class="pc-metric-note">{escape(note)}</div></div>')
+
+
+def metric_card(label: str, value: str, note: str = "") -> None:
+    st.markdown(metric_html(label, value, note), unsafe_allow_html=True)
 
 
 def metric_row(items: list[tuple[str, str, str]]) -> None:
-    for col, (label, value, note) in zip(st.columns(len(items), gap="small"), items):
-        with col:
-            metric_card(label, value, note)
+    """Cards in a grid that wraps to fewer per row on narrow screens instead of squeezing the numbers."""
+    st.markdown('<div class="pc-grid">' + "".join(metric_html(*i) for i in items) + "</div>", unsafe_allow_html=True)
 
 
 def party_tag(party: str) -> str:

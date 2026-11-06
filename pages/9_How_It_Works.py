@@ -44,7 +44,7 @@ def scale_chart(shift: float | None, name: str) -> go.Figure:
     fig = go.Figure()
     for lo, hi, label in bands:
         fig.add_shape(type="rect", x0=lo, x1=hi, y0=0, y1=1, fillcolor=PATTERN_COLORS[label], line=dict(color=BG, width=2))
-        fig.add_annotation(x=(lo + hi) / 2, y=0.5, text=label.replace(" with the ", "<br>with the "), showarrow=False,
+        fig.add_annotation(x=(lo + hi) / 2, y=0.5, text=label.replace(" with the ", "<br>with the ").replace("Partly ", "Partly<br>"), showarrow=False,
                            font=dict(color="#171614", size=12))
     if shift is not None:
         fig.add_shape(type="line", x0=shift, x1=shift, y0=-0.15, y1=1.15, line=dict(color=ACCENT, width=4))
@@ -128,16 +128,14 @@ show = mine.assign(**{"Matched president-friendly vote": mine["friendly"].map({1
 cols = ["date", "president", "category", "label", "vote", "friendly_vote", "Matched president-friendly vote"]
 names = {"date": "Date", "president": "President", "category": "Type", "label": "Bill", "vote": "Their vote",
          "friendly_vote": "President-friendly vote"}
-left, right = st.columns(2, gap="medium")
-for col, flag, title in [(left, 1, "Own party's president"), (right, 0, "Other party's president")]:
+for flag, title in [(1, "Pile 1: their own party's president"), (0, "Pile 2: the other party's president")]:
     part = show[show["own_president"] == flag]
-    with col:
-        st.markdown(f"**{title}** ({len(part)} votes)")
-        if part.empty:
-            st.caption("No votes in this pile.")
-        else:
-            st.dataframe(part[cols].rename(columns=names), hide_index=True, width="stretch", height=300,
-                         column_config={"Bill": st.column_config.TextColumn(width="medium")})
+    st.markdown(f"**{title}** ({len(part)} vote{'s' if len(part) != 1 else ''})")
+    if part.empty:
+        st.caption("No votes in this pile.")
+    else:
+        st.dataframe(part[cols].rename(columns=names), hide_index=True, width="stretch",
+                     height=min(38 + 35 * len(part), 300), column_config={"Bill": st.column_config.TextColumn(width="large")})
 
 # ---------------------------------------------------------------------------
 # Step 3
