@@ -8,12 +8,15 @@ from chart_utils import show_chart, ordinal
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 NOISE = 0.10  # per-Congress scores move this much from noise alone; smaller changes aren't flagged
+DELEGATE_AREAS = {"DC", "PR", "VI", "GU", "AS", "MP"}
 
 
 @st.cache_data
 def load():
     m = pd.read_csv(DATA_DIR / "members_processed.csv").dropna(subset=["nokken_poole_dim1"])
     m = m[m["party"].isin(["Democrat", "Republican"])]
+    # Delegates (D.C. and territories) vote on few questions, so their scores are mostly noise
+    m = m[~m["state_abbrev"].isin(DELEGATE_AREAS)]
     party_median = (m.groupby(["congress", "chamber", "party"])["nokken_poole_dim1"].median()
                     .rename("party_median").reset_index())
     return m.merge(party_median, on=["congress", "chamber", "party"])
@@ -45,6 +48,7 @@ with st.expander("How to read this page"):
 - **A known quirk:** these scores only see Yea and Nay. A member who votes No because a bill *doesn't go far enough*
   (for example, a libertarian Republican opposing a Republican spending bill) looks like they voted with the other
   party, so their score can drift toward the center even if their views didn't. Read movement alongside the actual votes.
+- Delegates from D.C. and the territories are left out: they vote on few questions, so their scores are mostly noise.
 - Members are compared within the chamber they served in. Someone who moved from the House to the Senate is measured
   over the Congresses in their latest chamber.
 """)
