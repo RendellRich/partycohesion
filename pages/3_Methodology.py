@@ -5,6 +5,15 @@ import streamlit as st
 
 st.title("Methodology & Sources")
 st.markdown("Transparent definitions so anyone can understand (and critique) the numbers.")
+st.page_link("pages/9_How_It_Works.py", label="New here? Start with How We Measure Consistency, a step-by-step example →")
+
+st.header("Data Coverage")
+st.markdown("""
+- **Years:** the 110th Congress (2007) to the present. Votes before 2007 are not included, so a member who served
+  earlier is scored only on votes from 2007 on, and their profile says the data starts in 2007.
+- **Votes counted:** only Yea and Nay floor votes. Present, not voting, and paired or announced positions are left out.
+- **Chambers:** House and Senate. Non-voting delegates appear in member lists but are left out of Ideology Drift.
+""")
 
 st.header("Primary Data Source")
 st.markdown("""
@@ -54,13 +63,15 @@ A member can have a high party unity rate and still sit toward their party's win
 
 st.header("Key Vote Series")
 st.markdown("""
-The Key Votes page groups high-profile roll calls into series. Each series is chosen by a fixed rule, not by hand:
+The Key Votes page groups high-profile roll calls into series. Three series are chosen by a fixed rule:
 
 - **Funding & Appropriations**: final passage votes (including votes to concur in the other chamber's changes) on appropriations bills and continuing resolutions. Procedural rule votes and authorization bills are excluded.
 - **Cabinet Confirmations**: Senate confirmation votes for the heads of the 15 executive departments and the Attorney General. Nominees confirmed by voice vote have no roll call.
 - **Biggest Party Breaks**: in each chamber, the 10 party-unity votes on final passage or nominations where the most Democrats and Republicans combined voted against their own party's majority.
 
-Additional series can be added by listing roll calls in `data/key_votes_custom.csv`. Any such series is labeled as hand-picked.
+A fourth series, **Major Legislation**, is chosen by hand from widely covered bills and listed in
+`data/key_votes_custom.csv`, where anyone can see and question the picks. So far it covers only the 119th Congress.
+It is labeled as hand-picked on the page.
 
 For every vote, the page shows the Yea–Nay split for each party and lists each Democrat or Republican who voted against their party's majority. If a party splits exactly evenly, it has no majority position and none of its members are counted as breaking with it.
 """)
@@ -82,6 +93,8 @@ Position Flips looks at five kinds of votes that come up under presidents of bot
 
 Funding and disaster votes are matched on the vote's description or on the title of a linked White House statement, because these bills often ride on unrelated "vehicle" bills.
 
+A step-by-step example with a real member's votes is on the **How We Measure Consistency** page.
+
 Each vote is matched to the president in office on its date. For every Democrat and Republican, the page compares how often they cast the president-friendly vote when their own party held the White House versus when the other party did. The difference in percentage points is the **shift**. Members need at least 2 votes under each party's president to be labeled. The bills in a category are not identical, so a changed vote can reflect a changed bill; every vote is listed on the page.
 """)
 
@@ -99,6 +112,31 @@ st.markdown("""
 Ideology Drift uses Voteview's Nokken-Poole scores, which estimate each member's position separately for each Congress. A member's movement is compared with their party's median movement over the same Congresses in the same chamber. Changes under 0.10 are treated as noise. Because the scores only see Yea and Nay, a member who votes No for the opposite reason from the other party can appear to move toward the center.
 """)
 
+st.header("Keeping It Neutral")
+st.markdown("""
+**Rules the site follows on every page**
+
+- The same rules, cutoffs and votes apply to every member of both parties. Nothing is adjusted by party.
+- Parties are listed alphabetically (Democrat, then Republican), and paired examples are listed alphabetically by last name.
+- Party colors follow the usual convention (blue, red, gray). Position Flips patterns use shades of one neutral color,
+  so no pattern reads as good or bad, and colors never carry meaning on their own.
+- The worked examples on How We Measure Consistency are the two parties' Senate leaders during the years they led at
+  the same time (McConnell and Schumer, 2017 to 2024), one from each party. Readers can switch to any member.
+- Anything picked by hand (the debt limit list and Major Legislation) is labeled, and the full lists are public.
+- Pages describe what the votes show. They do not call any vote right or wrong.
+
+**Known imbalances in the Position Flips data**
+
+- Votes are not spread evenly across presidents. Of the votes in the five categories, far more fall under Obama and
+  Trump than under Bush or Biden, and some categories (full-year funding, disaster aid) have no Biden-era votes,
+  partly because those bills often passed as unrelated vehicle bills that the rules cannot detect. The current counts
+  are listed on the Position Flips page.
+- Members cast the president-friendly vote far more often when their own party controls the chamber, under presidents
+  of both parties, and that effect is about as large as the president's. Because each party held the House and
+  Senate majorities in different years, the share of each party's members in each pattern is not a fair comparison of
+  the two parties. The site shows members individually for this reason.
+""")
+
 st.header("What This Site Does *Not* Do")
 st.markdown("""
 - It does not assign moral judgments (“good” or “bad” members).
@@ -114,6 +152,8 @@ st.markdown("""
 - Member files and roll-call vote files are re-downloaded from Voteview twice a week by an automatic job (`scripts/refresh_data.py`), which recomputes every number shown here.
 - Before new data is published, `scripts/validate_data.py` checks it (complete chambers, vote totals matching official counts, no sudden drops). If a check fails, nothing is published and a notice appears on the site until a refresh succeeds.
 - Processed data used by the app live in the project repository.
+- Every proposed change to the code runs an automated test suite first: the Position Flips math and cutoffs, the data
+  files, and every page loading and responding to the main interactions. A change that fails the tests is not merged.
 - Code and data processing steps are kept simple and inspectable so others can reproduce the numbers.
 """)
 
