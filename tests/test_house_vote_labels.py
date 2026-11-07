@@ -30,7 +30,8 @@ def test_apply_labels_fills_only_blank_house_rows():
     votes = pd.DataFrame({"congress": [118, 118, 118], "chamber": ["House", "House", "Senate"],
                           "rollnumber": [299, 1, 299], "vote_desc": [None, "Kept as is", None]})
     out = h.apply_labels(votes)
-    assert out.loc[0, "vote_desc"] == "Jackson of Texas Amendment No. 5 to H.R. 2670"
+    # The committed data may add the amendment's purpose after a colon (see house_amendment_purposes.py)
+    assert out.loc[0, "vote_desc"].startswith("Jackson of Texas Amendment No. 5 to H.R. 2670")
     assert out.loc[1, "vote_desc"] == "Kept as is"
     assert pd.isna(out.loc[2, "vote_desc"])  # Senate rows untouched
     assert list(out.columns) == list(votes.columns)
