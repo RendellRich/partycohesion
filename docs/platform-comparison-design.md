@@ -1,6 +1,6 @@
 # Comparing votes with what members ran on: design and pilot
 
-**Status:** built. Decisions A to D were settled on November 6, 2026 (section 5), and 39 topics from 2007 to 2026 are on the Platform Votes page (section 6).
+**Status:** built. Decisions A to D were settled on November 6, 2026 (section 5), and 41 topics from 2007 to 2026 are on the Platform Votes page (section 6).
 **Date:** November 6, 2026. Data through September 30, 2026.
 
 The goal: show where members voted against what they ran on, without the site taking a side. This document covers which sources can support that, a set of written rules, a two-topic pilot run under those rules, what the pilot taught, and the decisions needed before anything is built.
@@ -109,6 +109,7 @@ Thirty-four topics: 1 from the Bush years, 14 from the Obama years, 11 from the 
 | 116th | Path to citizenship for Dreamers | House 239 | |
 | 116th | Statehood for Washington D.C. | House 821 | |
 | 116th | A permanent ban on federal funding for abortion | | Senate 7 (cloture) |
+| 116th | The Paris climate agreement | House 183 | |
 | 117th | The PRO Act and right-to-work laws | House 69 | |
 | 117th | A federal law protecting abortion access | House 294 and 807 | Senate 593 and 698 (cloture) |
 | 117th | $15 federal minimum wage | | Senate 74 (budget waiver) |
@@ -117,7 +118,8 @@ Thirty-four topics: 1 from the Bush years, 14 from the Obama years, 11 from the 
 | 117th | Statehood for Washington D.C. | House 131 | |
 | 117th | Barring family planning grants to clinics that refer for abortion (Title X) | | Senate 668 (motion to proceed) |
 | 118th | A wall on the southern border | | House 208 (related: a broad border bill) |
-| 118th | A permanent ban on federal funding for abortion | | House 299 (related: the Jackson amendment ending Pentagon payment of abortion travel costs) |
+| 118th | A permanent ban on federal funding for abortion | | House 299 and 981 (related: the Jackson and Van Duyne amendments ending Pentagon payment of abortion travel costs) |
+| 118th | The Paris climate agreement | House 476 | House 37 and 68 (related: amendments about the agreement's goals) |
 | 119th | Across-the-board tariffs | Senate 225 and 600 | Senate 160, 594, 598; House 425 (related) |
 | 119th | Making the 2017 tax cuts permanent | House 144 and 189, Senate 372 | |
 
@@ -125,7 +127,7 @@ Thirty-four topics: 1 from the Bush years, 14 from the Obama years, 11 from the 
 
 **How the wording was checked.** Most planks were read in the platform text on The American Presidency Project. Four were confirmed another way, and the data file says so for each: the 2004 Republican stem cell plank and the 2016 Republican call to repeal the Affordable Care Act (both quoted in news reports), and the 2020 Democratic planks on citizenship and the border wall (the Democratic Party's own copy of the platform). The 2020 Democratic section on D.C. statehood was confirmed from the platform's table of contents.
 
-**Results** (counted votes, 2007 to 2026): 92 of 609 Democrats and 134 of 684 Republicans voted against their party's platform at least once. The single largest group is the 91 Republican votes for expanding stem cell research funding in 2007. On 16 topics the vote was on a measure the Democratic platform backs, on 16 a measure the Republican platform backs, and on 1 both, so the party totals are a description of these votes, not a ranking.
+**Results** (counted votes, 2007 to 2026): 92 of 614 Democrats and 135 of 693 Republicans voted against their party's platform at least once. The single largest group is the 91 Republican votes for expanding stem cell research funding in 2007. On 17 topics the vote was on a measure the Democratic platform backs, on 17 a measure the Republican platform backs, and on 1 both, so the party totals are a description of these votes, not a ranking.
 
 ## Sources
 

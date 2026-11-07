@@ -78,3 +78,8 @@ planned_parenthood_115,115,House,98,"Resolution letting states withhold Title X 
 planned_parenthood_115,115,Senate,100,"H.J.Res. 43, motion to proceed",direct,yes,Nay,Yea,A procedural vote to start debate. Vice President Pence broke a 50 to 50 tie.
 planned_parenthood_115,115,Senate,101,"H.J.Res. 43, Senate passage",direct,no,Nay,Yea,Vice President Pence broke a 50 to 50 tie. Signed into law in April 2017.
 title_x_117,117,Senate,668,"Resolution to overturn the 2021 Title X rule that let clinics refer for abortion (S.J.Res. 41), motion to proceed",direct,yes,Nay,Yea,"A procedural vote to start debate. It failed on a 49 to 49 tie, so the 2021 rule stayed in place."
+paris_116,116,House,183,"Climate Action Now Act (H.R. 9), keeping the U.S. in the Paris Agreement, House passage",direct,no,Yea,Nay,The Senate didn't vote on it.
+paris_118,118,House,476,"Gaetz amendment to the 2024 State Department funding bill (H.R. 4665), barring funds to carry out the Paris Agreement",direct,no,Nay,Yea,Passed 219 to 213.
+paris_118,118,House,37,"Blunt Rochester amendment to H.R. 21, saying the bill doesn't undo U.S. commitments under the Paris Agreement",related,no,Yea,Nay,"Shown, not counted: a statement about the bill's meaning, not a vote on the agreement itself."
+paris_118,118,House,68,"Ocasio-Cortez amendment to H.R. 21, limiting oil and gas leasing that conflicts with the Paris goals",related,no,Yea,Nay,"Shown, not counted: about oil and gas leasing, measured against the agreement's goals."
+abortion_funding_118,118,House,981,"Van Duyne amendment to the 2025 defense bill (H.R. 8070), ending Pentagon payment of travel costs for abortions",related,no,Nay,Yea,"Shown, not counted: it covers travel costs for service members, not paying for abortions themselves."
