@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -76,3 +77,41 @@ def test_no_key_does_nothing(monkeypatch, capsys):
     monkeypatch.setattr(sys, "argv", ["house_amendment_purposes.py"])
     hap.main()
     assert "No CONGRESS_API_KEY" in capsys.readouterr().out
+
+
+def _setup_files(tmp_path, monkeypatch):
+    labels = pd.DataFrame([
+        {"congress": 118, "rollnumber": 299, "year": 2023, "clerk_rollnumber": 300, "legis_num": "H R 2670",
+         "amendment_author": "Jackson of Texas Amendment No. 5", "clerk_vote_desc": None},
+        {"congress": 112, "rollnumber": 370, "year": 2011, "clerk_rollnumber": 380, "legis_num": "H R 2112",
+         "amendment_author": "Flake of Arizona Amendment", "clerk_vote_desc": None},
+    ])
+    labels_file, amend_file = tmp_path / "labels.csv", tmp_path / "amendments.csv"
+    labels.to_csv(labels_file, index=False)
+    monkeypatch.setattr(hap, "LABELS_FILE", labels_file)
+    monkeypatch.setattr(hap, "AMENDMENTS_FILE", amend_file)
+    return amend_file
+
+
+def test_time_limit_stops_the_run_and_keeps_progress(tmp_path, monkeypatch):
+    amend_file = _setup_files(tmp_path, monkeypatch)
+    client = hap.Client("key", budget=100, pause=0, minutes=1)
+    client.deadline = 0  # already past the time limit
+    assert hap.run(budget=100, key="key", client=client) == 0
+    assert amend_file.exists()  # still writes what it has
+
+
+def test_progress_is_saved_before_a_run_is_cut_off(tmp_path, monkeypatch):
+    amend_file = _setup_files(tmp_path, monkeypatch)
+    monkeypatch.setattr(hap, "SAVE_EVERY", 1)
+
+    class KilledClient(FakeClient):
+        def get(self, path_or_url, **params):
+            if path_or_url.startswith("/bill/"):  # the job is killed partway through the older records
+                raise KeyboardInterrupt
+            return super().get(path_or_url, **params)
+
+    with pytest.raises(KeyboardInterrupt):
+        hap.run(budget=100, key="key", client=KilledClient())
+    a = pd.read_csv(amend_file, dtype={"hamdt": str})
+    assert list(a["hamdt"]) == ["222"]  # the 2023 match found before the cut-off was kept

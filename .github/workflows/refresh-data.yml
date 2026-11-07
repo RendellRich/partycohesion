@@ -39,8 +39,8 @@ jobs:
         run: python scripts/refresh_data.py
 
       # What each House amendment does, from Congress.gov. Needs the CONGRESS_API_KEY repository secret
-      # (free from api.data.gov); without it this step does nothing. Each run makes at most 4,000 requests
-      # and picks up where the last one stopped, so the first fill takes a few runs. A failure here never
+      # (free from api.data.gov); without it this step does nothing. Each run makes at most 4,000 requests or runs 50 minutes,
+      # whichever comes first, and picks up where the last one stopped, so the first fill takes a few runs. A failure here never
       # stops the refresh.
       - name: Add House amendment purposes
         continue-on-error: true
@@ -48,7 +48,7 @@ jobs:
         env:
           CONGRESS_API_KEY: ${{ secrets.CONGRESS_API_KEY }}
         run: |
-          python scripts/house_amendment_purposes.py --budget 4000
+          python scripts/house_amendment_purposes.py --budget 4000 --minutes 50
           python scripts/house_vote_labels.py
 
       # Stops the run (nothing is committed, and GitHub emails a failure notice) if the
