@@ -38,10 +38,10 @@ jobs:
       - name: Refresh data from Voteview
         run: python scripts/refresh_data.py
 
-      # What each House amendment does, from Congress.gov. Needs the CONGRESS_API_KEY repository secret
-      # (free from api.data.gov); without it this step does nothing. Each run makes at most 4,000 requests or runs 50 minutes,
-      # whichever comes first, and picks up where the last one stopped, so the first fill takes a few runs. A failure here never
-      # stops the refresh.
+      # What each House amendment does. Before 2023 it comes from GovInfo's bill status files (no key needed);
+      # from 2023 on, from Congress.gov, which needs the CONGRESS_API_KEY repository secret (free from api.data.gov).
+      # Each run stops after 4,000 requests or 50 minutes and picks up where the last one stopped. A failure here
+      # never stops the refresh.
       - name: Add House amendment purposes
         continue-on-error: true
         timeout-minutes: 65
