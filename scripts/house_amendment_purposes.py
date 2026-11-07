@@ -14,8 +14,10 @@ goes, so a run that is cut off still keeps what it found.
 
 How a roll call is matched to its amendment:
 - 2023 on (118th Congress and later): Congress.gov's House roll call record names the amendment directly.
-- Before 2023: Congress.gov lists each bill's amendments, and each amendment's actions list the roll calls held on
-  it. Every amendment checked is cached, voted on or not, so nothing is looked up twice.
+- Before 2023: Congress.gov lists each bill's amendments with their purpose and latest action, and the latest action
+  of an amendment that got a roll call usually names it ("... (Roll no. 380)"). Only when a bill still has roll calls
+  left unmatched does the script read the full action history of its remaining amendments, which is slow. Every
+  amendment checked is cached, voted on or not, so nothing is looked up twice.
 
 Usage:
     CONGRESS_API_KEY=... python scripts/house_amendment_purposes.py [--budget 4000] [--minutes 50]
@@ -45,6 +47,8 @@ BILL_TYPES = [("H CON RES", "hconres"), ("H J RES", "hjres"), ("H RES", "hres"),
 FIRST_HOUSE_VOTE_CONGRESS = 118  # Congress.gov's House roll call records start in 2023
 MAX_PURPOSE = 300
 SAVE_EVERY = 100  # write progress after this many new rows
+TIMEOUT = 90  # seconds to wait for one Congress.gov answer
+ROLL_NO = re.compile(r"Roll no\. ?(\d+)", re.IGNORECASE)
 
 
 class OutOfBudget(Exception):
@@ -70,7 +74,8 @@ class Client:
             time.sleep(self.pause)
             try:
                 req = urllib.request.Request(url, headers={"User-Agent": "PartyCohesion data refresh"})
-                with urllib.request.urlopen(req, timeout=30) as resp:
+                # Some Congress.gov endpoints (an amendment's actions) can take over 30 seconds to answer
+                with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
                     return json.loads(resp.read())
             except urllib.error.HTTPError as e:
                 if e.code == 404:
@@ -128,14 +133,25 @@ def recorded_house_votes(client: Client, congress: int, hamdt: str) -> list[tupl
     return found
 
 
-def bill_amendments(client: Client, congress: int, kind: str, number: str) -> list[str]:
-    numbers, url = [], f"/bill/{congress}/{kind}/{number}/amendments"
+def bill_amendments(client: Client, congress: int, kind: str, number: str) -> list[dict]:
+    """A bill's House amendments, each with its number, purpose and latest action, from one list request per 250."""
+    items, url = [], f"/bill/{congress}/{kind}/{number}/amendments"
     while url:
         data = client.get(url, limit=250) or {}
-        numbers += [str(a["number"]) for a in data.get("amendments", [])
-                    if str(a.get("type", "")).upper() == "HAMDT" and a.get("number")]
+        items += [a for a in data.get("amendments", [])
+                  if str(a.get("type", "")).upper() == "HAMDT" and a.get("number")]
         url = (data.get("pagination") or {}).get("next")
-    return numbers
+    return items
+
+
+def latest_roll_call(congress: int, item: dict) -> tuple[int, int] | None:
+    """(session, clerk roll number) named in an amendment's latest action, if it names one."""
+    action = item.get("latestAction") or {}
+    m = ROLL_NO.search(str(action.get("text") or ""))
+    year = str(action.get("actionDate") or "")[:4]
+    if not m or not year.isdigit():
+        return None
+    return int(year) - (2 * congress + 1787) + 1, int(m.group(1))
 
 
 def load_amendments() -> pd.DataFrame:
@@ -191,26 +207,45 @@ def run(budget: int, key: str, minutes: float | None = None, client: Client | No
             checkpoint()
         # Before 2023: list each bill's amendments and find the ones with these roll calls
         older = todo[todo["congress"] < FIRST_HOUSE_VOTE_CONGRESS]
-        wanted = set(zip(older["congress"], older["session"], older["clerk_rollnumber"]))
-        for (cong, legis), _ in older.groupby(["congress", "legis_num"]):
+        for (cong, legis), bill_rolls in older.groupby(["congress", "legis_num"]):
             bp = bill_path(legis)
             if bp is None:
                 continue
-            for hamdt in bill_amendments(client, int(cong), *bp):
-                if (int(cong), hamdt) in checked:
-                    continue
-                votes = [v for v in recorded_house_votes(client, int(cong), hamdt) if (cong, *v) in wanted]
+            cong = int(cong)
+            left = {(int(a), int(b)) for a, b in zip(bill_rolls["session"], bill_rolls["clerk_rollnumber"])}
+
+            def record(item: dict, votes: list[tuple[int, int]]) -> None:
+                nonlocal added
+                hamdt = str(item["number"])
                 if not votes:
                     rows.append({"congress": cong, "hamdt": hamdt, "bill": legis, "session": None,
                                  "clerk_rollnumber": None, "purpose": None})  # checked: no roll call we need
                 else:
-                    purpose = amendment_purpose(client, int(cong), hamdt)
+                    purpose = clean_purpose(item.get("purpose") or item.get("description")) \
+                        or amendment_purpose(client, cong, hamdt)
                     for session, roll in votes:
                         rows.append({"congress": cong, "hamdt": hamdt, "bill": legis, "session": session,
                                      "clerk_rollnumber": roll, "purpose": purpose})
                         added += 1
-                checked.add((int(cong), hamdt))
+                        left.discard((session, roll))
+                checked.add((cong, hamdt))
                 checkpoint()
+
+            # Fast pass: the roll call named in each amendment's latest action
+            slow = []
+            for item in bill_amendments(client, cong, *bp):
+                if (cong, str(item["number"])) in checked:
+                    continue
+                vote = latest_roll_call(cong, item)
+                if vote is None:
+                    slow.append(item)
+                else:
+                    record(item, [vote] if vote in left else [])
+            # Slow pass, only while this bill still has roll calls without a match: read the full action history
+            for item in slow:
+                if not left:
+                    break
+                record(item, [v for v in recorded_house_votes(client, cong, str(item["number"])) if v in left])
     except OutOfBudget:
         print(f"Stopped after {client.used:,} requests (this run's request or time limit, or the hourly limit); "
               "the rest comes next run")
