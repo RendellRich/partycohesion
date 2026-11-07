@@ -61,7 +61,9 @@ def test_run_matches_both_eras_and_feeds_descriptions(tmp_path, monkeypatch):
 
     assert hap.run(budget=100, key="key") == 2
     a = pd.read_csv(amend_file, dtype={"hamdt": str})
-    assert set(a["hamdt"]) == {"222", "500", "501"}  # 501 cached as checked, with no roll call
+    # 500's roll call isn't in its latest action, so its full history was read; once the bill's only roll call
+    # was matched, 501 wasn't needed
+    assert set(a["hamdt"]) == {"222", "500"}
     assert hap.run(budget=100, key="key") == 0  # nothing looked up twice
 
     votes = pd.DataFrame({"congress": [118, 112], "chamber": ["House", "House"], "rollnumber": [299, 370],
@@ -115,3 +117,36 @@ def test_progress_is_saved_before_a_run_is_cut_off(tmp_path, monkeypatch):
         hap.run(budget=100, key="key", client=KilledClient())
     a = pd.read_csv(amend_file, dtype={"hamdt": str})
     assert list(a["hamdt"]) == ["222"]  # the 2023 match found before the cut-off was kept
+
+
+def test_latest_action_matches_without_reading_actions(tmp_path, monkeypatch):
+    amend_file = _setup_files(tmp_path, monkeypatch)
+    listed = {"amendments": [
+        {"number": "500", "type": "HAMDT", "purpose": OLD,
+         "latestAction": {"actionDate": "2011-07-12", "text": "On agreeing to the Flake amendment (A010) Failed by "
+                                                              "recorded vote: 152 - 274 (Roll no. 380)."}},
+        {"number": "501", "type": "HAMDT", "purpose": "Something else",
+         "latestAction": {"actionDate": "2011-07-12", "text": "Amendment agreed to by voice vote."}},
+    ], "pagination": {}}
+    asked = []
+
+    class ListClient(FakeClient):
+        def get(self, path_or_url, **params):
+            asked.append(path_or_url)
+            if path_or_url == "/bill/112/hr/2112/amendments":
+                self.used += 1
+                return listed
+            return super().get(path_or_url, **params)
+
+    assert hap.run(budget=100, key="key", client=ListClient()) == 2
+    assert not any(p.startswith("/amendment/112") for p in asked)  # purpose and roll call came from the list
+    a = pd.read_csv(amend_file, dtype={"hamdt": str})
+    row = a[a["hamdt"] == "500"].iloc[0]
+    assert (row["session"], row["clerk_rollnumber"], row["purpose"]) == (1, 380, "Prohibit funds for the program")
+    assert "501" not in set(a["hamdt"])  # not needed once the bill's roll call was matched, so not cached
+
+
+def test_latest_roll_call():
+    item = {"latestAction": {"actionDate": "2010-03-04", "text": "... Failed by recorded vote: 1 - 2 (Roll no. 99)."}}
+    assert hap.latest_roll_call(111, item) == (2, 99)
+    assert hap.latest_roll_call(111, {"latestAction": {"actionDate": "2010-03-04", "text": "By voice vote."}}) is None
