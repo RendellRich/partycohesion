@@ -61,3 +61,20 @@ abortion_funding_113,113,House,669,"No Taxpayer Funding for Abortion Act (H.R. 7
 daca_114,114,House,29,"Amendment to end DACA (to the 2015 homeland security funding bill, H.R. 240)",direct,no,Nay,Yea,
 daca_114,114,House,28,Amendment to block the 2014 deferred action programs (to H.R. 240),related,no,Nay,Yea,"Aimed mainly at the 2014 programs, which came after the 2012 platforms."
 abortion_funding_114,114,House,44,"No Taxpayer Funding for Abortion Act (H.R. 7), House passage",direct,no,Nay,Yea,
+aca_repeal_115,115,Senate,168,"Better Care Reconciliation Act (Senate repeal-and-replace), motion to waive the budget rules",direct,yes,Nay,Yea,Needed 60 votes and failed 43 to 57.
+aca_repeal_115,115,Senate,169,"Repeal-only amendment to H.R. 1628 (repeal most of the law, replace later)",direct,no,Nay,Yea,Failed 45 to 55.
+abortion_funding_115,115,House,64,"No Taxpayer Funding for Abortion Act (H.R. 7), House passage",direct,no,Nay,Yea,
+abortion_20_weeks_115,115,House,548,"Pain-Capable Unborn Child Protection Act (H.R. 36), House passage",direct,no,Nay,Yea,
+abortion_20_weeks_115,115,Senate,350,"Pain-Capable Unborn Child Protection Act (S. 2311), cloture on the motion to proceed",direct,yes,Nay,Yea,A procedural vote to start debate. It needed 60 votes.
+net_neutrality_115,115,Senate,422,Resolution to restore the FCC's net neutrality rules (S.J.Res. 52),direct,no,Yea,Nay,A Yea vote was a vote to keep the 2015 rules. It passed the Senate; the House didn't vote on it.
+dreamers_115,115,Senate,358,"McCain-Coons amendment: path to citizenship for Dreamers, cloture",direct,yes,Yea,Nay,A procedural vote. It needed 60 votes and failed 52 to 47.
+abortion_funding_118,118,House,299,"Jackson amendment to the 2024 defense bill (H.R. 2670), ending Pentagon payment of travel costs for abortions",related,no,Nay,Yea,"Shown, not counted: it covers travel costs for service members, not paying for abortions themselves. Passed 221 to 213."
+mexico_city_111,111,Senate,19,"Amendment to restore the Mexico City policy (to H.R. 2, children's health insurance)",direct,no,Nay,Yea,Failed 37 to 60. President Obama had lifted the policy a few days earlier.
+mexico_city_111,111,Senate,81,Amendment barring UN Population Fund money from groups that support coercive abortion (to H.R. 1105),related,no,Nay,Yea,"Shown, not counted: it set a condition on UN Population Fund money rather than restoring the Mexico City policy. Failed 39 to 55."
+abortion_funding_116,116,Senate,7,"No Taxpayer Funding for Abortion Act (S. 109), cloture on the motion to proceed",direct,yes,Nay,Yea,A procedural vote to start debate. It needed 60 votes and failed 48 to 47.
+planned_parenthood_114,114,House,503,"Defund Planned Parenthood Act (H.R. 3134), House passage",direct,no,Nay,Yea,Would have stopped federal funding for Planned Parenthood for one year.
+planned_parenthood_114,114,Senate,262,"Bill to stop federal funding of Planned Parenthood (S. 1881), cloture on the motion to proceed",direct,yes,Nay,Yea,A procedural vote to start debate. It needed 60 votes and failed 53 to 46.
+planned_parenthood_115,115,House,98,"Resolution letting states withhold Title X family planning money from Planned Parenthood (H.J.Res. 43), House passage",direct,no,Nay,Yea,Overturned a 2016 rule that barred states from cutting off providers like Planned Parenthood.
+planned_parenthood_115,115,Senate,100,"H.J.Res. 43, motion to proceed",direct,yes,Nay,Yea,A procedural vote to start debate. Vice President Pence broke a 50 to 50 tie.
+planned_parenthood_115,115,Senate,101,"H.J.Res. 43, Senate passage",direct,no,Nay,Yea,Vice President Pence broke a 50 to 50 tie. Signed into law in April 2017.
+title_x_117,117,Senate,668,"Resolution to overturn the 2021 Title X rule that let clinics refer for abortion (S.J.Res. 41), motion to proceed",direct,yes,Nay,Yea,"A procedural vote to start debate. It failed on a 49 to 49 tie, so the 2021 rule stayed in place."
