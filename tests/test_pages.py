@@ -154,3 +154,18 @@ def test_no_legacy_pages_folder():
     """A pages/ folder switches on Streamlit's older automatic navigation, which skips app.py for direct links."""
     assert not (ROOT / "pages").exists()
     assert len(PAGES) >= 12
+
+
+def test_all_votes_platform_column():
+    at = open_page("views/10_All_Votes.py")
+    at.toggle(key="av_plat").set_value(True).run()
+    assert not at.exception, [e.value for e in at.exception]
+    found = at.dataframe[0].value
+    links = pd.read_csv(ROOT / "data" / "platform_votes.csv", comment="#")
+    assert len(found) == len(links) and (found["Platform Topic"] != "").all()
+    assert any("On Platform Votes:" in i.value for i in at.info)  # the picked vote explains its platform link
+    at.toggle(key="av_plat").set_value(False).run()
+    at.text_input(key="av_q").set_value("H.R. 3762").run()
+    found = at.dataframe[0].value
+    assert "Repealing the Affordable Care Act" in set(found["Platform Topic"])
+    assert "" in set(found["Platform Topic"])  # amendment votes on the same bill aren't platform votes
