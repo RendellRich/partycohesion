@@ -109,7 +109,7 @@ Thirty-four topics: 1 from the Bush years, 14 from the Obama years, 11 from the 
 | 116th | Path to citizenship for Dreamers | House 239 | |
 | 116th | Statehood for Washington D.C. | House 821 | |
 | 116th | A permanent ban on federal funding for abortion | | Senate 7 (cloture) |
-| 116th | The Paris climate agreement | House 183 | |
+| 116th | The Paris climate agreement | House 183, 176 and 335 | House 175 (related: a finding that the agreement is a treaty) |
 | 117th | The PRO Act and right-to-work laws | House 69 | |
 | 117th | A federal law protecting abortion access | House 294 and 807 | Senate 593 and 698 (cloture) |
 | 117th | $15 federal minimum wage | | Senate 74 (budget waiver) |
@@ -127,7 +127,7 @@ Thirty-four topics: 1 from the Bush years, 14 from the Obama years, 11 from the 
 
 **How the wording was checked.** Most planks were read in the platform text on The American Presidency Project. Four were confirmed another way, and the data file says so for each: the 2004 Republican stem cell plank and the 2016 Republican call to repeal the Affordable Care Act (both quoted in news reports), and the 2020 Democratic planks on citizenship and the border wall (the Democratic Party's own copy of the platform). The 2020 Democratic section on D.C. statehood was confirmed from the platform's table of contents.
 
-**Results** (counted votes, 2007 to 2026): 92 of 614 Democrats and 135 of 693 Republicans voted against their party's platform at least once. The single largest group is the 91 Republican votes for expanding stem cell research funding in 2007. On 17 topics the vote was on a measure the Democratic platform backs, on 17 a measure the Republican platform backs, and on 1 both, so the party totals are a description of these votes, not a ranking.
+**Results** (counted votes, 2007 to 2026): 92 of 616 Democrats and 137 of 693 Republicans voted against their party's platform at least once. The single largest group is the 91 Republican votes for expanding stem cell research funding in 2007. On 16 topics the vote was on a measure the Democratic platform backs, on 17 a measure the Republican platform backs, and on 2 both, so the party totals are a description of these votes, not a ranking.
 
 ## Sources
 
