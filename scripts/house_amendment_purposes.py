@@ -8,8 +8,9 @@ it. This script finds the Congress.gov amendment behind each House amendment rol
 data/house_amendments.csv. house_vote_labels.apply_labels() then adds the purpose to the description.
 
 Needs a free Congress.gov API key (from https://api.data.gov/signup/) in the CONGRESS_API_KEY environment variable.
-Without one it does nothing. Each run stops after a fixed number of requests and picks up where it left off next
-time, so the first fill is spread over several runs.
+Without one it does nothing. Each run stops after a fixed number of requests or minutes, whichever comes first,
+and picks up where it left off next time, so the first fill is spread over several runs. Progress is saved as it
+goes, so a run that is cut off still keeps what it found.
 
 How a roll call is matched to its amendment:
 - 2023 on (118th Congress and later): Congress.gov's House roll call record names the amendment directly.
@@ -17,7 +18,7 @@ How a roll call is matched to its amendment:
   it. Every amendment checked is cached, voted on or not, so nothing is looked up twice.
 
 Usage:
-    CONGRESS_API_KEY=... python scripts/house_amendment_purposes.py [--budget 4000]
+    CONGRESS_API_KEY=... python scripts/house_amendment_purposes.py [--budget 4000] [--minutes 50]
 """
 
 import argparse
@@ -43,6 +44,7 @@ BILL_TYPES = [("H CON RES", "hconres"), ("H J RES", "hjres"), ("H RES", "hres"),
               ("S CON RES", "sconres"), ("S J RES", "sjres"), ("S RES", "sres"), ("S", "s")]
 FIRST_HOUSE_VOTE_CONGRESS = 118  # Congress.gov's House roll call records start in 2023
 MAX_PURPOSE = 300
+SAVE_EVERY = 100  # write progress after this many new rows
 
 
 class OutOfBudget(Exception):
@@ -50,13 +52,14 @@ class OutOfBudget(Exception):
 
 
 class Client:
-    """Congress.gov API calls, counted against a per-run budget and paced to stay under the hourly limit."""
+    """Congress.gov API calls, counted against a per-run budget and time limit, paced to stay under the hourly limit."""
 
-    def __init__(self, key: str, budget: int, pause: float = 0.8):
+    def __init__(self, key: str, budget: int, pause: float = 0.8, minutes: float | None = None):
         self.key, self.budget, self.pause, self.used = key, budget, pause, 0
+        self.deadline = time.monotonic() + minutes * 60 if minutes else None
 
     def get(self, path_or_url: str, **params) -> dict | None:
-        if self.used >= self.budget:
+        if self.used >= self.budget or (self.deadline is not None and time.monotonic() >= self.deadline):
             raise OutOfBudget
         url = path_or_url if path_or_url.startswith("http") else API + path_or_url
         query = {"format": "json", "api_key": self.key, **params}
@@ -153,13 +156,26 @@ def targets() -> pd.DataFrame:
     return t[keep]
 
 
-def run(budget: int, key: str) -> int:
-    client = Client(key, budget)
+def save(rows: list[dict]) -> None:
+    out = pd.DataFrame(rows, columns=COLUMNS).drop_duplicates(["congress", "hamdt", "session", "clerk_rollnumber"])
+    out.sort_values(["congress", "hamdt"]).to_csv(AMENDMENTS_FILE, index=False)
+
+
+def run(budget: int, key: str, minutes: float | None = None, client: Client | None = None) -> int:
+    client = client or Client(key, budget, minutes=minutes)
     have = load_amendments()
     rows = have.to_dict("records")
     checked = set(zip(have["congress"].astype(int), have["hamdt"].astype(str)))
     todo = targets()
     added = 0
+    saved_at = len(rows)
+
+    def checkpoint() -> None:
+        nonlocal saved_at
+        if len(rows) - saved_at >= SAVE_EVERY:
+            save(rows)
+            saved_at = len(rows)
+
     try:
         # 2023 on: Congress.gov's roll call record names the amendment
         for r in todo[todo["congress"] >= FIRST_HOUSE_VOTE_CONGRESS].itertuples():
@@ -172,6 +188,7 @@ def run(budget: int, key: str) -> int:
                          "clerk_rollnumber": r.clerk_rollnumber,
                          "purpose": amendment_purpose(client, r.congress, hamdt)})
             added += 1
+            checkpoint()
         # Before 2023: list each bill's amendments and find the ones with these roll calls
         older = todo[todo["congress"] < FIRST_HOUSE_VOTE_CONGRESS]
         wanted = set(zip(older["congress"], older["session"], older["clerk_rollnumber"]))
@@ -193,10 +210,11 @@ def run(budget: int, key: str) -> int:
                                      "clerk_rollnumber": roll, "purpose": purpose})
                         added += 1
                 checked.add((int(cong), hamdt))
+                checkpoint()
     except OutOfBudget:
-        print(f"Stopped after {client.used:,} requests (this run's budget or the hourly limit); the rest comes next run")
-    out = pd.DataFrame(rows, columns=COLUMNS).drop_duplicates(["congress", "hamdt", "session", "clerk_rollnumber"])
-    out.sort_values(["congress", "hamdt"]).to_csv(AMENDMENTS_FILE, index=False)
+        print(f"Stopped after {client.used:,} requests (this run's request or time limit, or the hourly limit); "
+              "the rest comes next run")
+    save(rows)
     print(f"Amendment purposes: matched {added:,} roll calls this run ({client.used:,} requests)")
     return added
 
@@ -204,12 +222,13 @@ def run(budget: int, key: str) -> int:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--budget", type=int, default=4000, help="most Congress.gov requests to make this run")
+    parser.add_argument("--minutes", type=float, default=50, help="stop after this many minutes")
     args = parser.parse_args()
     key = os.environ.get("CONGRESS_API_KEY", "").strip()
     if not key:
         print("No CONGRESS_API_KEY set, so amendment purposes were skipped.")
         return
-    run(args.budget, key)
+    run(args.budget, key, minutes=args.minutes)
 
 
 if __name__ == "__main__":
