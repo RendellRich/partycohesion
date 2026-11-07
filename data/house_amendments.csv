@@ -5,9 +5,17 @@ congress,hamdt,bill,session,clerk_rollnumber,purpose
 110,1003,H R 2537,,,
 110,101,H R 1257,1.0,240.0,Insert a complete new text consisting of a section inserting provisions for disclosure of executive compensation
 110,102,H R 1257,1.0,241.0,Insert provisions regarding a deferred compensation exemption
+110,1026,H R 2830,2.0,220.0,"State the findings of Congress that stateless submersible or semi-submersible vessels on international voyages are a serious international problem, facilitate international crimes, and are a threat to the safety and security of the United States. The amendment would make it a federal criminal…"
+110,1027,H R 2830,2.0,221.0,"State that the marine safety provisions of the bill shall not impair the legal authority of the Coast Guard to carry out its homeland security mission, including protecting ports and waterways, stopping human smuggling, and preventing terrorist organizations from attacking the United States"
 110,103,H R 1257,1.0,242.0,Insert conditional implementation provisions
+110,1069,H R 3021,2.0,374.0,"Makin various technical changes in addition to clarifing or adding certain allowable uses of funds, clarifing the Act's green building requirements, and adding certain reporting requirements"
+110,1070,H R 3021,2.0,375.0,Establish a moratorium on using federal funds to purchase carbon offsets with the funding authorized in the bill
+110,1071,H R 3021,2.0,376.0,Allow funding authorized by the bill to be used for renewable energy generation and heating systems in schools
+110,1074,H R 3021,2.0,377.0,"Provide that schools and local educational agencies receiving grants under this bill shall report, if they installed flooring, whether it was (1) low- or no-VOC (Volatile Organic Compounds) flooring, (2) made from sustainable materials, and (3) cost effective"
+110,109,H R 363,1.0,255.0,"Insert a new section providing for a new undergraduate scholarships program for science, technology, engineering and mathematics and known as US-STEM"
 110,1109,H R 1286,,,
 110,1110,H R 1286,2.0,482.0,Require the Secretary to complete and submit to Congress a report on the energy resources included in the Washington-Rochambeau Revolutionary Route National Historic Trail
+110,1142,H R 3999,2.0,528.0,Provide that none of the funds may be used to employ workers in violation of section 274A of the Immigration and Nationality Act
 110,1144,H R 1338,,,
 110,1145,H R 1338,2.0,551.0,Direct the Secretary of Labor to study and report back to Congress within 90 days the effect of the Equal Pay Act amendments contained in the bill (section 3) on employers' ability to recruit and hire employees regardless of gender; the effective date of these amendments is delayed pending the…
 110,1146,H R 1338,2.0,552.0,Delay the effective date of the bill by six months from the time of enactment. The amendment requires the Department of Labor to educate small businesses about what is required under law and assist them with compliance
@@ -16,7 +24,9 @@ congress,hamdt,bill,session,clerk_rollnumber,purpose
 110,1149,H R 1338,,,
 110,115,H R 249,1.0,267.0,Not either increase the Federal deficit or reduce the Federal surplus
 110,116,H R 1429,,,
+110,1168,H R 3667,2.0,581.0,"Amend the bill by requiring that the proposed study analyze any potential impacts on the possession or use of a weapon, trap, or net, including a concealed weapon"
 110,117,H R 1429,1.0,277.0,Allow eight states to coordinate Head Start with state-run early childhood development programs through a demonstration program
+110,1173,H R 3036,2.0,612.0,Clarify that funds issued under the National Capacity Environmental Education Grant Program may be used to address environmental justice issues that may arise in low income communities. The amendment also provides that funds may be used to develop and implement policy approaches to environmental…
 110,118,H R 1429,1.0,278.0,Authorize the Education Secretary to carry out a program to forgive student loans for Head Start and Early Head Start teachers who have earned a bachelor's degree in a field related to early childhood education and who commit to teach in the program for a minimum of 3 years
 110,119,H R 1429,1.0,279.0,Revise the trai ning and technical assistance program for Early Head Start by ensuring that training and technical assistance are provided by entities with specific expertise in infant and toddler development. The amendment also directs 50 percent of training and technical assistance funds…
 110,120,H R 1429,1.0,280.0,"Amend Section 18 of the bill to require that the Secretary certify that at least 50 percent of all Head Start teachers nationwide meet certain degree requirements by September 30, 2011, two years earlier than required under the current legislation"
@@ -239,6 +249,23 @@ congress,hamdt,bill,session,clerk_rollnumber,purpose
 110,348,H R 2641,1.0,524.0,Reduce amounts appropriated in the bill by 1 percent across-the-board
 110,349,H R 2641,1.0,525.0,"Reduce total amounts appropriated in the bill by $1,130,000,000"
 110,350,H R 2641,1.0,526.0,Assure that no funds be made available to designate any geographic area as a national interest electric transmission corridor under the Federal Power Act by the Secretary of Energy
+110,351,H R 2764,1.0,527.0,"Decrease funding for the Department of State, Administration of Foreign Affairs by $36,700,000, and to increase funding for the Economic Support Fund by the same amount in order to address funding for Cuba Democracy assistance programs"
+110,352,H R 2764,1.0,528.0,"Increase funding (by transfer) for assistance programs for Iraq by $158,000,000"
+110,353,H R 2764,1.0,529.0,Provide additional funding (by transfer) for the Iraq Study Group in the amount of $1 million
+110,354,H R 2764,1.0,530.0,Increase funding (by transfer) for anti-terrorism programs by $20 million
+110,355,H R 2764,1.0,531.0,"Reduce the appropriation for contributions to international organizations by $203,082,000"
+110,364,H R 2764,1.0,532.0,Restore the President's emergency plan for AIDS relief authorization provision requiring 33% of HIV/AIDS prevention funding to be spent on abstinence and fidelity promotion program
+110,367,H R 2764,1.0,533.0,"Insert provisions to Section 622 to prevent unintended pregnancies, abortions,and the transmission of sexually transmitted infections, including HIV/AIDS; and to provide that no contract or grant for exclusive purpose of providing donated contraceptives in developing countries shall be denied to…"
+110,368,H R 2764,1.0,534.0,Strike the last proviso in section 622 of the bill regarding the Mexico City policy on family planning assistance
+110,370,H R 2764,1.0,535.0,Strike section 699 from the bill. Section 699 relates to assistance for Egypt
+110,378,H R 2764,1.0,536.0,"Prohibit use of funds for programs at the Western Hemisphere Institute for Security Cooperation located at Fort Benning, Georgia"
+110,382,H R 2764,1.0,537.0,"Reduce appropriations in the bill by $2,956,000,000"
+110,383,H R 2764,1.0,538.0,"Reduce appropriations in the bill by $342,430,000 across-the-board"
+110,384,H R 2764,1.0,539.0,Reduce the total appropriation in the bill (other than for assistance for Israel) by 0.5 percent across-the-board
+110,388,H R 2764,1.0,540.0,"Prohibit funds to provide direct aid to the Palestinian Authority, except as otherwise provided by existing law"
+110,390,H R 2764,1.0,541.0,Prohibit the use of funds for travel by the Speaker of the House of Representatives to countries that are State sponsors of terrorism
+110,393,H R 2771,1.0,545.0,"Reduce funding for the Government Printing Office--Congressional Printing and Binding by $3,200,000"
+110,394,H R 2771,1.0,546.0,Reduce appropri ations in the bill by 4% across the board
 110,395,H R 2643,,,
 110,396,H R 2643,,,
 110,397,H R 2643,,,
@@ -298,6 +325,28 @@ congress,hamdt,bill,session,clerk_rollnumber,purpose
 110,450,H R 2643,,,
 110,451,H R 2643,1.0,575.0,Eliminate funding for the National Endowment for the Arts
 110,452,H R 2643,1.0,576.0,Prohibit use of funds in the bill relating to oil-shale leasing in the States of Utah or Wyoming
+110,457,H R 2829,1.0,584.0,Reduce funding for the General Activites under the General Services Administration by $8 million and increase funding for the Office of Inspector General under the General Services Administration by $6 million
+110,458,H R 2829,1.0,585.0,"Reduce funds for Selective Service System by $10,000,000 and increase funds for the Small Business Administration by $10,000,000"
+110,459,H R 2829,1.0,586.0,Stike section 738 regarding requirement for Public-Private Competition
+110,460,H R 2829,1.0,587.0,Decrease funding (by transfer) regarding the Salaries and Expenses of the Office of Special Counsel by $1 million
+110,463,H R 2829,1.0,588.0,Prohibit funds to be used by the SEC to enforce the requirements of section 404 of the Sarbanes-Oxley Act
+110,466,H R 2829,1.0,589.0,Prohibit the use of funds to be used for the Prevention Works or Whitman-Walker Clinic needle exchange programs
+110,469,H R 2829,1.0,590.0,Prohibit funds for the Grace Johnstown Area Regional Industries Incubator and Workforce Development program
+110,470,H R 2829,1.0,591.0,"Prohibit the use of funds to be used for a project for Barracks Row Main Street, Inc"
+110,471,H R 2829,1.0,592.0,"Prohibit the use of funds for the San Francisco Planning and Urban Research Association, SPUR Urban Center"
+110,472,H R 2829,1.0,593.0,"Prohibit the use of funds to be used for the Mitchell County Development Foundation, Inc. for the Home of the Perfect Christmas Tree Project"
+110,477,H R 2829,1.0,594.0,Prohibit the use of funds for the West Virginia University Research Corporation for renovations of a small business incubator
+110,479,H R 2829,1.0,595.0,Prohibit use of funds for the Abraham Lincoln National Airport Commission
+110,480,H R 2829,1.0,596.0,Prohibit use of funds in the bill for the Office of the Vice President
+110,482,H R 2829,1.0,597.0,Prohibit use of funds for a list of sundry projects contained in the bill
+110,483,H R 2829,1.0,598.0,Limit the use of funds to implement section 5112 of title 31 United States Code
+110,484,H R 2829,1.0,599.0,"Prohibit the use of funds to be used by the Federal Communications Commission to implement the Fairness Doctrine, as repealed in General Fairness Doctrine Obligations of Broadcast Licensees or any other regulations having the same substances"
+110,485,H R 2829,1.0,600.0,Provide that each amount appropriated or otherwise made available by this Act that is not required to be appropriated or otherwise made available by a provision of law is reduced by 8.9 percent
+110,486,H R 2829,1.0,601.0,"Reduce appropriations in the bill by $214,340,000"
+110,488,H R 2829,1.0,602.0,Require that each amount appropriated or othewise made avaiable by this Act is hereby reduced by 0.5 percent
+110,489,H R 2829,1.0,603.0,Prohibit funds to be used to implement or enforce the Health Care Benefits Expansion Act of 1992
+110,490,H R 2829,1.0,604.0,"Prohibit funds to be used by the Internal Revenue Service to implement a Spanish-language version of the ""Where's my Refund?"" service"
+110,492,H R 2669,1.0,611.0,An amendment in the nature of a substitute printed in part B of House Report 110-224 to reduce subsidies in the loan programs an d invests the majority of the savings in the Pell Grant program by providing increases of $350 in 2008 and $100 each year thereafter. It also provides a plan for…
 110,493,H R 1851,,,
 110,494,H R 1851,,,
 110,495,H R 1851,1.0,625.0,"Impose a 7-year time limit on participation in the Section 8 program. The amendment excludes the elderly and disabled from this requirement. In addition, the amendment provides for a hardship exception"
@@ -317,19 +366,85 @@ congress,hamdt,bill,session,clerk_rollnumber,purpose
 110,508,H R 2641,1.0,639.0,"Prohibit use of funds for Nanosys, Inc"
 110,509,H R 2641,1.0,640.0,Prohibit use of funds for each earmark listed in the bill
 110,51,H R 1227,,,
+110,511,H R 3043,1.0,642.0,Increase appropriations for the Employment Standards Administration and reduce appropriations for the Departmental Management account
+110,512,H R 3043,1.0,643.0,Reduce appropriations for the Bureau of Labor Statistics and increase appropriations for education for the disadvantaged
+110,514,H R 3043,1.0,644.0,"Reduce the amount appropriated for the Salaries and Expenses account by $58,419,000"
+110,517,H R 3043,1.0,645.0,Reduce the appropriation (by transfer) for the Salaries and Expenses by $50 million
+110,519,H R 3043,1.0,646.0,Prohibit the use of appropriated funds to be used to carry out a public-private competition or direct conversion under OMB Circular A-76 or any successor
 110,52,H R 1227,1.0,164.0,"Require recipients of rental assistance under the bill to perform 20 hours per week of approved `work activities.' Approved activities include work, preparation to find work, vocational education, community service, and providing child care services. Exemptions are provided for senior citizens,…"
+110,520,H R 3043,1.0,647.0,Increase the appropriation (by transfer) for Health Resources and Services by $12.5 million
+110,522,H R 3043,1.0,648.0,"Redirect $37,200,000 in funding with respect to the Health Resources and Services account"
+110,524,H R 3043,1.0,649.0,"Strike the proviso on page 36, beginning at line 5 which states that within the amounts provided for part A of title XXVI of the Public Health Service Act, funds are included to ensure that the amount of any funding provided under such part to a metropolitan area for the program year beginning in…"
+110,527,H R 3043,1.0,650.0,"Reduce appropriations for the National Institute of Allergy and Infectious Diseases (by transfer), and redirect $125 million to Special Education"
 110,53,H R 1227,1.0,165.0,"Require that, instead of replacing all pre-Katrina public housing units, only the number of public housing units occupied pre-Katrina be replaced"
+110,530,H R 3043,1.0,651.0,Reduce appropriations for Children and Families Services Programs by $8 million
+110,531,H R 3043,1.0,652.0,Reduce appropriations for Children and Families Services Programs by $5 million
+110,536,H R 3043,1.0,653.0,"Reduce appropriations for School Improvement Programs (by transfer), and redirect $21 million to ESEA"
+110,537,H R 3043,1.0,654.0,"Reduce appropriations on Page 80, line 2, by $33,907,000"
+110,538,H R 3043,1.0,655.0,Reduce (by transfer) the Innovation and Improvement account by $10 million
+110,539,H R 3043,1.0,656.0,"Reduce the Innovation and Improvement account by $10,695,000"
 110,54,H R 1227,1.0,170.0,"Extend FEMA housing assistance for evacuees of Hurricanes Katrina, Rita, and Wilma until December 31, 2007 and provide tenant-based rental assistance upon termination of FEMA housing assistance"
 110,54,H R 1227,1.0,166.0,"Extend FEMA housing assistance for evacuees of Hurricanes Katrina, Rita, and Wilma until December 31, 2007 and provide tenant-based rental assistance upon termination of FEMA housing assistance"
+110,540,H R 3043,1.0,657.0,"Reduce the Innovation and Improvement account by $23,533,000"
+110,542,H R 3043,1.0,658.0,Increase (by transfer) for Special Education account by $50 million
+110,543,H R 3043,1.0,659.0,"Reduce Rehabilitation Services and Disability Research account by $2,279,000"
+110,544,H R 3043,1.0,660.0,"Reduce funding for the Student Financial Assistance account by $64,987,000"
+110,548,H R 3043,1.0,661.0,An amendment numbered 17 printed in the Congressional Record reduce appropriations for the Corporation for National and Community Service
+110,549,H R 3043,1.0,662.0,"Strike line 7 and all that follows through the comma on page 104, line 12"
 110,55,H R 1227,1.0,168.0,Strike section 306 of the bill. Section 306 authorizes funds for eligible families to continue receiving voucher assistance after the termination of the Disaster Voucher Program
+110,550,H R 3043,1.0,663.0,Strike a sundry list of projects contained in the bill
+110,552,H R 3043,1.0,664.0,"Prohibit the use of funds to be used for the Exploratorium, San Francisco, California, for its Bay Area Science Teacher Recruitment, Retention, and Improvement Initiative"
+110,553,H R 3043,1.0,665.0,"Prohibit the use of funds be used to pay the basic pay of any individual serving as Deputy Commissioner of Social Security, Social Security Administration, whose appointment to such position has not been confirmed by a vote of the Senate pursuant to section 702(b)(1) of the Social Security Act"
+110,555,H R 3043,1.0,666.0,Prohibit the use of funds for activities under section 241(a) of the Public Health Service Act
+110,559,H R 3043,1.0,667.0,"Prohibit the use of funds for the On Location Entertainment Industry Craft and Technician Training project, West Los Angeles College, Culver City, CA"
 110,56,H R 1227,1.0,169.0,Strike section 103 of the bill. Section 103 eliminates the prohibition of use for match requirement
+110,560,H R 3043,1.0,668.0,"Prohibit the use of funds for the American Ballet Theatre, New York, New York, for educational activities"
+110,561,H R 3043,1.0,669.0,"Prohibit the use of funds for the South Carolina Aquarium, Charleston, South Carolina, for exhibits and curriculum"
+110,562,H R 3043,1.0,670.0,"Prohibit the use of funds for the Kansas Regional Prisons Museum, Lansing, Kansas, for educational and outreach programs"
+110,564,H R 3043,1.0,671.0,"Prohibit the use of funds for the Corporation for Jefferson's Poplar Forest, Forest, Virginia, for expansion of exhibits and outreach"
+110,565,H R 3043,1.0,672.0,"Prohibit funds to be used to pay a bonus or other performance-based cash award to any employee of the Social Security Administration or the Centers for Medicare & Medicaid Services who holds a position to which such employee was appointed by the President, by and with the advice and consent of the…"
 110,57,H R 1227,,,
+110,571,H R 3043,1.0,673.0,"Prohibit use of funds by the SSA to administer Socia Security benefit payments, under any agreement between the United States and Mexico establishing totalization arrangements between the two countries"
+110,572,H R 3043,1.0,674.0,Prohibit use of funds in the bill by the NLRB to recognize as the exclusive bargaining representative of employees any labor organization that has not been certified as such by the NLRB
+110,575,H R 3043,1.0,675.0,"Add a new section prohibiting use of funds to implement any policy prohibiting a Medicare beneficiary from electing during a coverage election period, to receive health care benefits under title XVIII of such Act through enrollment in a Medicare Advantage plan"
+110,580,H R 3043,1.0,676.0,Limit the use of funds for the publication of certain student loan applications
+110,581,H R 3043,1.0,677.0,Limit the use of funds regarding certain Medicare regulations
+110,587,H R 3043,1.0,678.0,"Prohibit the use of funds for the Charles B. Rangel Center for Public Service, City College of New York, NY"
+110,589,H R 3043,1.0,679.0,"Prohibit the use of funds for the American Jazz Museum in Kansas City, Missouri, for exhibits, education programs, and an archival project"
+110,590,H R 3043,1.0,680.0,Provide that each amount appropriated or otherwise made available by this Act that is not required to be appropriated or otherwise made available by a provision of law is hereby reduced by 4.6 percent
+110,591,H R 3043,1.0,681.0,Decrease spending in the bill by 1% across-the board
+110,592,H R 3043,1.0,682.0,Reduce spending amounts in the bill by .5% across-the-board
+110,593,H R 3043,1.0,683.0,Reduce amounts appropriated in the bill by 0.25% across-the-board
+110,594,H R 3043,1.0,684.0,Prohibit use of funds in the bill for Planned Parenthood
+110,598,H R 3074,1.0,691.0,Strike the proviso pertaining to the Highway Trust Fund account
+110,599,H R 3074,1.0,692.0,"Reduce funding (by transfer) for Operating Grants to the National Railroad Passenger Corporation account by $106,000,000"
 110,60,H R 1401,1.0,198.0,"Make technical and clerical changes to H.R. 1401, as reported by the Committee on Homeland Security. It also clarifies the relationship between the Department of Homeland Security and Transportation in carrying out certain portions of the bill, and modifies the whistleblower protections for…"
 110,60,H R 1401,1.0,194.0,"Make technical and clerical changes to H.R. 1401, as reported by the Committee on Homeland Security. It also clarifies the relationship between the Department of Homeland Security and Transportation in carrying out certain portions of the bill, and modifies the whistleblower protections for…"
+110,600,H R 3074,1.0,693.0,Strike the $475 million appropriation for the Operating Grants to the National Railroad Passenger Corporation account
+110,601,H R 3074,1.0,694.0,Reduce the Capital and Debt Service Grants to the National Railroad Passenger Corporation account by $425 million
+110,603,H R 3074,1.0,695.0,Reduce by $330 million the appropriation for Public and Indian Housing account
+110,605,H R 3074,1.0,696.0,Strike the Native Hawaiin Housing Block Grant program
 110,61,H R 1401,,,
+110,612,H R 3074,1.0,697.0,"Limit the use of funds to used to support Amtrak's route with the highest loss, measured by passenger per mile cost as based on the National Railroad Passenger Corporation's September 2006 Financial Performance of Routes Report"
+110,613,H R 3074,1.0,698.0,"Strike the $300,000 appropriation in the bill for the Belmont Complex in Armstrong County, Pennsylvania"
+110,615,H R 3074,1.0,699.0,"Strike the $400,000 appropriation in the bill for the North Central Wisconsin Regional Planning Commission in Wausau, Wisconsin"
+110,616,H R 3074,1.0,700.0,"Strike the $50,000 appropriation in the bill for the National Forest Recreation Association in Woodlake, California"
+110,618,H R 3074,1.0,713.0,Prohibit the use of funds to be used to implement or enforce the requirement under section 12(c) of the United States Housing Act of 1937
 110,62,H R 1401,1.0,199.0,Establish a program to coordinate with state and local governments to enable minimize the need for transportation of toxic inhalation hazardous materials by rail
 110,62,H R 1401,1.0,195.0,Establish a program to coordinate with state and local governments to enable minimize the need for transportation of toxic inhalation hazardous materials by rail
+110,620,H R 3074,1.0,701.0,Limit the use of funds for the Friends of the Cheat Rails to Trails Program
+110,621,H R 3074,1.0,702.0,"Limit the use of funds for the Houston Zoo, in Houston, Texas"
+110,622,H R 3074,1.0,703.0,"Prohibit the use of funds by the Federal Aviation Administration to eliminate, consolidate, de-consolidate, co-locate, execute inter-facility reorganization, or plan for the consolidation/deconsolidation, inter-facility reorganization, or co-location of any FAA air traffic control facility or…"
+110,623,H R 3074,1.0,704.0,Prohibit the use of funds by the Federal Aviation Administration to implement its preferred alternative of the New York/New Jersey/ Philadelphia Airspace Redesign project
+110,626,H R 3074,1.0,705.0,"Prohibit use of funds in the bill for the Edmunds Center for the Arts, City of Edmunds, WA"
+110,627,H R 3074,1.0,706.0,Prohibit use of funds in the bill for parking facilities
 110,63,H R 1401,,,
+110,630,H R 3074,1.0,707.0,An amendment prohibiting the use of funds to participate in a working group pursuant to the Security and Prosperity Partnership
+110,631,H R 3074,1.0,708.0,Reduce the total amount appropriated in this Act by $3.2 billion
+110,632,H R 3074,1.0,709.0,"Reduce appropriations in this Act by $507,767,000"
+110,633,H R 3074,1.0,710.0,"Reduce the total amount appropriated in this Act by $253,690,000"
+110,634,H R 3074,1.0,711.0,Prohibit the use of funds for the mortgage insurance programs under title II of the National Housing Act may be used for any housing trust fund established under title II of the Cranston-Gonzalez National Affordable Housing Act
+110,638,H R 3074,1.0,712.0,"Prohibit the use of funds be used to implement the provisions of subchapter IV of chapter 31 of title 40, United States Code (relating to wage rate requirements; commonly known as the Davis-Bacon Act)"
 110,64,H R 1401,1.0,196.0,"Prohibit funds in this act, except those noted in Section 108, from being used by Amtrak for any of the Top 10 worst revenue losing long-distance routes as noted by its September 2006 monthly performance report. This amendment provides a waiver from this provision should the Secretary deem a route…"
 110,65,H R 1401,,,
 110,66,H R 1401,1.0,197.0,"Strike the section of the bill that provides a new Homeland Security grant program, `Over-The-Road Bus Security Assistance.'"
@@ -357,12 +472,38 @@ congress,hamdt,bill,session,clerk_rollnumber,purpose
 110,717,H R 2419,1.0,754.0,"Comprehensively reform the federal crop insurance program, including the Administration's farm bill crop insurance proposals. The amendment saves approximately $4 billion while adding resources to the Grassland Reserve Program"
 110,72,H R 1538,,,
 110,73,H R 1538,,,
+110,731,H R 3161,1.0,803.0,"Strike language from the bill prohibiting use of funds by the USDA Chief Financial Officer for ""competitive sourcing"" activities until the Secretary of Agriculture submits a report on the Department's contracting out policies and budget"
+110,732,H R 3161,1.0,804.0,"Reduce funds provided in the bill for rural community facilities programs by $6,287,000"
+110,733,H R 3161,1.0,805.0,"Reduce funds in the bill for grants to finance broadband transmission in rural areas by $8,910,000"
+110,734,H R 3161,1.0,806.0,Strike section 726 from the bill relating to importation of prescription drugs
+110,735,H R 3161,1.0,807.0,Prohibit use of funds in the bill to apply labor standards under the Davis-Bacon Act to contracts for construction of renewable energy systems
+110,736,H R 3161,1.0,808.0,Reduce discretionary funding in the bill by 5.5% across-the-board
+110,737,H R 3161,1.0,809.0,"Prohibit use of funds for the Catfish Pathogen Genomic Project in Auburn, Alabama"
+110,738,H R 3161,1.0,810.0,"Prohibit use of funds for grape genetics research in Geneva, NY"
+110,739,H R 3161,1.0,811.0,Prohibit use of funds for the Alternative Uses of Tobacco (MD) grant
 110,74,H R 1538,,,
+110,740,H R 3161,1.0,812.0,"Prohibit use of funds for the Ruminant Nutrition Consortium (MT, ND, SD, and WY)"
+110,741,H R 3161,1.0,813.0,"Prohibit the use of funds for the Wood Utilization (OR,MS,NC,MN,ME,MI,ID,TN,AK,WV) grant"
+110,748,H R 3221,1.0,827.0,"Require electric suppliers, other than governmental entities and rural electric cooperatives, to provide 15 percent of their electricity using renewable energy resources by the year 2020. Allows 4 percent of the requirement to be satisfied with electricity efficiency measures"
 110,75,H R 1538,1.0,207.0,"Require the Secretary of the Department of Defense to develop and implement a plan to help prevent Post-Traumatic Stress Disorder and other stress-related psychopathologies (including substance abuse conditions) from developing in our military service members. In addition, this amendment would…"
 110,75,H R 1538,1.0,206.0,"Require the Secretary of the Department of Defense to develop and implement a plan to help prevent Post-Traumatic Stress Disorder and other stress-related psychopathologies (including substance abuse conditions) from developing in our military service members. In addition, this amendment would…"
+110,751,H R 3221,1.0,828.0,"Repeal the availability of Federal eminent domain authority for use by companies permitted by FERC to construct or modify transmission lines within National Interest Electric Transmission Corridors. In place of this, the amendment would amend section 216(e) of the Federal Power Act to require…"
+110,755,H R 3221,1.0,829.0,Provide a sense of the Congress to recognize and support large and small scale conventional hydropower
 110,76,H R 1538,,,
+110,764,H R 3221,1.0,830.0,"Prohibit any Federal agency, including any office of the legislative branch, from acquiring a light duty motor vehicle or medium duty motor vehicle that is not a low greenhouse gas emitting vehicle"
+110,769,H R 3222,1.0,838.0,Prohibit the uses of funds to be used to perform any cost study pursuant to the provisions of OMB Circular A-76 if the study being performed exceeds a period of 24 months after initiation of such study with respect to a single function activity or 30 months after initiation of such study for a…
 110,77,H R 1538,,,
+110,770,H R 3222,1.0,839.0,Limit the use of funds for the Presidio Trust
+110,772,H R 3222,1.0,840.0,"Revise by reducing the amounts made available under the heading ""RESEARCH, DEVELOPMENT, TEST AND EVALUATION- Research, Development, Test, and Evaluation, Defense-wide"", and increasing the amounts made available under that heading by $97,200,000"
+110,775,H R 3222,1.0,841.0,"Prohibit the use of funds to be used to award a grant or contract based on the race, ethnicity, or sex of the grant applicant or prospective contractor"
+110,776,H R 3222,1.0,842.0,"Prohibit the use of funds under the heading ""Research, Development, Test, and Evaluation, Army"" may be used for the Paint Shield for Protecting People From Microbial Threats"
 110,78,H R 1538,,,
+110,780,H R 3222,1.0,843.0,Prohibit funds to be used for the Doyle Center for Manufacturing Technology
+110,781,H R 3222,1.0,844.0,Prohibit funds to be used for the Lewis Center for Education Research
+110,782,H R 3222,1.0,845.0,"Prohibit funds to be used for the National Drug Intelligence Center, Johnstown, Pennsylvania"
+110,786,H R 2786,1.0,856.0,Strike the section providing housing asstistance for native Hawaiians
+110,787,H R 2786,1.0,857.0,Prohibit use of funds in the bill to employ certain workers under the Immigration and Nationality Act
+110,788,H R 2786,1.0,858.0,Add a new section providing for offsets of spending authorized by the bill
 110,789,H R 1908,1.0,862.0,"Incorporate a number of revisions including revisions to the sections on damages, willful infringement, prior user rights, post-grant review, venue, inequitable conduct, applicant disclosure information and inventor's oath requirements, among others"
 110,79,H R 1538,,,
 110,790,H R 1908,,,
@@ -377,21 +518,40 @@ congress,hamdt,bill,session,clerk_rollnumber,purpose
 110,799,H R 1852,,,
 110,80,H R 1538,,,
 110,800,H R 1852,1.0,874.0,An amendment in the nature of a substitute numbered 7 printed in House Report 110-330 to reform the Federal Housing Administration's (FHA) single-family mortgage insurance activities and would allow FHA to base each borrower's mortgage insurance premiums on the risk that the borrower poses to the…
+110,801,H R 2761,1.0,881.0,"Clarify the certification process for acts of NBCR (nuclear, biological, chemical, or radiological) terrorism; apply the reset mechanism to the NBCR deductible, and provide that the Consumer Price Index will be used to adjust for inflation the dollar amounts used in TRIA. The amendment also makes…"
+110,802,H R 2761,1.0,882.0,"Raise the deductible set at 5% above $1,000,000,000 by 1% each program year, rather than by .5% as the bill is written"
 110,81,H R 1538,,,
+110,810,H R 2881,1.0,889.0,"Require the Administrator of the Federal Aviation Administration to carry out a study on the feasibility of developing a publicly searchable, Internet Web-based resource that provides information regarding the acceptable height and distance that wind turbines may be installed in relation to…"
+110,813,H R 2693,1.0,912.0,Require the Occupational Safety and Health Administration to wait until the National Institute for Occupational Safety and Health (NIOSH) concludes there is sufficient data to support a recommended exposure limit and establishes such recommended exposure limit before issuing a final standard
 110,82,H CON RES 99,1.0,209.0,"An amendment in the nature of a substitute numbered 1 printed in House Report 110-79 to balance the budget in FY 2012, and produce a total cumulative deficit that is $339 billion lower than that of the President's budget. The amendment also funds essential programs and services, especially in the…"
 110,83,H CON RES 99,1.0,210.0,"Balance the budget by FY 2010. It spends $395 billion on defense while projecting complete U.S. military redeployment out of Iraq during 2007. It also projects enactment of the Common Sense Budget Act, which would save at least $60 billion per year on largely obsolete Cold War weapons systems plus…"
 110,84,H CON RES 99,1.0,211.0,"An amendment in the nature of a substitute numbered 3 printed in House Report 110-79 to retain the 2001 and 2003 tax provisions, and provides for one-year extensions of alternative minimum tax [AMT] relief, the State and local sales tax deduction, and the research and experimentation [R&E] tax…"
+110,843,H R 2895,1.0,955.0,"Establish a state minimum allocation percentage, under which every state will receive at least one half of one percent (.5%) of the total funds available each year that are allocated to states, Indian Tribes, and insular areas. Allocations to all other states would be reduced pro rata to bring…"
 110,85,H R 1361,1.0,222.0,"Strike section 211, thereby requiring anyone receiving both a grant and a disaster loan to use the grant to repay the disaster loan thereby preventing the government from compensating the same person twice for the same disaster"
+110,850,H R 2895,1.0,956.0,"Establish a National Affordable Housing Grant Fund program within the HOME program, which is currently administered through the U.S. Department of Housing and Urban Development"
 110,86,H R 1361,1.0,223.0,"An amendment numbered 2 in House Report 110-97 to strike section 210, thereby eliminating the authority of the Administrator of the Small Business Administration to offer grants to certain small businesses that were severely affected by Hurricanes Katrina, Rita, or Wilma but that were denied…"
 110,87,H R 1361,,,
 110,88,H R 1257,,,
 110,89,H R 1257,,,
 110,90,H R 1257,,,
 110,91,H R 1257,,,
+110,919,H R 2768,2.0,5.0,"Provide the mining industry with more time to install a new generation of fire-resistant conveyor belts. The amendment would also provide funds for MSHA to purchase a new generation of dust monitoring devices to limit black lung disease, and ensure that breathable air requirements of the MINER Act…"
 110,92,H R 1257,1.0,236.0,Add a requirement for disclosure of activities to influence votes
+110,920,H R 2768,2.0,6.0,"Authorize $10,000,000 to award grants to provide rehabilitation service s to current and former miners suffering from mental health impairments, including drug addiction and substance abuse issues, which may have been caused or exacerbated by their work as miners"
+110,921,H R 2768,2.0,7.0,"Offer relief to mine operators that have been assessed penalties and pa y them in a timely fashion. It also establishes a trust fund within Treasury, composed of mine safety civil penalties. Funds from the trust fund can be used for mine safety inspections and investigations only"
+110,922,H R 2768,2.0,8.0,"An amendment in the nature of a substitute numbered 4 printed in House Report 110-508 to promote the continued robust implementa tion of the 2006 MINER Act, increases worker safety by providing miners the opportunity to have a voice in mine safety, expands substance abuse programs to all mines to…"
+110,923,H R 3524,2.0,12.0,"Make a number of technical and conforming changes as well as enhancemen ts to the bill, including the following: (1) redefines the scope of the 1 for 1 replacement requirement by requiring the replacement of all units in existence as of January 1, 2005, and provides a limited waiver from the…"
+110,924,H R 3524,2.0,13.0,Apply the one-to-one replacement requirement for units demolished under a HOPE VI grant only to units that are occupied prior to demolition
+110,926,H R 3524,2.0,14.0,Maintain HUD's authority to issue demolition-only grants
+110,928,H R 3524,2.0,15.0,Prevent appropriations for Davis-Bacon wages
+110,929,H R 3524,2.0,16.0,"Substitute the green building requirement, which is part of the mandatory core component of the underlying bill, with a provision that includes green building as part of the mandatory graded section. It also strikes references in the bill to specific green building standards and instead requires…"
 110,93,H R 1257,1.0,237.0,Insert a new paragraph outlining conditions triggering a vote
 110,94,H R 1257,1.0,238.0,Add a new paragraph providing for a majority-elected board exemption
 110,95,H R 1257,1.0,239.0,Insert a new paragraph providing that a shareholder who is casting a permitted vote shall be required to disclose to beneficiaries whether such vote was cast to approve or disapprove compensation
+110,956,H R 3521,2.0,75.0,"HUD for ""stop-loss"" do not have their applications rejected on the basis that the management and related fees they establish pursuant to this bill are not reasonable as defined by HUD. Additionally, the amendment is a restatement of current law with respect to the ineligibility of illegal…"
+110,957,H R 3521,2.0,76.0,"Amendment numbered 2 printed in House Report 110-524 holds HUD re sponsible, in the case of receivership, for performing the same responsibilities that the local housing agencies have in respect to working with tenant associations before building public housing. Additionally, in the case of…"
+110,968,H R 2857,2.0,105.0,"Strike the ""summer of service"" grant program and reduce the authorized amount designated for the program"
+110,969,H R 2857,2.0,106.0,"Add an Energy Conservation Corps, which would seek to address the nation's energy and transportation infrastructure needs while providing work and service opportunities"
 110,970,H CON RES 312,2.0,137.0,"An amendment in the nature of a substitute numbered 1 printed in House Report 110-548 and submitted on behalf of the Congressional Black Caucus, to seek an alternative budget that balances the budget in FY 2012. The CBC budget funds programs and services in the areas of health care, education,…"
 110,971,H CON RES 312,2.0,138.0,"An amendment in the nature of a substitute numbered 2 printed in House Report 110-548 submitted from the Congressional Progressive Caucus to provide at least $551.7 billion for domestic, non-military discretionary spending in FY09; provides a $118.9 billion economic stimulus package; extends…"
 110,972,H CON RES 312,2.0,140.0,"An amendment in the nature of a substitute numbered 3 printed in House Report 110-548 to balance the budget by 2012, retain provisions enacted in 2001/2003, prevent expansion of the AMT for the next 3 years, and achieve full repeal in 2013. Provides total discretionary budget authority of $1.04…"
