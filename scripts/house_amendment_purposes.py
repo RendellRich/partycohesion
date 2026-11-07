@@ -4,23 +4,22 @@ Add what each House amendment does to its roll call's description.
 
 The House Clerk's record (see house_vote_labels.py) names an amendment's sponsor but not its purpose. Congress.gov
 keeps an official record of every House amendment, with a one-line purpose, and links it to the roll calls held on
-it. This script finds the Congress.gov amendment behind each House amendment roll call and stores its purpose in
+it. This script finds the amendment behind each House amendment roll call and stores its purpose in
 data/house_amendments.csv. house_vote_labels.apply_labels() then adds the purpose to the description.
 
-Needs a free Congress.gov API key (from https://api.data.gov/signup/) in the CONGRESS_API_KEY environment variable.
-Without one it does nothing. Each run stops after a fixed number of requests or minutes, whichever comes first,
-and picks up where it left off next time, so the first fill is spread over several runs. Progress is saved as it
-goes, so a run that is cut off still keeps what it found.
-
 How a roll call is matched to its amendment:
-- 2023 on (118th Congress and later): Congress.gov's House roll call record names the amendment directly.
-- Before 2023: Congress.gov lists each bill's amendments with their purpose and latest action, and the latest action
-  of an amendment that got a roll call usually names it ("... (Roll no. 380)"). Only when a bill still has roll calls
-  left unmatched does the script read the full action history of its remaining amendments, which is slow. Every
-  amendment checked is cached, voted on or not, so nothing is looked up twice.
+- Before 2023: GovInfo publishes each bill's full Congress.gov record as one static file (BILLSTATUS XML), with every
+  House amendment, its purpose and the roll calls held on it. One download per bill, no key needed. (Congress.gov's
+  API answers these lookups for older bills very slowly, often not at all.)
+- 2023 on (118th Congress and later): Congress.gov's House roll call record names the amendment directly. This part
+  needs a free Congress.gov API key (from https://api.data.gov/signup/) in the CONGRESS_API_KEY environment variable
+  and is skipped without one.
+
+Each run stops after a fixed number of requests or minutes, whichever comes first, and picks up where it left off
+next time. Progress is saved as it goes, so a run that is cut off still keeps what it found.
 
 Usage:
-    CONGRESS_API_KEY=... python scripts/house_amendment_purposes.py [--budget 4000] [--minutes 50]
+    [CONGRESS_API_KEY=...] python scripts/house_amendment_purposes.py [--budget 4000] [--minutes 50]
 """
 
 import argparse
@@ -32,6 +31,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pandas as pd
@@ -41,13 +41,14 @@ DATA_DIR = ROOT / "data"
 LABELS_FILE = DATA_DIR / "house_vote_labels.csv"
 AMENDMENTS_FILE = DATA_DIR / "house_amendments.csv"
 API = "https://api.congress.gov/v3"
+BILL_STATUS = "https://www.govinfo.gov/bulkdata/BILLSTATUS/{congress}/{kind}/BILLSTATUS-{congress}{kind}{number}.xml"
 COLUMNS = ["congress", "hamdt", "bill", "session", "clerk_rollnumber", "purpose"]
 BILL_TYPES = [("H CON RES", "hconres"), ("H J RES", "hjres"), ("H RES", "hres"), ("H R", "hr"),
               ("S CON RES", "sconres"), ("S J RES", "sjres"), ("S RES", "sres"), ("S", "s")]
 FIRST_HOUSE_VOTE_CONGRESS = 118  # Congress.gov's House roll call records start in 2023
 MAX_PURPOSE = 300
 SAVE_EVERY = 100  # write progress after this many new rows
-TIMEOUT = 90  # seconds to wait for one Congress.gov answer
+TIMEOUT = 90  # seconds to wait for one answer
 ROLL_NO = re.compile(r"Roll no\. ?(\d+)", re.IGNORECASE)
 
 
@@ -62,9 +63,24 @@ class Client:
         self.key, self.budget, self.pause, self.used = key, budget, pause, 0
         self.deadline = time.monotonic() + minutes * 60 if minutes else None
 
-    def get(self, path_or_url: str, **params) -> dict | None:
+    def _check(self) -> None:
         if self.used >= self.budget or (self.deadline is not None and time.monotonic() >= self.deadline):
             raise OutOfBudget
+
+    def get_xml(self, url: str) -> ET.Element | None:
+        """A static XML file (GovInfo bulk data): no key, and a missing file is None."""
+        self._check()
+        self.used += 1
+        time.sleep(min(self.pause, 0.3))
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "PartyCohesion data refresh"})
+            with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+                return ET.fromstring(resp.read())
+        except Exception:
+            return None
+
+    def get(self, path_or_url: str, **params) -> dict | None:
+        self._check()
         url = path_or_url if path_or_url.startswith("http") else API + path_or_url
         query = {"format": "json", "api_key": self.key, **params}
         sep = "&" if "?" in url else "?"
@@ -74,7 +90,6 @@ class Client:
             time.sleep(self.pause)
             try:
                 req = urllib.request.Request(url, headers={"User-Agent": "PartyCohesion data refresh"})
-                # Some Congress.gov endpoints (an amendment's actions) can take over 30 seconds to answer
                 with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
                     return json.loads(resp.read())
             except urllib.error.HTTPError as e:
@@ -120,38 +135,28 @@ def amendment_purpose(client: Client, congress: int, hamdt: str) -> str:
     return clean_purpose(a.get("purpose") or a.get("description"))
 
 
-def recorded_house_votes(client: Client, congress: int, hamdt: str) -> list[tuple[int, int]]:
-    """(session, clerk roll number) of every House roll call on an amendment."""
-    found, url = [], f"/amendment/{congress}/hamdt/{hamdt}/actions"
-    while url:
-        data = client.get(url, limit=250) or {}
-        for action in data.get("actions", []):
-            for v in action.get("recordedVotes", []) or []:
-                if str(v.get("chamber", "")).lower().startswith("house") and v.get("rollNumber"):
-                    found.append((int(v.get("sessionNumber") or 0), int(v["rollNumber"])))
-        url = (data.get("pagination") or {}).get("next")
-    return found
-
-
-def bill_amendments(client: Client, congress: int, kind: str, number: str) -> list[dict]:
-    """A bill's House amendments, each with its number, purpose and latest action, from one list request per 250."""
-    items, url = [], f"/bill/{congress}/{kind}/{number}/amendments"
-    while url:
-        data = client.get(url, limit=250) or {}
-        items += [a for a in data.get("amendments", [])
-                  if str(a.get("type", "")).upper() == "HAMDT" and a.get("number")]
-        url = (data.get("pagination") or {}).get("next")
-    return items
-
-
-def latest_roll_call(congress: int, item: dict) -> tuple[int, int] | None:
-    """(session, clerk roll number) named in an amendment's latest action, if it names one."""
-    action = item.get("latestAction") or {}
-    m = ROLL_NO.search(str(action.get("text") or ""))
-    year = str(action.get("actionDate") or "")[:4]
-    if not m or not year.isdigit():
-        return None
-    return int(year) - (2 * congress + 1787) + 1, int(m.group(1))
+def bill_status_amendments(root: ET.Element) -> list[dict]:
+    """Each House amendment in a GovInfo bill status file: number, purpose and the House roll calls held on it."""
+    out = []
+    for a in root.findall("./bill/amendments/amendment"):
+        if (a.findtext("type") or "").upper() != "HAMDT" or not a.findtext("number"):
+            continue
+        description = a.findtext("description") or ""
+        purpose = clean_purpose(a.findtext("purpose")) or ("" if description.startswith("(See") else
+                                                           clean_purpose(description))
+        votes = set()
+        for v in a.iter("recordedVote"):
+            if (v.findtext("chamber") or "").lower().startswith("house") and (v.findtext("rollNumber") or "").isdigit():
+                votes.add((int(v.findtext("sessionNumber") or 0), int(v.findtext("rollNumber"))))
+        if not votes:  # older files list no recordedVote, only action text ending "(Roll no. 526)."
+            congress = int(a.findtext("congress") or 0)
+            for action in a.iter():
+                m = ROLL_NO.search(action.findtext("text") or "")
+                year = (action.findtext("actionDate") or "")[:4]
+                if m and congress and year.isdigit():
+                    votes.add((int(year) - (2 * congress + 1787) + 1, int(m.group(1))))
+        out.append({"number": a.findtext("number").strip(), "purpose": purpose, "votes": sorted(votes)})
+    return out
 
 
 def load_amendments() -> pd.DataFrame:
@@ -181,7 +186,6 @@ def run(budget: int, key: str, minutes: float | None = None, client: Client | No
     client = client or Client(key, budget, minutes=minutes)
     have = load_amendments()
     rows = have.to_dict("records")
-    checked = set(zip(have["congress"].astype(int), have["hamdt"].astype(str)))
     todo = targets()
     added = 0
     saved_at = len(rows)
@@ -193,19 +197,7 @@ def run(budget: int, key: str, minutes: float | None = None, client: Client | No
             saved_at = len(rows)
 
     try:
-        # 2023 on: Congress.gov's roll call record names the amendment
-        for r in todo[todo["congress"] >= FIRST_HOUSE_VOTE_CONGRESS].itertuples():
-            data = client.get(f"/house-vote/{r.congress}/{r.session}/{r.clerk_rollnumber}") or {}
-            v = data.get("houseRollCallVote") or {}
-            hamdt = str(v.get("amendmentNumber") or "")
-            if str(v.get("amendmentType", "")).upper() != "HAMDT" or not hamdt:
-                continue
-            rows.append({"congress": r.congress, "hamdt": hamdt, "bill": r.legis_num, "session": r.session,
-                         "clerk_rollnumber": r.clerk_rollnumber,
-                         "purpose": amendment_purpose(client, r.congress, hamdt)})
-            added += 1
-            checkpoint()
-        # Before 2023: list each bill's amendments and find the ones with these roll calls
+        # Before 2023: one GovInfo bill status file per bill lists its amendments and their roll calls
         older = todo[todo["congress"] < FIRST_HOUSE_VOTE_CONGRESS]
         for (cong, legis), bill_rolls in older.groupby(["congress", "legis_num"]):
             bp = bill_path(legis)
@@ -213,39 +205,29 @@ def run(budget: int, key: str, minutes: float | None = None, client: Client | No
                 continue
             cong = int(cong)
             left = {(int(a), int(b)) for a, b in zip(bill_rolls["session"], bill_rolls["clerk_rollnumber"])}
-
-            def record(item: dict, votes: list[tuple[int, int]]) -> None:
-                nonlocal added
-                hamdt = str(item["number"])
-                if not votes:
-                    rows.append({"congress": cong, "hamdt": hamdt, "bill": legis, "session": None,
-                                 "clerk_rollnumber": None, "purpose": None})  # checked: no roll call we need
-                else:
-                    purpose = clean_purpose(item.get("purpose") or item.get("description")) \
-                        or amendment_purpose(client, cong, hamdt)
-                    for session, roll in votes:
-                        rows.append({"congress": cong, "hamdt": hamdt, "bill": legis, "session": session,
-                                     "clerk_rollnumber": roll, "purpose": purpose})
-                        added += 1
-                        left.discard((session, roll))
-                checked.add((cong, hamdt))
+            root = client.get_xml(BILL_STATUS.format(congress=cong, kind=bp[0], number=bp[1]))
+            if root is None:
+                continue
+            for item in bill_status_amendments(root):
+                for session, roll in [v for v in item["votes"] if v in left]:
+                    rows.append({"congress": cong, "hamdt": item["number"], "bill": legis, "session": session,
+                                 "clerk_rollnumber": roll, "purpose": item["purpose"]})
+                    left.discard((session, roll))
+                    added += 1
                 checkpoint()
-
-            # Fast pass: the roll call named in each amendment's latest action
-            slow = []
-            for item in bill_amendments(client, cong, *bp):
-                if (cong, str(item["number"])) in checked:
+        # 2023 on: Congress.gov's roll call record names the amendment (needs the API key)
+        if key:
+            for r in todo[todo["congress"] >= FIRST_HOUSE_VOTE_CONGRESS].itertuples():
+                data = client.get(f"/house-vote/{r.congress}/{r.session}/{r.clerk_rollnumber}") or {}
+                v = data.get("houseRollCallVote") or {}
+                hamdt = str(v.get("amendmentNumber") or "")
+                if str(v.get("amendmentType", "")).upper() != "HAMDT" or not hamdt:
                     continue
-                vote = latest_roll_call(cong, item)
-                if vote is None:
-                    slow.append(item)
-                else:
-                    record(item, [vote] if vote in left else [])
-            # Slow pass, only while this bill still has roll calls without a match: read the full action history
-            for item in slow:
-                if not left:
-                    break
-                record(item, [v for v in recorded_house_votes(client, cong, str(item["number"])) if v in left])
+                rows.append({"congress": r.congress, "hamdt": hamdt, "bill": r.legis_num, "session": r.session,
+                             "clerk_rollnumber": r.clerk_rollnumber,
+                             "purpose": amendment_purpose(client, r.congress, hamdt)})
+                added += 1
+                checkpoint()
     except OutOfBudget:
         print(f"Stopped after {client.used:,} requests (this run's request or time limit, or the hourly limit); "
               "the rest comes next run")
@@ -256,13 +238,12 @@ def run(budget: int, key: str, minutes: float | None = None, client: Client | No
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--budget", type=int, default=4000, help="most Congress.gov requests to make this run")
+    parser.add_argument("--budget", type=int, default=4000, help="most requests to make this run")
     parser.add_argument("--minutes", type=float, default=50, help="stop after this many minutes")
     args = parser.parse_args()
     key = os.environ.get("CONGRESS_API_KEY", "").strip()
     if not key:
-        print("No CONGRESS_API_KEY set, so amendment purposes were skipped.")
-        return
+        print("No CONGRESS_API_KEY set, so only amendments before 2023 (from GovInfo) are looked up.")
     run(args.budget, key, minutes=args.minutes)
 
 
