@@ -18,7 +18,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v7
 
@@ -37,6 +37,19 @@ jobs:
 
       - name: Refresh data from Voteview
         run: python scripts/refresh_data.py
+
+      # What each House amendment does, from Congress.gov. Needs the CONGRESS_API_KEY repository secret
+      # (free from api.data.gov); without it this step does nothing. Each run makes at most 4,000 requests
+      # and picks up where the last one stopped, so the first fill takes a few runs. A failure here never
+      # stops the refresh.
+      - name: Add House amendment purposes
+        continue-on-error: true
+        timeout-minutes: 65
+        env:
+          CONGRESS_API_KEY: ${{ secrets.CONGRESS_API_KEY }}
+        run: |
+          python scripts/house_amendment_purposes.py --budget 4000
+          python scripts/house_vote_labels.py
 
       # Stops the run (nothing is committed, and GitHub emails a failure notice) if the
       # new data looks incomplete or wrong.
