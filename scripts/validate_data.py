@@ -188,6 +188,17 @@ n_rolls = all_votes.groupby(["congress", "chamber"]).size().rename("rolls")
 both = pd.concat([held, n_rolls], axis=1).dropna()
 check((both["most"] <= both["rolls"]).all(), "a member is listed on more roll calls than the chamber held")
 
+# Campaign statements and votes: every hand-coded stance has a row, with a clear side and a real roll call
+if (DATA / "campaign_statement_votes.csv").exists():
+    cs = pd.read_csv(DATA / "campaign_statement_votes.csv")
+    st_codes = pd.read_csv(DATA / "campaign_stances.csv", comment="#")
+    check(cs["stance"].isin(["Supports", "Opposes"]).all(), "campaign_statement_votes.csv has a stance other than Supports or Opposes")
+    check(cs["statement"].fillna("").str.len().gt(0).all(), "campaign_statement_votes.csv has a row with no campaign text")
+    check(not cs.duplicated(["topic_id", "bioguide_id", "congress", "rollnumber"]).any(), "campaign_statement_votes.csv lists a member twice for one vote")
+    check(len(cs) == len(st_codes), f"campaign_statement_votes.csv has {len(cs)} rows for {len(st_codes)} coded stances")
+    known = cs.merge(all_votes[["congress", "chamber", "rollnumber"]], how="left", indicator=True)
+    check((known["_merge"] == "both").all(), "campaign_statement_votes.csv has a roll call that isn't in all_votes.csv")
+
 # Cosponsored, then voted no
 if (DATA / "cosponsor_votes.csv").exists():
     cv = pd.read_csv(DATA / "cosponsor_votes.csv")
