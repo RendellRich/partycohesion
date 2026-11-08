@@ -178,6 +178,16 @@ if (DATA / "house_amendments.csv").exists():
     check(not matched.duplicated(["congress", "session", "clerk_rollnumber"]).any(),
           "house_amendments.csv matches one roll call to more than one amendment")
 
+# Missed votes: one row per member, Congress and chamber; counts that fit inside the roll calls held
+missed = pd.read_csv(DATA / "missed_votes.csv")
+check(not missed.duplicated(["congress", "chamber", "icpsr"]).any(), "missed_votes.csv has a duplicate member row")
+check(len(missed) >= 0.98 * len(members), f"missed_votes.csv covers only {len(missed):,} of {len(members):,} member rows")
+check(((missed["missed"] + missed["present"]) <= missed["eligible"]).all(), "missed_votes.csv counts exceed roll calls held")
+held = missed.groupby(["congress", "chamber"])["eligible"].max().rename("most")
+n_rolls = all_votes.groupby(["congress", "chamber"]).size().rename("rolls")
+both = pd.concat([held, n_rolls], axis=1).dropna()
+check((both["most"] <= both["rolls"]).all(), "a member is listed on more roll calls than the chamber held")
+
 # No sudden shrinkage compared with the last committed data
 for name, df in (("data/members_processed.csv", members), ("data/key_votes.csv", key_votes),
                  ("data/all_votes.csv", all_votes)):

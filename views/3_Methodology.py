@@ -93,6 +93,11 @@ records as one file per bill. From 2023 on, Congress.gov's own record of each Ho
 Nearly every House amendment vote has a purpose. The exceptions are a few dozen votes from late 2007 with no Clerk
 record online, which stay unnamed, and one 2009 vote missing from its bill's file.
 
+**Missed votes.** Each member's profile and the Members table count the roll calls held while the member served on
+which they cast no Yea, Nay or Present vote (Voteview's "not voting" record). Votes held before a member took office or
+after they left are not counted against them. The record doesn't say why a vote was missed: common reasons include
+illness, a family emergency or new child, running for another office, and the last months before leaving Congress.
+
 Each member's profile has their full voting record. A vote is flagged **against their party** when they voted Yea or
 Nay and their party's majority voted the other way. Independents are compared with the party they caucus with. This
 counts every roll call where the party took a side, including lopsided and procedural votes, so it is a broader

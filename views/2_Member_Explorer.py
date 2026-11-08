@@ -26,6 +26,19 @@ def load_members():
 
 
 @st.cache_data
+def load_missed():
+    """Roll calls held while each member served, and how many they did not vote on (see Methodology)."""
+    m = pd.read_csv(DATA_DIR / "missed_votes.csv")
+    m["missed_pct"] = (100 * m["missed"] / m["eligible"]).round(1)
+    return m
+
+
+MISSED_NOTE = ("A missed vote is a roll call held while the member served on which they cast no vote. The record "
+               "doesn't say why. Common reasons include illness, a family emergency or new child, running for another "
+               "office, and the last months before leaving Congress.")
+
+
+@st.cache_data
 def load_flips():
     return add_chamber_control(pd.read_csv(DATA_DIR / "flip_member_votes.csv"), load_members())
 
@@ -165,6 +178,21 @@ if pick:
                    "reasons a roll call can't show. Procedural and related votes are shown but not counted.")
         st.page_link("views/11_Platform_Votes.py", label="See every topic and the rules →")
 
+    # Missed votes
+    missed_all = load_missed()
+    mine_missed = missed_all[missed_all["icpsr"] == icpsr].sort_values(["congress", "chamber"], ascending=[False, True])
+    if not mine_missed.empty:
+        st.subheader("Missed votes")
+        medians = missed_all.groupby(["congress", "chamber"])["missed_pct"].median()
+        tot_missed, tot_held = int(mine_missed["missed"].sum()), int(mine_missed["eligible"].sum())
+        st.markdown(f"{short} missed **{tot_missed:,} of {tot_held:,}** roll calls held while they served "
+                    f"({100 * tot_missed / tot_held:.1f}%) since 2007.")
+        html_table(["Congress", "Chamber", "Missed", "Roll calls held while serving", "Share", "Chamber median"],
+                   [[ordinal(int(x.congress)), x.chamber, f"{int(x.missed):,}", f"{int(x.eligible):,}",
+                     f"{x.missed_pct:.1f}%", f"{medians.loc[(x.congress, x.chamber)]:.1f}%"]
+                    for x in mine_missed.itertuples()], muted_cols=(3, 5))
+        st.caption(MISSED_NOTE)
+
     # Party unity over time
     if len(scored) > 1:
         st.subheader("Party unity over time")
@@ -285,7 +313,9 @@ with st.expander("Browse all members in a Congress", expanded=not pick):
         party_filter = st.selectbox("Party", ["All", "Democrat", "Republican", "Independent"], key="me_party")
     with c4:
         search = st.text_input("Name or state", "", key="me_search", placeholder="e.g. Smith or TX")
-    filtered = df[df["congress"] == congress]
+    filtered = df[df["congress"] == congress].merge(
+        load_missed()[["congress", "chamber", "icpsr", "missed", "missed_pct"]],
+        on=["congress", "chamber", "icpsr"], how="left")
     if chamber != "All":
         filtered = filtered[filtered["chamber"] == chamber]
     if party_filter != "All":
@@ -295,15 +325,18 @@ with st.expander("Browse all members in a Congress", expanded=not pick):
                             | filtered["state_abbrev"].str.contains(search, case=False, na=False)]
     st.caption(f"{len(filtered)} members")
     st.dataframe(
-        filtered[["name", "chamber", "state_abbrev", "party", "party_unity_pct", "unity_votes_cast", "nominate_dim1",
-                  "cohesion_proxy"]].rename(columns={
+        filtered[["name", "chamber", "state_abbrev", "party", "party_unity_pct", "unity_votes_cast", "missed",
+                  "missed_pct", "nominate_dim1", "cohesion_proxy"]].rename(columns={
             "name": "Name", "chamber": "Chamber", "state_abbrev": "State", "party": "Party",
             "party_unity_pct": "Party Unity %", "unity_votes_cast": "Party-Line Votes Cast",
+            "missed": "Missed Votes", "missed_pct": "Missed %",
             "nominate_dim1": "Ideology Score", "cohesion_proxy": "Cohesion Proxy"}).sort_values("Name"),
         width="stretch", height=420, hide_index=True,
     )
 
 st.markdown("---")
+st.caption("Missed votes count roll calls held while the member served on which they cast no vote; click a column "
+           "heading to sort. " + MISSED_NOTE)
 st.caption("Party unity % is the share of party-line votes (a majority of Democrats opposed a majority of Republicans) "
            "on which the member voted with their own party's majority, computed from Voteview roll-call records. "
            "Ideology scores are DW-NOMINATE first-dimension estimates. The cohesion proxy reflects distance from the "
