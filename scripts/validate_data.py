@@ -195,7 +195,9 @@ if (DATA / "campaign_statement_votes.csv").exists():
     check(cs["stance"].isin(["Supports", "Opposes"]).all(), "campaign_statement_votes.csv has a stance other than Supports or Opposes")
     check(cs["statement"].fillna("").str.len().gt(0).all(), "campaign_statement_votes.csv has a row with no campaign text")
     check(not cs.duplicated(["topic_id", "bioguide_id", "congress", "rollnumber"]).any(), "campaign_statement_votes.csv lists a member twice for one vote")
-    check(len(cs) == len(st_codes), f"campaign_statement_votes.csv has {len(cs)} rows for {len(st_codes)} coded stances")
+    # A member who had left office (or not yet joined) by the vote is left out, so a few stances have no row
+    check(0.98 * len(st_codes) <= len(cs) <= len(st_codes),
+          f"campaign_statement_votes.csv has {len(cs)} rows for {len(st_codes)} coded stances")
     known = cs.merge(all_votes[["congress", "chamber", "rollnumber"]], how="left", indicator=True)
     check((known["_merge"] == "both").all(), "campaign_statement_votes.csv has a roll call that isn't in all_votes.csv")
 

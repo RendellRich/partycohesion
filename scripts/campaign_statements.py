@@ -46,6 +46,9 @@ TOPIC_RE = {
                  r"right to choose|life begins|born.alive|heartbeat|right to life", r"^$"),
     "background_checks": (r"background check|gun control|gun law|gun show|infring|second amendment|2nd amendment|"
                           r"firearm", r"health care workers"),
+    "ukraine_aid": (r"ukrain", r"^$"),
+    "same_sex_marriage": (r"one man and one woman|traditional marriage|marriage equality|same.sex marriage|"
+                          r"definition of marriage|obergefell|marry|marriage ban|defining marriage", r"^$"),
 }
 
 
@@ -79,9 +82,18 @@ def build() -> pd.DataFrame:
             icpsrs, rolls, votes = f["icpsr"], f["rollnumber"], f["votes"]
         col = int(np.where(rolls == t["rollnumber"])[0][0])
         cast = dict(zip(icpsrs.tolist(), votes[:, col].tolist()))
+        # The vote matrices mark "not in office yet / any more" the same as "did not vote"; Voteview's raw file
+        # tells them apart (cast code 0 = not a member at the time), so members who weren't serving are left out.
+        raw = DATA / "raw" / f"{PREFIX[t['chamber']]}{int(t['congress'])}_votes.csv"
+        serving = None
+        if raw.exists():
+            rv = pd.read_csv(raw, usecols=["rollnumber", "icpsr", "cast_code"])
+            serving = set(rv[(rv["rollnumber"] == t["rollnumber"]) & (rv["cast_code"] != 0)]["icpsr"].astype(int))
         who = members[(members["congress"] == t["congress"]) & (members["chamber"] == t["chamber"])]
         s = stances[(stances["topic_id"] == t["topic_id"]) & (stances["campaign_year"] == t["campaign_year"])]
         s = s.merge(who[["bioguide_id", "icpsr", "name", "party", "state_abbrev"]], on="bioguide_id", how="inner")
+        if serving is not None:
+            s = s[s["icpsr"].astype(int).isin(serving)]
         for _, r in s.iterrows():
             ids = [int(i) for i in str(r["statement_ids"]).split(";")]
             src = text.loc[ids]
