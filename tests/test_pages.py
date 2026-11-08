@@ -172,3 +172,11 @@ def test_all_votes_platform_column():
     found = at.dataframe[0].value
     assert "Repealing the Affordable Care Act" in set(found["Platform Topic"])
     assert "" in set(found["Platform Topic"])  # amendment votes on the same bill aren't platform votes
+
+
+def test_home_platform_votes_cards():
+    at = open_page("views/0_Home.py")
+    assert not at.exception, [e.value for e in at.exception]
+    text = html(at)
+    assert "PLATFORM VOTES · DEMOCRATS" in text and "PLATFORM VOTES · REPUBLICANS" in text
+    assert "not which party is more loyal" in text

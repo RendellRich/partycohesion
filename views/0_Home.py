@@ -10,6 +10,7 @@ import streamlit as st
 
 from chart_utils import ordinal
 from flip_utils import add_chamber_control, flip_scores
+from platform_utils import all_member_platform_votes, load_platform, party_totals
 from ui import card, fmt_date, inject_css
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -69,6 +70,23 @@ with c3:
         card("BIGGEST PARTY BREAK", f"{int(top['broke'])} members",
              f"voted against their own party's majority on {label[:90]} ({top['chamber']}, {top['date']}).")
     st.page_link("views/5_Key_Votes.py", label="See who broke ranks →")
+
+# Finding 4: Platform Votes, every Congress in the data
+plat_topics, plat_links = load_platform()
+plat = party_totals(all_member_platform_votes()).set_index("party")
+pd_, pr_ = plat.loc["Democrat"], plat.loc["Republican"]
+st.write("")
+p1, p2 = st.columns(2, gap="medium")
+with p1:
+    card("PLATFORM VOTES · DEMOCRATS", f"{int(pd_['members_against'])} of {int(pd_['members'])}",
+         "Democrats voted against their own party's platform at least once, on topics where the two parties' "
+         f"platforms take opposite, specific positions ({len(plat_topics)} topics since 2007).")
+with p2:
+    card("PLATFORM VOTES · REPUBLICANS", f"{int(pr_['members_against'])} of {int(pr_['members'])}",
+         "Republicans voted against their own party's platform at least once, on the same topics. The totals depend "
+         "on which topics qualify under the published rules, so they describe these votes, not which party is more "
+         "loyal.")
+st.page_link("views/11_Platform_Votes.py", label="See every topic, vote and member →")
 
 st.write("")
 m1, m2, m3, m4 = st.columns(4)
