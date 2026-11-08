@@ -201,3 +201,13 @@ def test_cosponsored_then_no_page():
     at.toggle(key="cs_unchanged").set_value(True).run()
     assert not at.exception, [e.value for e in at.exception]
     assert (at.dataframe[0].value["Text changed before vote"] == "No").all()
+
+
+def test_campaign_statements_page():
+    at = open_page("views/13_Campaign_Statements.py")
+    assert "Votes in a different direction from the campaign statement" in [s.value for s in at.subheader]
+    text = html(at)
+    assert "Massie" in text and "Fitzpatrick" in text
+    at.selectbox(key="cmp_dir").set_value("Different from the statement").run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert set(at.dataframe[0].value["Same direction"]) == {"No"}
