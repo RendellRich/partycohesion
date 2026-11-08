@@ -178,6 +178,19 @@ if (DATA / "house_amendments.csv").exists():
     check(not matched.duplicated(["congress", "session", "clerk_rollnumber"]).any(),
           "house_amendments.csv matches one roll call to more than one amendment")
 
+# Cosponsored, then voted no
+if (DATA / "cosponsor_votes.csv").exists():
+    cv = pd.read_csv(DATA / "cosponsor_votes.csv")
+    cn = pd.read_csv(DATA / "cosponsor_nays.csv")
+    check(not cv.duplicated(["congress", "chamber", "rollnumber"]).any(), "cosponsor_votes.csv lists a roll call twice")
+    check((cv["signers_yea"] + cv["signers_nay"] == cv["signers_voting"]).all(), "cosponsor_votes.csv counts don't add up")
+    per_vote = cn.groupby(["congress", "chamber", "rollnumber"]).size().rename("n")
+    joined = cv.set_index(["congress", "chamber", "rollnumber"]).join(per_vote).fillna({"n": 0})
+    check((joined["n"] == joined["signers_nay"]).all(), "cosponsor_nays.csv doesn't match the Nay counts")
+    known = cv.merge(all_votes[["congress", "chamber", "rollnumber"]], how="left", indicator=True)
+    check((known["_merge"] == "both").all(), "cosponsor_votes.csv has a roll call that isn't in all_votes.csv")
+    check(cv["congress"].nunique() >= all_votes["congress"].nunique() - 1, "cosponsor_votes.csv is missing Congresses")
+
 # No sudden shrinkage compared with the last committed data
 for name, df in (("data/members_processed.csv", members), ("data/key_votes.csv", key_votes),
                  ("data/all_votes.csv", all_votes)):

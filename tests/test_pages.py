@@ -180,3 +180,12 @@ def test_home_platform_votes_cards():
     text = html(at)
     assert "PLATFORM VOTES · DEMOCRATS" in text and "PLATFORM VOTES · REPUBLICANS" in text
     assert "not which party is more loyal" in text
+
+
+def test_cosponsored_then_no_page():
+    at = open_page("views/12_Cosponsored_Then_No.py")
+    assert not at.exception, [e.value for e in at.exception]
+    assert "Bills with the most signers voting no" in [s.value for s in at.subheader]
+    at.toggle(key="cs_unchanged").set_value(True).run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert (at.dataframe[0].value["Text changed before vote"] == "No").all()
