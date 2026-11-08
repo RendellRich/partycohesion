@@ -164,9 +164,11 @@ top = ms[ms["against"] > 0].head(15)
 html_table(["Member", "Topics against their platform", "Topics voted on"],
            [[l, int(a), int(c)] for l, a, c in zip(top["label"], top["against"], top["cast"])], muted_cols=(2,))
 
-st.subheader("Every topic")
+st.subheader("Topics by Congress")
+st.caption("Shows the most recent Congress first. Choose another Congress, or All, to see the rest.")
 cong_options = ["All"] + sorted(topics["congress"].unique(), reverse=True)
-cong = st.selectbox("Congress", cong_options, key="pv_cong",
+# One Congress by default: drawing every topic's vote cards at once (about 100) makes the page slow to scroll
+cong = st.selectbox("Congress", cong_options, index=1, key="pv_cong",
                     format_func=lambda c: "All" if c == "All" else f"{ordinal(c)} ({2 * c + 1787} to {2 * c + 1788}), "
                                                                   f"{PRESIDENT.get(c, '')} years")
 shown = topics if cong == "All" else topics[topics["congress"] == cong]

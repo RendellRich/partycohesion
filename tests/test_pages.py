@@ -127,6 +127,9 @@ def test_platform_votes_member_lookup():
     box.set_value(option(box, "Susan Collins")).run()
     assert not at.exception, [e.value for e in at.exception]
     assert "voted against the Republican platform on" in html(at)
+    headings = [m.value for m in at.markdown if m.value.startswith("#### ")]
+    latest = max(pd.read_csv(ROOT / "data" / "platform_topics.csv", comment="#")["congress"])
+    assert at.selectbox(key="pv_cong").value == latest and 0 < len(headings) < 10  # one Congress by default
     at.selectbox(key="pv_cong").set_value(117).run()
     assert not at.exception, [e.value for e in at.exception]
     headings = [m.value for m in at.markdown if m.value.startswith("#### ")]
