@@ -229,3 +229,13 @@ def test_campaign_statements_on_member_page():
     assert "Campaign statements and votes" in [s.value for s in at.subheader]
     text = html(at)
     assert "2 of 3" in text and "physical barrier" in text
+
+
+def test_members_table_campaign_column():
+    at = open_page("views/2_Member_Explorer.py")
+    at.selectbox(key="me_cong").set_value(116).run()
+    at.toggle(key="me_only_camp").set_value(True).run()
+    assert not at.exception, [e.value for e in at.exception]
+    table = at.dataframe[-1].value
+    assert table["Campaign Statements"].notna().all() and len(table) > 100
+    assert table["Voted Differently"].sum() >= 2  # Fitzpatrick and Johnson
