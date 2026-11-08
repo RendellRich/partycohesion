@@ -211,3 +211,11 @@ def test_campaign_statements_page():
     at.selectbox(key="cmp_dir").set_value("Different from the statement").run()
     assert not at.exception, [e.value for e in at.exception]
     assert set(at.dataframe[0].value["Same direction"]) == {"No"}
+
+
+def test_campaign_statements_other_topics():
+    at = open_page("views/13_Campaign_Statements.py")
+    for topic in ("Legal access to abortion", "Background checks on all gun sales"):
+        at.selectbox(key="cmp_topic").set_value(topic).run()
+        assert not at.exception, [e.value for e in at.exception]
+        assert len(at.dataframe[0].value) > 100
