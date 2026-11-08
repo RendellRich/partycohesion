@@ -86,9 +86,12 @@ often use the formal title rather than the short name.
 
 Voteview has no description for most House amendment votes. For those, the site uses the House Clerk's official
 record of the roll call, which names the amendment's sponsor (for example "Jackson of Texas Amendment No. 5 to H.R.
-2670"), so they can be found by the sponsor's name. Where Congress.gov's record of the amendment is matched to the
-roll call, its one-line purpose is added after a colon. Purposes are filled in gradually, a few thousand lookups at
-each data refresh. A few dozen votes from late 2007 have no Clerk record online and stay unnamed.
+2670"), so they can be found by the sponsor's name. After a colon comes the amendment's one-line purpose from its
+official Congress.gov record, so the votes can also be found by what the amendment does. Before 2023 the purpose and
+the roll calls held on each amendment come from GovInfo's bill status files, which publish the same Congress.gov
+records as one file per bill. From 2023 on, Congress.gov's own record of each House roll call names the amendment.
+Nearly every House amendment vote has a purpose. The exceptions are a few dozen votes from late 2007 with no Clerk
+record online, which stay unnamed, and one 2009 vote missing from its bill's file.
 
 Each member's profile has their full voting record. A vote is flagged **against their party** when they voted Yea or
 Nay and their party's majority voted the other way. Independents are compared with the party they caucus with. This
