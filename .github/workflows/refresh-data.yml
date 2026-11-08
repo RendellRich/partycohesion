@@ -53,6 +53,11 @@ jobs:
 
       # Sponsors and cosponsors of each bill that got a final passage vote, from GovInfo (no key needed). Older
       # Congresses don't change, so only the newest one is fetched again. A failure here never stops the refresh.
+      - name: Update member details
+        continue-on-error: true
+        timeout-minutes: 10
+        run: python scripts/member_details.py
+
       - name: Update cosponsor votes
         continue-on-error: true
         timeout-minutes: 25

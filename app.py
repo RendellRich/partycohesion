@@ -18,12 +18,13 @@ if drop_changed_local_modules():
 
 from chart_utils import EXPORT_SIZES, DEFAULT_EXPORT, clear_cache_if_data_changed
 from site_status import show_refresh_notice
+from ui import share_bar
 
 st.set_page_config(
     page_title="PartyCohesion",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 
 st.markdown("<style>footer {visibility: hidden;}</style>", unsafe_allow_html=True)
@@ -64,3 +65,10 @@ with st.sidebar:
 clear_cache_if_data_changed()  # new data from the twice-weekly refresh shows up without a restart
 show_refresh_notice()
 nav.run()
+
+# Share this page (the Members page has its own, which links to the member being viewed)
+if nav.url_path != "Member_Explorer":
+    st.write("")
+    text = ("PartyCohesion: do members of Congress vote the same way no matter who is president?" if not nav.url_path
+            else f"{nav.title}, from PartyCohesion: how members of Congress vote, from the official record")
+    share_bar(text, nav.url_path)

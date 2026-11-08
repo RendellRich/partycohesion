@@ -103,7 +103,7 @@ vote_card(v, members_who_broke_ranks(v, members),
 if pd.notna(v["topic"]):
     st.info(f"**On Platform Votes: {v['topic']}** ({v['status'].lower()}). A {v['dem_platform_vote']} vote matched the "
             f"Democratic platform and a {v['rep_platform_vote']} vote matched the Republican platform.")
-    st.page_link("views/11_Platform_Votes.py", label="See who voted against their party's platform →")
+    st.page_link("views/11_Platform_Votes.py", label="See who voted against their party's platform")
 
 st.markdown("---")
 st.caption("Source: Voteview roll-call records, refreshed twice a week. Only actual Yea and Nay floor votes are "

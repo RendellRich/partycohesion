@@ -178,7 +178,7 @@ def test_home_platform_votes_cards():
     at = open_page("views/0_Home.py")
     assert not at.exception, [e.value for e in at.exception]
     text = html(at)
-    assert "PLATFORM VOTES · DEMOCRATS" in text and "PLATFORM VOTES · REPUBLICANS" in text
+    assert "Platform votes, Democrats" in text and "Platform votes, Republicans" in text
     assert "not which party is more loyal" in text
 
 
@@ -239,3 +239,24 @@ def test_members_table_campaign_column():
     table = at.dataframe[-1].value
     assert table["Campaign Statements"].notna().all() and len(table) > 100
     assert table["Voted Differently"].sum() >= 2  # Fitzpatrick and Johnson
+
+
+def test_home_more_findings_and_share():
+    at = open_page("views/0_Home.py")
+    text = html(at)
+    for label in ("Missed votes", "Cosponsored, then voted no", "Campaign statements", "pc-share"):
+        assert label in text
+    assert any("partycohesion.streamlit.app" in c.value for c in at.code)
+
+
+def test_member_deep_link_details_and_share():
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=120)
+    at.run()
+    at.switch_page("views/2_Member_Explorer.py")
+    at.query_params["member"] = "F000466"
+    at.run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert at.selectbox(key="me_member").value.startswith("Fitzpatrick, Brian")
+    text = html(at)
+    assert "pc-person" in text and "fitzpatrick.house.gov" in text and "Committees:" in text
+    assert any("member=F000466" in c.value for c in at.code)

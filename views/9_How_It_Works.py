@@ -244,7 +244,7 @@ st.markdown("""
 - **Votes are not spread evenly across presidents,** and matching sets aside votes with nothing comparable, so some
   members are scored on a small share of their votes. The vote count is always shown. See Methodology.
 """)
-st.page_link("views/7_Position_Flips.py", label="See every member's result on Position Flips →")
-st.page_link("views/3_Methodology.py", label="Full methodology and data sources →")
+st.page_link("views/7_Position_Flips.py", label="See every member's result on Position Flips")
+st.page_link("views/3_Methodology.py", label="Full methodology and data sources")
 st.caption("Source: Voteview roll-call records and White House Statements of Administration Policy. Only actual Yea "
            "and Nay floor votes are counted.")

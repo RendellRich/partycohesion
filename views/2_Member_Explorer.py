@@ -2,6 +2,7 @@
 position, ideology), plus a browsable table of every member. Layout follows the "Members" mockup in
 the PartyCohesion Figma design system."""
 
+from html import escape
 from pathlib import Path
 
 import numpy as np
@@ -12,7 +13,8 @@ import streamlit as st
 from chart_utils import ACCENT, MUTED, PARTY_COLORS, ordinal, show_chart
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import platform_record
-from ui import display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row, pattern_badge
+from ui import (display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row,
+                pattern_badge, share_bar)
 from vote_index import load_votes, member_record, search_votes, voteview_url
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -31,6 +33,39 @@ def load_missed():
     m = pd.read_csv(DATA_DIR / "missed_votes.csv")
     m["missed_pct"] = (100 * m["missed"] / m["eligible"]).round(1)
     return m
+
+
+@st.cache_data
+def load_details() -> pd.DataFrame:
+    """Photo, years served, website, phone and committees (built by scripts/member_details.py)."""
+    return pd.read_csv(DATA_DIR / "member_details.csv").fillna("").set_index("bioguide_id")
+
+
+def member_facts(bioguide: str) -> None:
+    details = load_details()
+    if bioguide not in details.index:
+        return
+    d = details.loc[bioguide]
+    photo = (f'<img src="{escape(d["photo_url"])}" alt="Official photo of {escape(d["full_name"])}" loading="lazy">'
+             if d["photo_url"] else "<div></div>")
+    served = f"Served in Congress {d['first_year']} to " + ("now" if d["in_office"] else str(d["last_year"]))
+    lines = [f"<b>{escape(served)}</b>"]
+    if d["website"]:
+        lines.append(f'Official website: <a href="{escape(d["website"])}" target="_blank" rel="noopener">'
+                     f'{escape(d["website"].split("//")[-1].rstrip("/"))}</a>')
+    contact = []
+    if d["contact_form"]:
+        contact.append(f'<a href="{escape(d["contact_form"])}" target="_blank" rel="noopener">contact form</a>')
+    if d["phone"]:
+        contact.append(escape(d["phone"]))
+    if d["office"]:
+        contact.append(escape(d["office"]))
+    if contact:
+        lines.append("Contact: " + ", ".join(contact))
+    if d["committees"]:
+        lines.append("Committees: " + escape(d["committees"]))
+    st.markdown(f'<div class="pc-person">{photo}<div class="pc-facts">{"<br>".join(lines)}</div></div>',
+                unsafe_allow_html=True)
 
 
 @st.cache_data
@@ -99,15 +134,27 @@ dupes = latest["label"].duplicated(keep=False)
 latest.loc[dupes, "label"] = latest.loc[dupes, "label"] + " #" + latest.loc[dupes, "icpsr"].astype(str)
 options = dict(zip(latest.sort_values("label")["label"], latest.sort_values("label")["icpsr"]))
 
-pick = st.selectbox("Find a member", list(options), index=None, placeholder="Type a name…", key="me_member")
+# A shared link opens a member directly: ?member=<Bioguide ID>
+bioguide_of = dict(zip(latest["icpsr"], latest["bioguide_id"]))
+label_of = {bioguide_of[i]: lab for lab, i in options.items() if pd.notna(bioguide_of.get(i))}
+linked = label_of.get(st.query_params.get("member", ""))
+labels = list(options)
+pick = st.selectbox("Find a member", labels, index=labels.index(linked) if linked else None,
+                    placeholder="Type a name…", key="me_member")
 
 if pick:
     icpsr = options[pick]
     rows = df[df["icpsr"] == icpsr].sort_values("congress")
     member = rows.iloc[-1]
     short = last_name(member["name"])
+    bioguide = bioguide_of.get(icpsr, "")
+    if bioguide:
+        st.query_params["member"] = bioguide
     member_header(member["name"], member["party"], member["state_abbrev"], member["chamber"],
                   rows["congress"].min(), rows["congress"].max(), newest)
+    member_facts(bioguide)
+    share_bar(f"{display_name(member['name'])} ({member['party'][0]}-{member['state_abbrev']}): voting record on "
+              "PartyCohesion", "Member_Explorer", {"member": bioguide} if bioguide else None)
     caucus = member.get("caucus")
     if member["party"] not in ("Democrat", "Republican") and pd.notna(caucus):
         st.caption(f"Caucuses with the {caucus}s, so party unity and Position Flips compare them with {caucus}s.")
@@ -161,7 +208,7 @@ if pick:
                    raw_cols=(4,), muted_cols=(1, 2))
         st.caption("The first two columns count every vote. The shift compares only matched votes: the same type of "
                    "vote, cast when the member's party was in the same position in the chamber.")
-        st.page_link("views/9_How_It_Works.py", label="How this is measured →")
+        st.page_link("views/9_How_It_Works.py", label="How this is measured")
     else:
         st.caption("This member cast no Yea or Nay votes on debt limit, funding, disaster aid or war powers bills in this data.")
 
@@ -182,7 +229,7 @@ if pick:
                     for x in shown.sort_values("date", ascending=False).itertuples()], muted_cols=(0,))
         st.caption("A platform is the party's official policy document, not a personal promise, and members often give "
                    "reasons a roll call can't show. Procedural and related votes are shown but not counted.")
-        st.page_link("views/11_Platform_Votes.py", label="See every topic and the rules →")
+        st.page_link("views/11_Platform_Votes.py", label="See every topic and the rules")
 
     # Campaign statements (House members, 2018 to 2022 campaigns)
     camp = load_campaign()
@@ -199,7 +246,7 @@ if pick:
                      x.same_direction] for x in mine_camp.itertuples()], muted_cols=(0,))
         st.caption("Statements come from CampaignView's collection of House candidates' campaign websites. A roll call "
                    "can't show a member's reasons, and the bill voted on is rarely the campaign promise word for word.")
-        st.page_link("views/13_Campaign_Statements.py", label="See every topic and how stances are coded →")
+        st.page_link("views/13_Campaign_Statements.py", label="See every topic and how stances are coded")
 
     # Missed votes
     missed_all = load_missed()
@@ -317,9 +364,12 @@ if pick:
                            "Voteview": st.column_config.LinkColumn(display_text="Open")})
         if len(view) > 1000:
             st.caption(f"Showing the 1,000 most recent of {len(view):,}. Search or pick a Congress to narrow it.")
-        st.page_link("views/10_All_Votes.py", label="Search every vote and see who broke ranks →")
+        st.page_link("views/10_All_Votes.py", label="Search every vote and see who broke ranks")
 else:
+    if "member" in st.query_params:
+        del st.query_params["member"]
     st.info("Start typing a last name to see a member's profile, or browse everyone below.")
+    share_bar("Look up how any member of Congress votes, on PartyCohesion", "Member_Explorer")
 
 # ---------------------------------------------------------------------------
 # Browse
@@ -365,8 +415,7 @@ with st.expander("Browse all members in a Congress", expanded=not pick):
     )
 
 st.markdown("---")
-st.caption("Missed votes count roll calls held while the member served on which they cast no vote; click a column "
-           "heading to sort. " + MISSED_NOTE)
+st.caption("Click a column heading to sort. " + MISSED_NOTE)
 st.caption("Campaign statements count the clear positions a House member's own 2018, 2020 or 2022 campaign website "
            "took on a topic in Campaign Statements and Votes; voted differently counts the ones where their later vote "
            "went the other direction. Open a member's profile to read them.")
