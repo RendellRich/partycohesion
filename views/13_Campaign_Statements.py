@@ -40,7 +40,8 @@ metric_row([
     ("Campaign statements with a clear side", f"{len(view):,}",
      f"from {view['bioguide_id'].nunique()} members · {(view['stance'] == 'Supports').sum()} supported, "
      f"{(view['stance'] == 'Opposes').sum()} opposed"),
-    ("Votes in the same direction", f"{same:,} of {len(view):,}", "as the campaign statement"),
+    ("Votes in the same direction", f"{same:,} of {len(view):,}",
+     f"as the campaign statement · {(view['same_direction'] == 'Did not vote').sum()} did not vote"),
     ("Votes in a different direction", f"{len(diff):,}", f"{diff['bioguide_id'].nunique()} members"),
 ])
 st.caption("A campaign statement counts only when it takes a clear side. Statements that only describe an opponent's "
@@ -69,13 +70,14 @@ c1, c2 = st.columns(2)
 with c1:
     party = st.selectbox("Party", ["All", "Democrat", "Republican"], key="cmp_party")
 with c2:
-    which = st.selectbox("Vote direction", ["All", "Same as the statement", "Different from the statement"],
-                         key="cmp_dir")
+    which = st.selectbox("Vote direction", ["All", "Same as the statement", "Different from the statement",
+                                            "Did not vote"], key="cmp_dir")
 table = view
 if party != "All":
     table = table[table["party"] == party]
 if which != "All":
-    table = table[table["same_direction"] == ("Yes" if which.startswith("Same") else "No")]
+    table = table[table["same_direction"] == {"Same as the statement": "Yes", "Different from the statement": "No",
+                                              "Did not vote": "Did not vote"}[which]]
 st.dataframe(pd.DataFrame({
     "Member": [member(r) for _, r in table.iterrows()],
     "Campaign": table["campaign_year"].astype(str),
