@@ -102,3 +102,5 @@ cfpb_115,115,House,520,"Ellison amendment to H.R. 3354, striking the section tha
 cfpb_116,116,House,223,"Burgess amendment to H.R. 1500, putting the Consumer Financial Protection Bureau's funding permanently under congressional appropriation",direct,no,Nay,Yea,Failed 192 to 235.
 cfpb_116,116,House,225,"Green amendment to H.R. 1500, reinstating the Bureau's rule on forced arbitration",related,no,Yea,Nay,"Shown, not counted: about one of the Bureau's rules, not its funding."
 clean_power_plan_116,116,House,380,"Duncan amendment to the 2020 funding bill (H.R. 3055), barring funds to enforce Clean Power Plan rules",direct,no,Nay,Yea,Failed 192 to 240.
+abortion_funding_111,111,House,882,"Stupak amendment to the House health care bill (H.R. 3962), barring federal funds for abortion in the public option and in plans bought with federal subsidies",direct,no,Nay,Yea,Agreed to 240 to 194.
+abortion_funding_111,111,Senate,369,"Motion to table the Nelson amendment to H.R. 3590, which would have barred federal funds for abortion coverage",direct,yes,Yea,Nay,"Shown, not counted: a motion to table. It passed 54 to 45, which set the amendment aside."
