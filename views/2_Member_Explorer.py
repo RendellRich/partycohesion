@@ -336,9 +336,13 @@ with st.expander("Browse all members in a Congress", expanded=not pick):
         party_filter = st.selectbox("Party", ["All", "Democrat", "Republican", "Independent"], key="me_party")
     with c4:
         search = st.text_input("Name or state", "", key="me_search", placeholder="e.g. Smith or TX")
-    filtered = df[df["congress"] == congress].merge(
-        load_missed()[["congress", "chamber", "icpsr", "missed", "missed_pct"]],
-        on=["congress", "chamber", "icpsr"], how="left")
+    only_camp = st.toggle("Only members with campaign statements", key="me_only_camp")
+    camp_counts = load_campaign().groupby("icpsr").agg(
+        camp_n=("stance", "size"), camp_diff=("same_direction", lambda x: int((x == "No").sum()))).reset_index()
+    filtered = (df[df["congress"] == congress]
+                .merge(load_missed()[["congress", "chamber", "icpsr", "missed", "missed_pct"]],
+                       on=["congress", "chamber", "icpsr"], how="left")
+                .merge(camp_counts, on="icpsr", how="left"))
     if chamber != "All":
         filtered = filtered[filtered["chamber"] == chamber]
     if party_filter != "All":
@@ -346,13 +350,16 @@ with st.expander("Browse all members in a Congress", expanded=not pick):
     if search:
         filtered = filtered[filtered["name"].str.contains(search, case=False, na=False)
                             | filtered["state_abbrev"].str.contains(search, case=False, na=False)]
+    if only_camp:
+        filtered = filtered[filtered["camp_n"].notna()]
     st.caption(f"{len(filtered)} members")
     st.dataframe(
         filtered[["name", "chamber", "state_abbrev", "party", "party_unity_pct", "unity_votes_cast", "missed",
-                  "missed_pct", "nominate_dim1", "cohesion_proxy"]].rename(columns={
+                  "missed_pct", "camp_n", "camp_diff", "nominate_dim1", "cohesion_proxy"]].rename(columns={
             "name": "Name", "chamber": "Chamber", "state_abbrev": "State", "party": "Party",
             "party_unity_pct": "Party Unity %", "unity_votes_cast": "Party-Line Votes Cast",
-            "missed": "Missed Votes", "missed_pct": "Missed %",
+            "missed": "Missed Votes", "missed_pct": "Missed %", "camp_n": "Campaign Statements",
+            "camp_diff": "Voted Differently",
             "nominate_dim1": "Ideology Score", "cohesion_proxy": "Cohesion Proxy"}).sort_values("Name"),
         width="stretch", height=420, hide_index=True,
     )
@@ -360,6 +367,9 @@ with st.expander("Browse all members in a Congress", expanded=not pick):
 st.markdown("---")
 st.caption("Missed votes count roll calls held while the member served on which they cast no vote; click a column "
            "heading to sort. " + MISSED_NOTE)
+st.caption("Campaign statements count the clear positions a House member's own 2018, 2020 or 2022 campaign website "
+           "took on a topic in Campaign Statements and Votes; voted differently counts the ones where their later vote "
+           "went the other direction. Open a member's profile to read them.")
 st.caption("Party unity % is the share of party-line votes (a majority of Democrats opposed a majority of Republicans) "
            "on which the member voted with their own party's majority, computed from Voteview roll-call records. "
            "Ideology scores are DW-NOMINATE first-dimension estimates. The cohesion proxy reflects distance from the "
