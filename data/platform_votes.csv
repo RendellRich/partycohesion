@@ -87,3 +87,18 @@ paris_116,116,House,176,"Gosar amendment to H.R. 9, striking the bill's ban on u
 paris_116,116,House,335,"Palmer amendment to the 2020 funding bill (H.R. 2740), striking the language that blocks withdrawal from the Paris Agreement and allows payments under it",direct,no,Nay,Yea,Failed 184 to 241.
 paris_116,116,House,175,"Gosar amendment to H.R. 9, adding findings that the Paris Agreement is a treaty",related,no,Nay,Yea,"Shown, not counted: a finding about the agreement's legal status, not a vote on staying in it."
 title_x_116,116,House,266,"Roby amendment to the 2020 funding bill (H.R. 2740), striking the language that blocked the 2019 Title X rule separating grant recipients from abortion providers",direct,no,Nay,Yea,Failed 191 to 229. The rule led Planned Parenthood to leave the Title X program in August 2019.
+davis_bacon_115,115,House,418,"King amendment to the 2018 security funding bill (H.R. 3219), barring funds to enforce the Davis-Bacon Act",direct,no,Nay,Yea,Failed 178 to 249.
+davis_bacon_115,115,House,444,"King amendment to the 2018 funding bill (H.R. 3354), barring funds to enforce the Davis-Bacon Act",direct,no,Nay,Yea,Failed 176 to 241.
+davis_bacon_115,115,House,452,"King amendment to H.R. 3354, barring funds to enforce the Davis-Bacon Act",direct,no,Nay,Yea,Failed 180 to 241.
+davis_bacon_115,115,House,463,"King amendment to H.R. 3354, barring funds to enforce the Davis-Bacon Act",direct,no,Nay,Yea,Failed 173 to 240.
+davis_bacon_115,115,House,864,"King amendment to the FAA bill (H.R. 4), barring funds to enforce Davis-Bacon prevailing wages",direct,no,Nay,Yea,Failed 172 to 243.
+davis_bacon_115,115,House,369,"Gosar amendment to the 2018 defense bill (H.R. 2810), changing how prevailing wages are surveyed",related,no,Nay,Yea,"Shown, not counted: changes how prevailing wages are set rather than ending them."
+davis_bacon_116,116,House,834,"Foxx amendment to H.R. 2, dropping prevailing wages on federal-aid highway and transit projects",direct,no,Nay,Yea,Failed 147 to 274.
+pro_act_116,116,House,749,"PRO Act (H.R. 2474), House passage, which would override state right-to-work laws",direct,no,Yea,Nay,Passed 224 to 194. The Senate didn't vote on it.
+pro_act_116,116,House,744,"Allen amendment to the PRO Act, striking the provision that overturns state right-to-work laws",direct,no,Nay,Yea,Failed 187 to 232.
+pro_act_116,116,House,745,"Meadows amendment to the PRO Act, striking the provisions that limit state right-to-work laws",direct,no,Nay,Yea,Failed 186 to 235.
+pro_act_116,116,House,748,"PRO Act, motion to recommit",direct,yes,Nay,Yea,A procedural vote. It failed 195 to 223.
+cfpb_115,115,House,520,"Ellison amendment to H.R. 3354, striking the section that brings the Consumer Financial Protection Bureau into the regular appropriations process",direct,no,Yea,Nay,Failed 183 to 226.
+cfpb_116,116,House,223,"Burgess amendment to H.R. 1500, putting the Consumer Financial Protection Bureau's funding permanently under congressional appropriation",direct,no,Nay,Yea,Failed 192 to 235.
+cfpb_116,116,House,225,"Green amendment to H.R. 1500, reinstating the Bureau's rule on forced arbitration",related,no,Yea,Nay,"Shown, not counted: about one of the Bureau's rules, not its funding."
+clean_power_plan_116,116,House,380,"Duncan amendment to the 2020 funding bill (H.R. 3055), barring funds to enforce Clean Power Plan rules",direct,no,Nay,Yea,Failed 192 to 240.
