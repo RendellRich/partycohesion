@@ -215,10 +215,10 @@ st.markdown("""
   balance comes from which bills reached the floor, not from a target. The Platform Votes page shows
   the current split. The two parties' totals depend heavily on which topics qualify, so read them as a description of
   these votes, not a ranking.
-- Every counted roll call counts, even when the House voted on nearly the same amendment several times. From 2017 to
-  2020 the House voted six times on amendments to cut off or drop Davis-Bacon prevailing wages, and the Republicans
-  who voted no account for nearly half of all Republican votes against their platform. The Platform Votes page lists
-  votes by topic, so the repetition is visible.
+- The House sometimes voted on nearly the same amendment several times. From 2017 to 2020 it voted six times on
+  amendments to cut off or drop Davis-Bacon prevailing wages. So that repetition doesn't decide the totals, each member
+  counts once per topic: against their platform if they voted against it on any counted vote on that topic. Every
+  individual vote is still listed on the Platform Votes and member pages.
 """)
 
 st.header("What This Site Does *Not* Do")

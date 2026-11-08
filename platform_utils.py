@@ -66,27 +66,44 @@ def member_platform_votes(links: pd.DataFrame, members: pd.DataFrame) -> pd.Data
     return pd.concat(out, ignore_index=True)[cols] if out else pd.DataFrame(columns=cols)
 
 
-def party_totals(mv: pd.DataFrame) -> pd.DataFrame:
-    """For each party, over the counted votes only: votes cast, votes against the party's platform, and how many
-    members voted against it at least once."""
+def member_topics(mv: pd.DataFrame) -> pd.DataFrame:
+    """One row per member per topic, over the counted votes. A member counts once per topic, as against their
+    platform if they voted against it on any counted vote on that topic, so a topic with several nearly identical
+    votes weighs the same as a topic with one."""
     counted = mv[mv["counts"]]
+    cols = ["icpsr", "topic_id", "name", "side", "state_abbrev", "votes", "votes_against", "against"]
+    if counted.empty:
+        return pd.DataFrame(columns=cols)
+    g = counted.groupby(["icpsr", "topic_id"], sort=False).agg(
+        name=("name", "last"), side=("side", "last"), state_abbrev=("state_abbrev", "last"),
+        votes=("against", "size"), votes_against=("against", "sum")).reset_index()
+    g["against"] = g["votes_against"] > 0
+    return g[cols]
+
+
+def party_totals(mv: pd.DataFrame) -> pd.DataFrame:
+    """For each party, over the counted votes: topics voted on and against the platform (each member once per
+    topic), the counted votes behind them, and how many members voted against it at least once."""
+    mt = member_topics(mv)
     rows = []
     for side in ("Democrat", "Republican"):
-        p = counted[counted["side"] == side]
-        rows.append({"party": side, "votes_cast": len(p), "against": int(p["against"].sum()),
+        p = mt[mt["side"] == side]
+        rows.append({"party": side, "topics_cast": len(p), "topics_against": int(p["against"].sum()),
+                     "votes_cast": int(p["votes"].sum()), "votes_against": int(p["votes_against"].sum()),
                      "members": p["icpsr"].nunique(), "members_against": p.loc[p["against"], "icpsr"].nunique()})
     t = pd.DataFrame(rows)
-    t["against_pct"] = (100 * t["against"] / t["votes_cast"].where(t["votes_cast"] > 0)).round(1)
+    t["against_pct"] = (100 * t["topics_against"] / t["topics_cast"].where(t["topics_cast"] > 0)).round(1)
     return t
 
 
 def member_summary(mv: pd.DataFrame) -> pd.DataFrame:
-    """Per member, over the counted votes: how many they cast and how many went against their party's platform."""
-    counted = mv[mv["counts"]]
-    if counted.empty:
+    """Per member, over the counted votes: how many topics they voted on and how many they voted against their
+    party's platform on (each topic once)."""
+    mt = member_topics(mv)
+    if mt.empty:
         return pd.DataFrame(columns=["icpsr", "name", "side", "state_abbrev", "cast", "against"])
-    g = counted.groupby("icpsr").agg(name=("name", "last"), side=("side", "last"), state_abbrev=("state_abbrev", "last"),
-                                     cast=("against", "size"), against=("against", "sum")).reset_index()
+    g = mt.groupby("icpsr").agg(name=("name", "last"), side=("side", "last"), state_abbrev=("state_abbrev", "last"),
+                                cast=("against", "size"), against=("against", "sum")).reset_index()
     return g.sort_values(["against", "cast"], ascending=[False, False])
 
 
@@ -102,11 +119,12 @@ def all_member_platform_votes() -> pd.DataFrame:
 
 
 def platform_record(icpsr: int) -> tuple[pd.DataFrame, int, int]:
-    """One member's platform votes, plus how many counted votes they cast and how many went against their platform."""
+    """One member's platform votes, plus how many topics they cast a counted vote on and how many of those topics
+    they voted against their platform on (each topic once)."""
     mv = all_member_platform_votes()
     mine = mv[mv["icpsr"] == icpsr]
-    counted = mine[mine["counts"]]
-    return mine, len(counted), int(counted["against"].sum())
+    mt = member_topics(mine)
+    return mine, len(mt), int(mt["against"].sum())
 
 
 @st.cache_data
