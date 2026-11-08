@@ -33,6 +33,12 @@ def load_missed():
     return m
 
 
+@st.cache_data
+def load_campaign():
+    """Campaign website statements and the vote that followed (built by scripts/campaign_statements.py)."""
+    return pd.read_csv(DATA_DIR / "campaign_statement_votes.csv")
+
+
 MISSED_NOTE = ("A missed vote is a roll call held while the member served on which they cast no vote. The record "
                "doesn't say why. Common reasons include illness, a family emergency or new child, running for another "
                "office, and the last months before leaving Congress.")
@@ -177,6 +183,23 @@ if pick:
         st.caption("A platform is the party's official policy document, not a personal promise, and members often give "
                    "reasons a roll call can't show. Procedural and related votes are shown but not counted.")
         st.page_link("views/11_Platform_Votes.py", label="See every topic and the rules →")
+
+    # Campaign statements (House members, 2018 to 2022 campaigns)
+    camp = load_campaign()
+    mine_camp = camp[camp["icpsr"] == icpsr].sort_values(["campaign_year", "topic"], ascending=[False, True])
+    if not mine_camp.empty:
+        st.subheader("Campaign statements and votes")
+        n_diff = int((mine_camp["same_direction"] == "No").sum())
+        n_same = int((mine_camp["same_direction"] == "Yes").sum())
+        st.markdown(f"What {short}'s own campaign website said, next to their vote on the closest roll call after "
+                    f"that election. **{n_same} of {len(mine_camp)}** votes went in the same direction"
+                    + (f"; **{n_diff}** went in a different direction." if n_diff else "."))
+        html_table(["Campaign", "Topic", "Stance", "Campaign website text", "Vote", "Their vote", "Same direction"],
+                   [[str(x.campaign_year), x.topic, x.stance, x.statement, x.vote_label, x.actual_vote,
+                     x.same_direction] for x in mine_camp.itertuples()], muted_cols=(0,))
+        st.caption("Statements come from CampaignView's collection of House candidates' campaign websites. A roll call "
+                   "can't show a member's reasons, and the bill voted on is rarely the campaign promise word for word.")
+        st.page_link("views/13_Campaign_Statements.py", label="See every topic and how stances are coded →")
 
     # Missed votes
     missed_all = load_missed()

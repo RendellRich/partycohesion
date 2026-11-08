@@ -219,3 +219,13 @@ def test_campaign_statements_other_topics():
         at.selectbox(key="cmp_topic").set_value(topic).run()
         assert not at.exception, [e.value for e in at.exception]
         assert len(at.dataframe[0].value) > 100
+
+
+def test_campaign_statements_on_member_page():
+    at = open_page("views/2_Member_Explorer.py")
+    box = at.selectbox(key="me_member")
+    box.set_value(option(box, "Fitzpatrick, Brian")).run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert "Campaign statements and votes" in [s.value for s in at.subheader]
+    text = html(at)
+    assert "2 of 3" in text and "physical barrier" in text
