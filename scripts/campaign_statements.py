@@ -41,7 +41,7 @@ OPPOSITE = {"Yea": "Nay", "Nay": "Yea"}
 CAST = {1: "Yea", -1: "Nay", 0: "Did not vote"}
 # Sentences about each topic, and look-alikes to skip ("Wall Street", "the Berlin Wall")
 TOPIC_RE = {
-    "border_wall": (r"\bwall\b|fence|barrier", r"wall street|berlin wall|wall of my office"),
+    "border_wall": (r"\bwalls?\b|fenc|barrier", r"wall street|berlin wall|wall of my office|red-tape barrier"),
     "abortion": (r"abortion|pro-life|pro-choice|unborn|roe v|reproductive|planned parenthood|sanctity of (human )?life|"
                  r"right to choose|life begins|born.alive|heartbeat|right to life", r"^$"),
     "background_checks": (r"background check|gun control|gun law|gun show|infring|second amendment|2nd amendment|"
