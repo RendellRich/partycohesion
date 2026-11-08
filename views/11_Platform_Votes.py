@@ -10,7 +10,7 @@ import streamlit as st
 from pathlib import Path
 
 from chart_utils import ACCENT, MUTED, ordinal
-from platform_utils import load_platform, member_platform_votes, member_summary, party_totals
+from platform_utils import load_platform, member_platform_votes, member_summary, member_topics, party_totals
 from ui import chips, display_name, fmt_date, html_table, inject_css, intro, metric_row, party_tag
 from vote_index import voteview_url
 
@@ -87,21 +87,24 @@ metric_row([
 ])
 metric_row([
     ("Democrats who voted against it", f"{int(d['members_against'])} of {int(d['members'])}",
-     f"at least once · {int(d['against'])} of {int(d['votes_cast']):,} votes"),
+     f"at least once · on {int(d['topics_against'])} of {int(d['topics_cast']):,} member topics"),
     ("Republicans who voted against it", f"{int(r['members_against'])} of {int(r['members'])}",
-     f"at least once · {int(r['against'])} of {int(r['votes_cast']):,} votes"),
+     f"at least once · on {int(r['topics_against'])} of {int(r['topics_cast']):,} member topics"),
 ])
-against = mv[mv["counts"] & mv["against"]].merge(topics[["topic_id", "topic"]], on="topic_id")
+against = member_topics(mv)
+against = against[against["against"]].merge(topics[["topic_id", "topic"]], on="topic_id")
 where = []
 for side in ("Democrat", "Republican"):
     by_topic = against[against["side"] == side].groupby("topic").size().sort_values(ascending=False)
     if len(by_topic):
         top2 = by_topic.head(2)
-        where.append(f"{int(top2.sum())} of the {int(by_topic.sum())} {"Democratic" if side == "Democrat" else side} votes against their platform came on "
-                     f"{'these topics' if len(top2) > 1 else 'this topic'}: "
+        where.append(f"{int(top2.sum())} of the {int(by_topic.sum())} times a {side} voted against their platform on a "
+                     f"topic came on {'these topics' if len(top2) > 1 else 'this topic'}: "
                      + " and ".join(f"{name} ({n})" for name, n in top2.items()))
-st.caption("Counted votes are direct, non-procedural roll calls. Don't read the two parties' totals as a ranking: "
-           "they depend on which topics qualify under the rules, and the list is still growing. "
+st.caption("Counted votes are direct, non-procedural roll calls. Each member counts once per topic (a member topic): "
+           "against their platform if they voted against it on any counted vote on that topic, so a topic with "
+           "several nearly identical votes weighs the same as a topic with one. Don't read the two parties' totals as "
+           "a ranking: they depend on which topics qualify under the rules, and the list is still growing. "
            + ". ".join(where) + ".")
 
 pres_counts = topics["congress"].map(PRESIDENT).value_counts()
@@ -123,6 +126,7 @@ These rules were written down before any member results were computed, and apply
    law, a program, a rate, a power), and at least one roll call must be on exactly that action.
 3. **Which votes count.** Votes on the measure itself: passage, final approval, a joint resolution, or an amendment
    that adds or removes the policy. Procedural votes such as cloture and budget waivers are shown, but not counted.
+   Each member counts once per topic, as against their platform if they voted against it on any counted vote on it.
 4. **Direct or related.** A direct vote is on exactly what the planks name. A related vote is on the same topic but a
    different or broader measure. Only direct votes count.
 5. **Every qualifying topic is included.** Topics aren't dropped to make the two sides even. Instead, the split is
@@ -148,15 +152,16 @@ if pick != "Choose a member":
                                                  on=["congress", "chamber", "rollnumber"])
     mine = mine.merge(topics[["topic_id", "topic"]], on="topic_id").sort_values("date")
     st.markdown(f"**{escape(pick)}** voted against the {row['side']} platform on **{int(row['against'])} of "
-                f"{int(row['cast'])}** counted votes.")
+                f"{int(row['cast'])}** topics they cast a counted vote on. Every vote is listed below.")
     html_table(["Date", "Topic", "Vote", "Their vote", "Platform vote", "Against platform", "Counted"],
                [[fmt_date(x.date), x.topic, x.measure, x.vote, x.platform_vote, "Yes" if x.against else "No",
                  "Yes" if x.counts else "No"] for x in mine.itertuples()], muted_cols=(0, 6))
 
 st.subheader("Who voted against their platform most often")
-st.caption("Counted votes only. A member can only be counted on votes held while they served in that chamber.")
+st.caption("Counted votes only, each topic once. A member can only be counted on votes held while they served in "
+           "that chamber.")
 top = ms[ms["against"] > 0].head(15)
-html_table(["Member", "Against their platform", "Counted votes cast"],
+html_table(["Member", "Topics against their platform", "Topics voted on"],
            [[l, int(a), int(c)] for l, a, c in zip(top["label"], top["against"], top["cast"])], muted_cols=(2,))
 
 st.subheader("Every topic")

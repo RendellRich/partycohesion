@@ -3,7 +3,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from platform_utils import load_platform, member_platform_votes, member_summary, party_totals, platform_year
+from platform_utils import (load_platform, member_platform_votes, member_summary, member_topics, party_totals,
+                            platform_year)
 from ui import display_name
 
 DATA = Path(__file__).resolve().parent.parent / "data"
@@ -74,7 +75,9 @@ def test_procedural_and_related_votes_are_shown_not_counted():
     assert len(links[~links["counts"]]) >= 3
     assert not mv.loc[(mv["procedural"] == "yes") | (mv["link"] == "related"), "counts"].any()
     ms = member_summary(mv)
-    assert ms["cast"].sum() == mv["counts"].sum()  # the per-member totals use counted votes only
+    counted = mv[mv["counts"]]
+    # the per-member totals use counted votes only, each member once per topic
+    assert ms["cast"].sum() == len(counted.drop_duplicates(["icpsr", "topic_id"]))
 
 
 def test_party_totals_add_up():
@@ -83,7 +86,19 @@ def test_party_totals_add_up():
     counted = mv[mv["counts"]]
     for side in ("Democrat", "Republican"):
         assert t.loc[side, "votes_cast"] == (counted["side"] == side).sum()
+        assert t.loc[side, "votes_against"] == (counted["against"] & (counted["side"] == side)).sum()
+        assert t.loc[side, "topics_against"] <= t.loc[side, "votes_against"]
         assert t.loc[side, "members_against"] <= t.loc[side, "members"]
+
+
+def test_repeated_votes_count_once_per_topic():
+    """A member who voted against their platform on several votes on one topic counts once for that topic."""
+    _, _, mv = scored()
+    mt = member_topics(mv)
+    assert not mt.duplicated(["icpsr", "topic_id"]).any()
+    # Six Davis-Bacon amendments (2017 to 2020): a Republican who voted no on all of them is one topic per Congress
+    db = mt[mt["topic_id"].str.startswith("davis_bacon") & mt["against"]]
+    assert db["votes_against"].max() > 1 and (db.groupby(["icpsr", "topic_id"]).size() == 1).all()
 
 
 def test_roman_numeral_suffix():

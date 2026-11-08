@@ -215,8 +215,8 @@ b_plat, b_cast, b_against = platform_record(b_id)
 if a_cast or b_cast:
     st.subheader("Votes on their party's platform")
     st.markdown("On topics where the Democratic and Republican platforms take opposite positions, how often each member "
-                "voted against their own party's platform. Counted votes only.")
-    html_table(["Member", "Against their party's platform", "Counted votes cast"],
+                "voted against their own party's platform. Counted votes only, each topic once.")
+    html_table(["Member", "Topics against their party's platform", "Topics voted on"],
                [[nm, str(ag) if c else "None", str(c)] for nm, ag, c in ((a_name, a_against, a_cast),
                                                                           (b_name, b_against, b_cast))],
                muted_cols=(2,))

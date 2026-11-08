@@ -113,7 +113,7 @@ if pick:
     ideo = member["nominate_dim1"]
     chambers = " and ".join(sorted(rows["chamber"].unique()))
     plat_rows, plat_cast, plat_against = platform_record(icpsr)
-    platform = (("Against party platform", f"{plat_against} of {plat_cast}", "counted Platform Votes")
+    platform = (("Against party platform", f"{plat_against} of {plat_cast}", "Platform Votes topics")
                 if plat_cast else ("Against party platform", "None", "No counted Platform Votes"))
     metric_row([
         unity, flip, platform,
@@ -154,7 +154,7 @@ if pick:
     else:
         side = plat_rows["side"].iloc[-1]
         st.markdown(f"On topics where the two parties' platforms take opposite positions, {short} voted against the "
-                    f"{side} platform on **{plat_against} of {plat_cast}** counted votes.")
+                    f"{side} platform on **{plat_against} of {plat_cast}** topics they cast a counted vote on.")
         show_all = st.toggle("Include procedural and related votes (not counted)", key="me_plat_all")
         shown = plat_rows if show_all else plat_rows[plat_rows["counts"]]
         html_table(["Date", "Vote", "Their vote", "Matches their platform"] + (["Counted"] if show_all else []),

@@ -208,13 +208,17 @@ st.markdown("""
 
 **Known imbalances in the Platform Votes data**
 
-- The list has 42 topics: 1 from the Bush years (the data starts in 2007), 16 from the Obama years, 15 from the Trump
+- The list has 48 topics: 1 from the Bush years (the data starts in 2007), 16 from the Obama years, 21 from the Trump
   years and 10 from the Biden years. Every topic that qualifies under the rules is included rather than dropping some
   to even out the count, and the page shows the split.
-- The topics are split about evenly by which platform backs the measure voted on (16 Democratic, 18 Republican and 2 with
-  both), but that balance comes from which bills reached the floor, not from a target. The Platform Votes page shows
+- By which platform backs the measure voted on, the topics split 17 Democratic, 22 Republican and 3 with both. The
+  balance comes from which bills reached the floor, not from a target. The Platform Votes page shows
   the current split. The two parties' totals depend heavily on which topics qualify, so read them as a description of
   these votes, not a ranking.
+- The House sometimes voted on nearly the same amendment several times. From 2017 to 2020 it voted six times on
+  amendments to cut off or drop Davis-Bacon prevailing wages. So that repetition doesn't decide the totals, each member
+  counts once per topic: against their platform if they voted against it on any counted vote on that topic. Every
+  individual vote is still listed on the Platform Votes and member pages.
 """)
 
 st.header("What This Site Does *Not* Do")
