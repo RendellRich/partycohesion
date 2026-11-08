@@ -33,6 +33,7 @@ RAW_DIR = DATA_DIR / "raw"
 MEMBERS_RAW = RAW_DIR / "HSall_members.csv"
 PROCESSED_FILE = DATA_DIR / "members_processed.csv"
 SUMMARY_FILE = DATA_DIR / "unity_summary.csv"
+MISSED_FILE = DATA_DIR / "missed_votes.csv"
 
 BASE_URL = "https://voteview.com/static/data/out"
 MEMBERS_URL = f"{BASE_URL}/members/HSall_members.csv"
@@ -60,6 +61,8 @@ PARTY_MAP = {
 # matches the official clerk totals.
 YEA_CODES = {1}
 NAY_CODES = {6}
+PRESENT_CODES = {7, 8}  # Voteview: present (not a Yea or Nay)
+NOT_VOTING_CODES = {9}  # Voteview: not voting while a member, for any reason
 
 
 def download(url: str, dest: Path, force: bool = True) -> None:
@@ -398,6 +401,27 @@ def build_vote_matrices(members: pd.DataFrame) -> None:
     print(f"Wrote vote matrices to {MATRIX_DIR.name}/ ({size / 1e6:.1f} MB)")
 
 
+def build_missed_votes(members: pd.DataFrame) -> None:
+    """Per member, Congress and chamber: roll calls held while they were a member (Voteview lists a member only on
+    votes held during their service), how many they did not vote on, and how many they answered present."""
+    rows = []
+    for cong in CONGRESSES:
+        for chamber, prefix in CHAMBERS.items():
+            ids = members.loc[(members["congress"] == cong) & (members["chamber"] == chamber), "icpsr"].unique()
+            votes = pd.read_csv(RAW_DIR / f"{prefix}{cong}_votes.csv", usecols=["rollnumber", "icpsr", "cast_code"])
+            votes = votes[votes["icpsr"].isin(ids) & votes["cast_code"].between(1, 9)]
+            g = votes.groupby("icpsr")["cast_code"].agg(
+                eligible="size",
+                missed=lambda c: int(c.isin(NOT_VOTING_CODES).sum()),
+                present=lambda c: int(c.isin(PRESENT_CODES).sum())).reset_index()
+            rows.append(g.assign(congress=cong, chamber=chamber))
+    out = pd.concat(rows, ignore_index=True)[["congress", "chamber", "icpsr", "eligible", "missed", "present"]]
+    out["icpsr"] = out["icpsr"].astype(int)
+    out.sort_values(["congress", "chamber", "icpsr"]).to_csv(MISSED_FILE, index=False)
+    print(f"Wrote {MISSED_FILE.name} ({len(out):,} rows; {out['missed'].sum():,} missed of "
+          f"{out['eligible'].sum():,} roll calls held while members served)")
+
+
 # ---------------------------------------------------------------------------
 # Position flips: recurring votes under presidents of both parties
 # ---------------------------------------------------------------------------
@@ -570,6 +594,9 @@ def process() -> None:
 
     print("\nBuilding vote matrices…")
     build_vote_matrices(members)
+
+    print("\nCounting missed votes…")
+    build_missed_votes(members)
 
     print("\nLinking the president's stated positions…")
     positions = link_president_positions()
