@@ -201,6 +201,16 @@ if (DATA / "campaign_statement_votes.csv").exists():
     known = cs.merge(all_votes[["congress", "chamber", "rollnumber"]], how="left", indicator=True)
     check((known["_merge"] == "both").all(), "campaign_statement_votes.csv has a roll call that isn't in all_votes.csv")
 
+# Member details: nearly every member has a row, and photo links point at the public-domain image set
+if (DATA / "member_details.csv").exists():
+    md = pd.read_csv(DATA / "member_details.csv")
+    check(md["bioguide_id"].is_unique, "member_details.csv lists a member twice")
+    check(md["bioguide_id"].nunique() >= 0.98 * members["bioguide_id"].nunique(),
+          "member_details.csv is missing members")
+    photos = md["photo_url"].fillna("")
+    check(((photos == "") | photos.str.startswith("https://unitedstates.github.io/images/")).all(),
+          "member_details.csv has a photo link outside the public-domain image set")
+
 # Cosponsored, then voted no
 if (DATA / "cosponsor_votes.csv").exists():
     cv = pd.read_csv(DATA / "cosponsor_votes.csv")

@@ -26,12 +26,27 @@ STATES = {
     "VI": "U.S. Virgin Islands", "AS": "American Samoa", "MP": "Northern Mariana Islands", "USA": "United States",
 }
 
+# Type: Public Sans (the U.S. Web Design System's typeface, made for government data) for everything, and
+# Source Serif 4 for the big questions and page titles, so headings read like the public record they come from.
+FONTS = ("https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400"
+         "&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap")
+SERIF = "'Source Serif 4', Georgia, serif"
+SANS = "'Public Sans', 'Segoe UI', system-ui, sans-serif"
+
 CSS = f"""
 <style>
-.pc-hero {{ font-size: 2.5rem; font-weight: 700; line-height: 1.2; max-width: 900px; margin: 0.5rem 0 1rem 0; }}
-.pc-intro {{ color: {MUTED}; font-size: 1.05rem; line-height: 1.6; max-width: 900px; margin-bottom: 1.25rem; }}
+@import url('{FONTS}');
+.stApp, .stApp p, .stApp li, .stApp label, .stApp input, .stApp textarea, .stApp button,
+.stApp [data-testid="stMarkdownContainer"] {{ font-family: {SANS}; }}
+.stApp h1 {{ font-family: {SERIF}; font-weight: 700; letter-spacing: -0.01em; }}
+.stApp h2, .stApp h3 {{ font-family: {SANS}; font-weight: 700; }}
+.stApp [data-testid="stMetricValue"], .pc-stat, .pc-metric-value {{ font-variant-numeric: tabular-nums; }}
+.stApp a:focus-visible, .stApp button:focus-visible {{ outline: 2px solid {ACCENT}; outline-offset: 2px; }}
+.pc-hero {{ font-family: {SERIF}; font-size: 2.6rem; font-weight: 700; line-height: 1.15; max-width: 22ch;
+            margin: 0.5rem 0 1rem 0; letter-spacing: -0.01em; }}
+.pc-intro {{ color: {MUTED}; font-size: 1.05rem; line-height: 1.6; max-width: 72ch; margin-bottom: 1.25rem; }}
 .pc-card {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 10px; padding: 20px; height: 100%; }}
-.pc-eyebrow {{ color: {ACCENT}; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }}
+.pc-eyebrow {{ color: {ACCENT}; font-size: 0.9rem; font-weight: 600; }}
 .pc-stat {{ font-size: 2.4rem; font-weight: 700; line-height: 1.2; margin: 6px 0 8px 0; }}
 .pc-body {{ color: {MUTED}; font-size: 1rem; line-height: 1.5; }}
 .pc-metric {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 10px; padding: 14px 16px; height: 100%; }}
@@ -54,6 +69,18 @@ CSS = f"""
 .pc-bar {{ display: flex; gap: 2px; height: 22px; }}
 .pc-bar span {{ display: block; height: 100%; border-radius: 3px; }}
 .pc-chips {{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }}
+.pc-share {{ display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 4px 0; }}
+.pc-share span {{ color: {MUTED}; font-size: 0.9rem; margin-right: 4px; }}
+.pc-share a {{ border: 1px solid {BORDER}; border-radius: 999px; padding: 4px 12px; font-size: 0.9rem; font-weight: 600;
+              color: #FAFAFA !important; text-decoration: none; }}
+.pc-share a:hover {{ border-color: {ACCENT}; }}
+.pc-person {{ display: grid; grid-template-columns: 112px 1fr; gap: 18px; align-items: start; margin: 6px 0 14px 0; }}
+.pc-person img {{ width: 112px; border-radius: 8px; border: 1px solid {BORDER}; }}
+.pc-facts {{ color: {MUTED}; font-size: 0.95rem; line-height: 1.7; }}
+.pc-facts b {{ color: #FAFAFA; font-weight: 600; }}
+.pc-facts a {{ color: {ACCENT}; }}
+@media (max-width: 640px) {{ .pc-person {{ grid-template-columns: 80px 1fr; }} .pc-person img {{ width: 80px; }}
+                             .pc-hero {{ font-size: 2rem; }} }}
 .pc-chip {{ border: 1px solid {BORDER}; border-radius: 999px; padding: 3px 10px; font-size: 0.85rem; font-weight: 600; }}
 </style>
 """
@@ -129,6 +156,26 @@ def display_name(name: str) -> str:
     return f"{first} {last}{suffix}".strip()
 
 
+SITE = "https://partycohesion.streamlit.app"
+
+
+def share_bar(text: str, path: str = "", params: dict | None = None) -> None:
+    """Share links for X, Facebook, Reddit and email, plus the page link to copy. path is the page's URL path
+    (e.g. "Members"); params are query parameters that open the same view (e.g. a member's profile)."""
+    from urllib.parse import quote, urlencode
+    url = f"{SITE}/{path}".rstrip("/") + (f"?{urlencode(params)}" if params else "")
+    u, t = quote(url, safe=""), quote(text, safe="")
+    links = [("X", f"https://twitter.com/intent/tweet?text={t}&url={u}"),
+             ("Facebook", f"https://www.facebook.com/sharer/sharer.php?u={u}"),
+             ("Reddit", f"https://www.reddit.com/submit?url={u}&title={t}"),
+             ("Email", f"mailto:?subject={t}&body={quote(text + chr(10) + chr(10) + url, safe='')}")]
+    st.markdown('<div class="pc-share"><span>Share</span>' + "".join(
+        f'<a href="{escape(h)}" target="_blank" rel="noopener" aria-label="Share on {n}">{n}</a>' for n, h in links)
+        + "</div>", unsafe_allow_html=True)
+    st.caption("Or copy this link:")
+    st.code(url, language=None)
+
+
 def last_name(name: str) -> str:
     return str(name).split(",")[0].strip()
 
@@ -141,8 +188,8 @@ def congress_years(first: int, last: int, newest: int) -> str:
 
 def member_header(name: str, party: str, state: str, chamber: str, first: int, last: int, newest: int) -> None:
     from chart_utils import ordinal
-    place = f"{STATES.get(state, state)} · {chamber} · {ordinal(first)} to {ordinal(last)} Congress " \
-            f"({congress_years(first, last, newest)})" + (" · data starts in 2007" if int(first) == 110 else "")
+    place = f"{STATES.get(state, state)}, {chamber}, {ordinal(first)} to {ordinal(last)} Congress " \
+            f"({congress_years(first, last, newest)})" + ("; data starts in 2007" if int(first) == 110 else "")
     st.markdown(f'<div class="pc-name">{escape(display_name(name))} {party_tag(party)}</div>'
                 f'<div class="pc-place">{escape(place)}</div>', unsafe_allow_html=True)
 
@@ -182,7 +229,7 @@ def vote_card(v: pd.Series, broke: pd.DataFrame, link: str | None = None) -> Non
         who = (f'<div style="margin-top:14px;font-weight:600">{len(broke)} member{"s" if len(broke) != 1 else ""} voted '
                f"against their party's majority</div>{chips(names)}")
     source = (f'<div style="margin-top:14px"><a href="{escape(link)}" target="_blank" rel="noopener" '
-              f'style="color:{ACCENT}">Full record on Voteview →</a></div>') if link else ""
+              f'style="color:{ACCENT}">Full record on Voteview</a></div>') if link else ""
     st.markdown(f'<div class="pc-card"><div class="pc-eyebrow">{escape(eyebrow)}</div>'
                 f'<div style="font-size:1.4rem;font-weight:600;margin:6px 0 4px 0">{escape(str(v["label"]))}</div>'
                 f'<div class="pc-body">{escape(result)}</div><div class="pc-bars">{bars}</div>'

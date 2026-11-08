@@ -40,7 +40,7 @@ def plank_html(t, party: str) -> str:
     return (f'<div style="margin:8px 0">{party_tag(party)} <span class="pc-body">· {year} platform{escape(year_note)} · '
             f'<b>{escape(t[f"{p}_stance"])}</b></span><div class="pc-body" style="margin-top:4px">'
             f'{escape(t[f"{p}_plank"])} <a href="{escape(t[f"{p}_source"])}" target="_blank" rel="noopener" '
-            f'style="color:{ACCENT}">Platform text →</a> <span style="font-size:0.85rem">({escape(t[f"{p}_check"])})</span>'
+            f'style="color:{ACCENT}">Platform text</a> <span style="font-size:0.85rem">({escape(t[f"{p}_check"])})</span>'
             f'</div></div>')
 
 
@@ -67,7 +67,7 @@ def vote_html(link, against: pd.DataFrame) -> str:
             f'<div style="margin:4px 0 6px 0">{tags}</div><div class="pc-body">{escape(result)}</div>'
             f'<div class="pc-body">{escape(platform)}</div>{who}{note}'
             f'<div style="margin-top:12px"><a href="{escape(url)}" target="_blank" rel="noopener" '
-            f'style="color:{ACCENT}">Full record on Voteview →</a></div></div>')
+            f'style="color:{ACCENT}">Full record on Voteview</a></div></div>')
 
 
 inject_css()

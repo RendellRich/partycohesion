@@ -5,7 +5,7 @@ import streamlit as st
 
 st.title("Methodology & Sources")
 st.markdown("Transparent definitions so anyone can understand (and critique) the numbers.")
-st.page_link("views/9_How_It_Works.py", label="New here? Start with How We Measure Consistency, a step-by-step example →")
+st.page_link("views/9_How_It_Works.py", label="New here? Start with How We Measure Consistency, a step-by-step example")
 
 st.header("Data Coverage")
 st.markdown("""

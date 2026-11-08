@@ -205,7 +205,7 @@ if flips["icpsr"].isin([a_id, b_id]).any():
     html_table(["Type of vote", a_name, b_name],
                [["All five types" if c == "All categories" else c, flip_cell(a_id, c), flip_cell(b_id, c)]
                 for c in FLIP_CATEGORIES], raw_cols=(1, 2))
-    st.page_link("views/9_How_It_Works.py", label="How this is measured →")
+    st.page_link("views/9_How_It_Works.py", label="How this is measured")
 
 # ---------------------------------------------------------------------------
 # Platform Votes side by side
@@ -229,7 +229,7 @@ if a_cast or b_cast:
                      f"{x.vote_b}{' (against platform)' if x.against_b else ''}"]
                     for x in both.sort_values("date_a", ascending=False).itertuples()], muted_cols=(0,))
         st.caption("Counted votes both members cast. Each is compared with their own party's platform.")
-    st.page_link("views/11_Platform_Votes.py", label="See every topic and the rules →")
+    st.page_link("views/11_Platform_Votes.py", label="See every topic and the rules")
 
 # ---------------------------------------------------------------------------
 # Party unity side by side

@@ -54,22 +54,22 @@ top = breaks.sort_values("broke", ascending=False).iloc[0] if len(breaks) else N
 
 c1, c2, c3 = st.columns(3, gap="medium")
 with c1:
-    card("POSITION FLIPS", f"{pct_consistent:.0f}%",
+    card("Position flips", f"{pct_consistent:.0f}%",
          f"of current members ({len(scored)} with enough comparable votes) cast the same vote on debt limits, "
          "government funding, disaster aid and war powers under presidents of both parties, comparing like with like.")
-    st.page_link("views/7_Position_Flips.py", label="See every member →")
-    st.page_link("views/9_How_It_Works.py", label="How this is measured →")
+    st.page_link("views/7_Position_Flips.py", label="See every member")
+    st.page_link("views/9_How_It_Works.py", label="How this is measured")
 with c2:
-    card("PARTY UNITY", f"{means.min():.0f}–{means.max():.0f}%",
+    card("Party unity", f"{means.min():.0f}–{means.max():.0f}%",
          f"Average share of the {ordinal(latest)} Congress's {n_unity:,} party-line votes on which members sided with "
          "their own party.")
-    st.page_link("views/2_Member_Explorer.py", label="Explore members →")
+    st.page_link("views/2_Member_Explorer.py", label="Explore members")
 with c3:
     if top is not None:
         label = str(top["vote_desc"] if pd.notna(top["vote_desc"]) else top["bill_number"])
-        card("BIGGEST PARTY BREAK", f"{int(top['broke'])} members",
+        card("Biggest party break", f"{int(top['broke'])} members",
              f"voted against their own party's majority on {label[:90]} ({top['chamber']}, {top['date']}).")
-    st.page_link("views/5_Key_Votes.py", label="See who broke ranks →")
+    st.page_link("views/5_Key_Votes.py", label="See who broke ranks")
 
 # Finding 4: Platform Votes, every Congress in the data
 plat_topics, plat_links = load_platform()
@@ -78,15 +78,42 @@ pd_, pr_ = plat.loc["Democrat"], plat.loc["Republican"]
 st.write("")
 p1, p2 = st.columns(2, gap="medium")
 with p1:
-    card("PLATFORM VOTES · DEMOCRATS", f"{int(pd_['members_against'])} of {int(pd_['members'])}",
+    card("Platform votes, Democrats", f"{int(pd_['members_against'])} of {int(pd_['members'])}",
          "Democrats voted against their own party's platform at least once, on topics where the two parties' "
          f"platforms take opposite, specific positions ({len(plat_topics)} topics since 2007).")
 with p2:
-    card("PLATFORM VOTES · REPUBLICANS", f"{int(pr_['members_against'])} of {int(pr_['members'])}",
+    card("Platform votes, Republicans", f"{int(pr_['members_against'])} of {int(pr_['members'])}",
          "Republicans voted against their own party's platform at least once, on the same topics. The totals depend "
          "on which topics qualify under the published rules, so they describe these votes, not which party is more "
          "loyal.")
-st.page_link("views/11_Platform_Votes.py", label="See every topic, vote and member →")
+st.page_link("views/11_Platform_Votes.py", label="See every topic, vote and member")
+
+# Findings 5 to 7: missed votes, cosponsored then voted no, campaign statements
+missed = pd.read_csv(DATA_DIR / "missed_votes.csv")
+missed_pct = 100 * missed["missed"].sum() / missed["eligible"].sum()
+house_median = (100 * missed["missed"] / missed["eligible"])[missed["chamber"] == "House"].median()
+co_votes = pd.read_csv(DATA_DIR / "cosponsor_votes.csv")
+co_nays = pd.read_csv(DATA_DIR / "cosponsor_nays.csv").merge(
+    co_votes[["congress", "chamber", "rollnumber", "changed_before_vote"]], on=["congress", "chamber", "rollnumber"])
+camp = pd.read_csv(DATA_DIR / "campaign_statement_votes.csv")
+camp_diff = camp[camp["same_direction"] == "No"]
+st.write("")
+f1, f2, f3 = st.columns(3, gap="medium")
+with f1:
+    card("Missed votes", f"{missed_pct:.1f}%",
+         f"of roll calls held while they served were missed by members since 2007. The typical House member misses "
+         f"{house_median:.1f}% in a Congress, and a small group accounts for most absences.")
+    st.page_link("views/2_Member_Explorer.py", label="Look up a member")
+with f2:
+    card("Cosponsored, then voted no", f"{len(co_nays):,}",
+         f"times a bill's own sponsor or cosponsor voted against it on final passage. Only "
+         f"{int((~co_nays['changed_before_vote']).sum())} of those came on text that hadn't changed since they signed.")
+    st.page_link("views/12_Cosponsored_Then_No.py", label="See every case")
+with f3:
+    card("Campaign statements", f"{(camp['same_direction'] == 'Yes').sum()} of {len(camp)}",
+         f"clear positions on House members' own campaign websites were followed by a vote in the same direction. "
+         f"{len(camp_diff)} went the other way.")
+    st.page_link("views/13_Campaign_Statements.py", label="Read the statements")
 
 st.write("")
 m1, m2, m3, m4 = st.columns(4)
