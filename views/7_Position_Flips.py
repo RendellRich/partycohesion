@@ -7,6 +7,7 @@ import streamlit as st
 from pathlib import Path
 from chart_utils import show_chart, ordinal, PATTERN_COLORS, ACCENT, MUTED
 from flip_utils import add_chamber_control, flip_scores, MIN_VOTES_EACH_SIDE
+from ui import explainer
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 CATEGORIES = ["All categories", "Debt limit", "Stopgap funding", "Full-year funding", "Disaster aid", "War powers limits"]
@@ -42,6 +43,9 @@ st.markdown(
     "for disaster relief, and limiting the president's power to keep troops in combat. This page checks whether a member's vote on those "
     "questions **stays the same no matter who is president**, or **changes when the White House changes parties**."
 )
+explainer("Consistent means a member's vote on these questions didn't depend on which party held the White House. "
+          "A vote that changed with the White House isn't wrong on its own: members often point to changes in the "
+          "bill or the times, and the vote can't show their reasons.")
 
 st.page_link("views/9_How_It_Works.py", label="New here? See the math step by step with a real member")
 

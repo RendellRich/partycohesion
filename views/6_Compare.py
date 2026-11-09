@@ -13,7 +13,7 @@ import streamlit as st
 from chart_utils import PAIR_COLORS, ordinal, show_chart
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import platform_record
-from ui import STATES, card, display_name, fmt_date, html_table, inject_css, intro, last_name, metric_card, party_tag, pattern_badge
+from ui import explainer, STATES, card, display_name, fmt_date, html_table, inject_css, intro, last_name, metric_card, party_tag, pattern_badge
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 MATRIX_DIR = DATA_DIR / "matrices"
@@ -102,6 +102,9 @@ newest = int(members["congress"].max())
 st.title("Compare Members")
 intro("Pick any two members to see how often they voted the same way while serving together, their party unity side "
       "by side, and the key votes where they split.")
+explainer('Pick two members to see how often they voted the same way while serving together. Members of the '
+          'same party agree on most votes, so the surprises are a low number between two allies or a high one '
+          'across parties.')
 
 # One entry per person (Voteview ID), labeled with their most recent party, state and chamber
 latest = members.sort_values("congress").groupby("icpsr").tail(1)

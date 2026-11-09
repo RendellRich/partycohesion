@@ -11,7 +11,7 @@ from pathlib import Path
 
 from chart_utils import ACCENT, MUTED, ordinal
 from platform_utils import load_platform, member_platform_votes, member_summary, member_topics, party_totals
-from ui import chips, display_name, fmt_date, html_table, inject_css, intro, metric_row, party_tag
+from ui import explainer, chips, display_name, fmt_date, html_table, inject_css, intro, metric_row, party_tag
 from vote_index import voteview_url
 
 PRESIDENT = {110: "Bush", 111: "Obama", 112: "Obama", 113: "Obama", 114: "Obama", 115: "Trump", 116: "Trump", 117: "Biden", 118: "Biden", 119: "Trump", 120: "Trump"}
@@ -77,6 +77,9 @@ st.title("Platform Votes")
 intro("Votes where the Democratic and Republican platforms took opposite, specific positions, and the members who "
       "voted against their own party's platform. A platform is each party's official policy document, adopted at its "
       "convention. It is not a personal promise from each member, and members often give reasons a roll call can't show.")
+explainer('Each party adopts a platform every four years. This page finds votes where the two platforms took '
+          "opposite sides and shows who voted against their own party's platform. A platform is the party's "
+          'document, not a promise each member signed.')
 
 totals = party_totals(mv).set_index("party")
 counted = links[links["counts"]]

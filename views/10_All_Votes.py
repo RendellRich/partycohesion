@@ -8,7 +8,7 @@ import streamlit as st
 
 from chart_utils import chamber_label, ordinal
 from platform_utils import platform_roll_calls
-from ui import inject_css, intro, metric_row, vote_card
+from ui import explainer, inject_css, intro, metric_row, vote_card
 from vote_index import load_votes, members_who_broke_ranks, search_votes, voteview_url
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -31,6 +31,9 @@ members = load_members()
 st.title("All Votes")
 intro(f"Every House and Senate roll call since 2007, {len(votes):,} in all. Search by bill number or words in the "
       "bill's title, see how each party voted, and exactly who voted against their own party.")
+explainer('Every roll call is here. Search for a bill to see how each party split and which members voted '
+          "against their own party's majority. Voting against the party isn't good or bad on its own; it shows "
+          'where a member parted ways with most of their colleagues.')
 
 q = st.text_input("Search", "", key="av_q", placeholder="e.g. H.R. 1, S. 5, debt limit, infrastructure")
 st.caption("Tip: Senate records often list a bill by its formal title, so search by bill number (like S. 5) to find "

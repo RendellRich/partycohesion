@@ -13,7 +13,7 @@ import streamlit as st
 from chart_utils import ACCENT, MUTED, PARTY_COLORS, ordinal, show_chart
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import platform_record
-from ui import (display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row,
+from ui import (explainer, display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row,
                 pattern_badge, share_bar)
 from vote_index import load_votes, member_record, search_votes, voteview_url
 
@@ -125,6 +125,10 @@ newest = int(df["congress"].max())
 st.title("Members")
 intro("Look up any member of Congress since 2007: how often they vote with their party, whether their votes change "
       "with the White House, and where they sit ideologically.")
+explainer("A member's record shows how often they side with their party, whether their votes shift when the "
+          'White House changes hands, and, for many House members, what their campaign website said. High party '
+          "unity is normal in today's Congress, so the votes where a member breaks from their party usually "
+          'tell you the most.')
 
 # One entry per person, labeled with their most recent party, state and chamber
 latest = df.sort_values("congress").groupby("icpsr").tail(1)

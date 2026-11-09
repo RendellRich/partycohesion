@@ -8,10 +8,12 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from chart_utils import ordinal
+import plotly.graph_objects as go
+
+from chart_utils import BG, MUTED, PARTY_COLORS, ordinal, show_chart
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import all_member_platform_votes, load_platform, party_totals
-from ui import card, fmt_date, inject_css
+from ui import card, display_name, fmt_date, inject_css
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -36,6 +38,41 @@ st.markdown('<div class="pc-hero">Do members of Congress vote the same way no ma
 st.markdown('<div class="pc-intro">PartyCohesion uses the official roll-call record, every vote since 2007, to show how '
             "often each member sides with their party, and whether their position on the same question changes when the "
             "White House changes hands. No scorecards, no opinions: the votes and the method.</div>", unsafe_allow_html=True)
+
+# Look up a member: the most common reason someone opens the site
+pick_list = current.sort_values("congress").drop_duplicates("icpsr", keep="last").sort_values("name")
+pick_list = pick_list[pick_list["bioguide_id"].notna()]
+labels = {f"{display_name(r.name)} ({r.party[0]}-{r.state_abbrev}, {r.chamber})": r.bioguide_id
+          for r in pick_list.itertuples()}
+who = st.selectbox("Look up your representative or senator", list(labels), index=None,
+                   placeholder="Type a name, e.g. Ocasio-Cortez or Cruz", key="home_lookup")
+if who:
+    st.switch_page("views/2_Member_Explorer.py", query_params={"member": labels[who]})
+
+# Party unity over time: the one chart on Home
+unity = (members[members["party"].isin(["Democrat", "Republican"])]
+         .groupby(["congress", "party"])["party_unity_pct"].mean().reset_index())
+unity["year"] = 2 * unity["congress"] + 1787
+fig = go.Figure()
+for party in ("Democrat", "Republican"):
+    u = unity[unity["party"] == party]
+    fig.add_trace(go.Scatter(
+        x=u["year"], y=u["party_unity_pct"], name=party, mode="lines+markers",
+        line=dict(color=PARTY_COLORS[party], width=2), marker=dict(size=8, line=dict(color=BG, width=2)),
+        customdata=u["congress"].map(ordinal),
+        hovertemplate=f"{party}s, %{{customdata}} Congress (%{{x}}): %{{y:.1f}}%<extra></extra>"))
+    end = u.iloc[-1]
+    fig.add_annotation(x=end["year"], y=end["party_unity_pct"], text=f"{party}s {end['party_unity_pct']:.0f}%",
+                       xanchor="left", xshift=10, showarrow=False, font=dict(size=13))
+fig.update_layout(height=360, hovermode="x unified", margin=dict(r=140, l=10, b=10),
+                  legend=dict(orientation="h", y=1.02, x=0, yanchor="bottom"),
+                  yaxis=dict(range=[80, 100], ticksuffix="%", title=None),
+                  xaxis=dict(dtick=4, title=None, range=[2005.5, int(unity["year"].max()) + 0.8]))
+show_chart(fig, "Share of party-line votes cast with their own party, average member, by Congress",
+           "party_unity_over_time")
+st.caption("A party-line vote is one where most Democrats and most Republicans voted on opposite sides. The vertical "
+           "axis starts at 80% so the change between Congresses is visible.")
+st.write("")
 
 # Finding 1: Position Flips, current members
 scores = flip_scores(flip_votes).merge(current[["icpsr"]].drop_duplicates(), on="icpsr")
@@ -68,7 +105,7 @@ with c3:
     if top is not None:
         label = str(top["vote_desc"] if pd.notna(top["vote_desc"]) else top["bill_number"])
         card("Biggest party break", f"{int(top['broke'])} members",
-             f"voted against their own party's majority on {label[:90]} ({top['chamber']}, {top['date']}).")
+             f"voted against their own party's majority on {label[:90]} ({top['chamber']}, {fmt_date(top['date'])}).")
     st.page_link("views/5_Key_Votes.py", label="See who broke ranks")
 
 # Finding 4: Platform Votes, every Congress in the data

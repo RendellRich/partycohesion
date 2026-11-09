@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from ui import display_name, inject_css, intro, metric_row
+from ui import explainer, display_name, inject_css, intro, metric_row
 from vote_index import voteview_url
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -31,6 +31,9 @@ st.title("Campaign Statements and Votes")
 intro("What House members wrote on their own campaign websites, next to how they voted on the closest roll call "
       "after the election. The statements are in the candidates' own words. The site only marks whether the vote "
       "went in the same direction as the statement.")
+explainer('Candidates tell voters where they stand on their campaign websites. This page lines those words up '
+          "with the next vote on the same issue. Nearly all match; the few that don't are worth a closer look, "
+          "but one vote can't show why it went that way.")
 
 topic = st.selectbox("Topic", sorted(rows["topic"].unique()), key="cmp_topic")
 view = rows[rows["topic"] == topic]

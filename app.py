@@ -18,7 +18,7 @@ if drop_changed_local_modules():
 
 from chart_utils import EXPORT_SIZES, DEFAULT_EXPORT, clear_cache_if_data_changed
 from site_status import show_refresh_notice
-from ui import share_bar
+from ui import inject_css, share_bar
 
 st.set_page_config(
     page_title="PartyCohesion",
@@ -56,6 +56,7 @@ pages = {
 }
 
 nav = st.navigation(pages)
+inject_css()  # site styles for every page, including pages that don't load them themselves
 
 with st.sidebar:
     st.radio("Chart download size", list(EXPORT_SIZES), key="export_size",
