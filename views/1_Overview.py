@@ -6,6 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
 from chart_utils import show_chart, ordinal, chamber_label, PARTY_COLORS
+from ui import explainer
 
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "members_processed.csv"
@@ -18,6 +19,8 @@ df = load_members()
 
 st.title("Overview")
 st.markdown("Party and ideology patterns in recent Congresses. Scores are derived from roll-call voting behavior.")
+explainer('This is the big picture for one Congress: how tightly each party votes together and how far apart '
+          'the two parties sit. Pick a Congress and chamber to compare years.')
 
 # Filters
 col_f1, col_f2 = st.columns(2)

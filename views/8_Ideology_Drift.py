@@ -5,6 +5,7 @@ import plotly.express as px
 import streamlit as st
 from pathlib import Path
 from chart_utils import show_chart, ordinal, PARTY_COLORS, MUTED, ACCENT
+from ui import explainer
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 NOISE = 0.10  # per-Congress scores move this much from noise alone; smaller changes aren't flagged
@@ -37,6 +38,9 @@ st.markdown(
     "**on their own**? Scores are Voteview's per-Congress ideology estimates: negative is more liberal, positive is "
     "more conservative."
 )
+explainer('Every member gets a score from liberal to conservative based on how they vote. This page shows '
+          "whether a member's score moved over their career, and whether they moved along with their party or "
+          'on their own.')
 with st.expander("How to read this page"):
     st.markdown(f"""
 - **Own change:** the member's score in their latest Congress minus their score in their first Congress here.

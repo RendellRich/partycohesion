@@ -7,7 +7,7 @@ import pandas as pd
 import streamlit as st
 
 from chart_utils import ordinal
-from ui import display_name, fmt_date, inject_css, intro, metric_row
+from ui import explainer, display_name, fmt_date, inject_css, intro, metric_row
 from vote_index import voteview_url
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -40,6 +40,9 @@ st.title("Cosponsored, Then Voted No")
 intro("Members who put their name on a bill as its sponsor or a cosponsor, and then voted against it on final "
       "passage. A bill often changes between signing and the vote, so each case shows whether its text had changed "
       "first.")
+explainer('Signing on to a bill is a public show of support. Sometimes the same member votes no when the bill '
+          'reaches the floor, most often because it was changed after they signed. The "text changed before '
+          'vote" column tells those cases apart.')
 
 cast = int(votes["signers_voting"].sum())
 unchanged = rows[~rows["changed_before_vote"]]

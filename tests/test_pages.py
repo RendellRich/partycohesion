@@ -260,3 +260,17 @@ def test_member_deep_link_details_and_share():
     text = html(at)
     assert "pc-person" in text and "fitzpatrick.house.gov" in text and "Committees:" in text
     assert any("member=F000466" in c.value for c in at.code)
+
+
+def test_home_lookup_and_unity_chart():
+    at = open_page("views/0_Home.py")
+    assert not at.exception, [e.value for e in at.exception]
+    box = at.selectbox(key="home_lookup")
+    box.set_value(option(box, "Brian Fitzpatrick")).run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert at.query_params.get("member") in ("F000466", ["F000466"])
+
+
+def test_page_explainers():
+    for page in ("views/10_All_Votes.py", "views/11_Platform_Votes.py", "views/13_Campaign_Statements.py"):
+        assert "What this means" in html(open_page(page))

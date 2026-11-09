@@ -20,7 +20,7 @@ SOURCE = "partycohesion.streamlit.app · Data: Voteview"
 # chart marks on BG; text colors pass 4.5:1. Colors never carry meaning alone.
 MUTED = "#A8A29E"
 ACCENT = "#E9C46A"          # highlights "this member" and links
-PARTY_COLORS = {"Democrat": "#5B9BD5", "Republican": "#E06C6C", "Independent": "#A8A29E"}
+PARTY_COLORS = {"Democrat": "#5A97D2", "Republican": "#E06C6C", "Independent": "#A8A29E"}
 # Position Flips: one hue at different strengths, so no pattern reads as good or bad
 PATTERN_COLORS = {"Consistent": "#E7DFF5", "Partly changed": "#B9A6E3", "Changed with the White House": "#8C6BD1",
                   "Opposite pattern": "#7A8597"}

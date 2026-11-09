@@ -42,6 +42,8 @@ CSS = f"""
 .stApp h2, .stApp h3 {{ font-family: {SANS}; font-weight: 700; }}
 .stApp [data-testid="stMetricValue"], .pc-stat, .pc-metric-value {{ font-variant-numeric: tabular-nums; }}
 .stApp a:focus-visible, .stApp button:focus-visible {{ outline: 2px solid {ACCENT}; outline-offset: 2px; }}
+.stApp [data-testid="stMain"] [data-testid="stPageLink-NavLink"] p {{ color: {ACCENT}; font-weight: 600; }}
+.stApp [data-testid="stMain"] [data-testid="stPageLink-NavLink"]:hover p {{ text-decoration: underline; }}
 .pc-hero {{ font-family: {SERIF}; font-size: 2.6rem; font-weight: 700; line-height: 1.15; max-width: 22ch;
             margin: 0.5rem 0 1rem 0; letter-spacing: -0.01em; }}
 .pc-intro {{ color: {MUTED}; font-size: 1.05rem; line-height: 1.6; max-width: 72ch; margin-bottom: 1.25rem; }}
@@ -69,6 +71,9 @@ CSS = f"""
 .pc-bar {{ display: flex; gap: 2px; height: 22px; }}
 .pc-bar span {{ display: block; height: 100%; border-radius: 3px; }}
 .pc-chips {{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }}
+.pc-explain {{ border-left: 3px solid {ACCENT}; background: {SURFACE}; border-radius: 0 8px 8px 0; padding: 12px 16px;
+               max-width: 72ch; color: #E7E5E4; font-size: 0.98rem; line-height: 1.55; margin: 0 0 18px 0; }}
+.pc-explain-title {{ color: {ACCENT}; font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }}
 .pc-share {{ display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 4px 0; }}
 .pc-share span {{ color: {MUTED}; font-size: 0.9rem; margin-right: 4px; }}
 .pc-share a {{ border: 1px solid {BORDER}; border-radius: 999px; padding: 4px 12px; font-size: 0.9rem; font-weight: 600;
@@ -92,6 +97,12 @@ def inject_css() -> None:
 
 def intro(text: str) -> None:
     st.markdown(f'<div class="pc-intro">{escape(text)}</div>', unsafe_allow_html=True)
+
+
+def explainer(text: str) -> None:
+    """A short plain-language note for first-time visitors, shown under a page's intro."""
+    st.markdown(f'<div class="pc-explain"><div class="pc-explain-title">What this means</div>{escape(text)}</div>',
+                unsafe_allow_html=True)
 
 
 def card(eyebrow: str, stat: str, body: str) -> None:

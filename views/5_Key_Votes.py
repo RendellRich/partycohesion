@@ -8,7 +8,7 @@ import plotly.express as px
 import streamlit as st
 
 from chart_utils import PARTY_COLORS, chamber_label, ordinal, show_chart
-from ui import inject_css, intro, metric_row, vote_card
+from ui import explainer, inject_css, intro, metric_row, vote_card
 from vote_index import voteview_url
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -51,6 +51,9 @@ members, summary, votes, defectors = load_data()
 st.title("Key Votes")
 intro("The highest-profile votes in each Congress, how each party split, and exactly who voted against their own "
       "party. Three series are picked by a published rule, and one hand-picked list is labeled as such.")
+explainer('These are the highest-profile votes of each Congress. The bars show how each party split, and the '
+          'names show who crossed party lines. A member may cross for their district, their beliefs or a change '
+          "to the bill, and the vote alone doesn't say which.")
 
 f1, f2, _ = st.columns([1.2, 1, 0.8])
 with f1:
