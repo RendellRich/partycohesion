@@ -11,6 +11,7 @@ import plotly.express as px
 import streamlit as st
 
 from chart_utils import ACCENT, MUTED, PARTY_COLORS, ordinal, show_chart
+from seat_map import seat_map
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import platform_record
 from ui import (explainer, display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row,
@@ -143,6 +144,8 @@ bioguide_of = dict(zip(latest["icpsr"], latest["bioguide_id"]))
 label_of = {bioguide_of[i]: lab for lab, i in options.items() if pd.notna(bioguide_of.get(i))}
 linked = label_of.get(st.query_params.get("member", ""))
 labels = list(options)
+if "me_pending" in st.session_state:  # a seat clicked on the map below opens that member
+    st.session_state["me_member"] = st.session_state.pop("me_pending")
 pick = st.selectbox("Find a member", labels, index=labels.index(linked) if linked else None,
                     placeholder="Type a name…", key="me_member")
 
@@ -192,6 +195,25 @@ if pick:
          f"{rows['congress'].nunique()} Congress{'es' if rows['congress'].nunique() > 1 else ''}, {chambers}"
          + (" (data starts in 2007)" if int(rows["congress"].min()) == int(df["congress"].min()) else "")),
     ])
+
+    # Their seat in the chamber, in their most recent Congress
+    room = (df[(df["congress"] == member["congress"]) & (df["chamber"] == member["chamber"])]
+            .drop_duplicates("icpsr", keep="last").copy())
+    room["label"] = [f"{display_name(r.name)} ({r.party[0]}-{r.state_abbrev})" for r in room.itertuples()]
+    if pd.notna(ideo) and room["nominate_dim1"].notna().all():
+        when = "this Congress" if int(member["congress"]) == newest else f"the {ordinal(member['congress'])} Congress"
+        seat_event = show_chart(seat_map(room, member["chamber"], highlight=icpsr, highlight_name=short),
+                                f"{display_name(member['name'])} in the {member['chamber']}, {ordinal(member['congress'])} Congress",
+                                f"seat_map_{short.lower().replace(' ', '_')}",
+                                key=f"me_seat_{icpsr}_{st.session_state.get('me_seat_clicks', 0)}", on_select="rerun")
+        st.caption(f"Every member who served in the {member['chamber']} in {when}, one dot each, placed left to right "
+                   f"by Voteview ideology score. {short}'s seat is ringed. Click any other dot to open that member.")
+        clicked = (seat_event or {}).get("selection", {}).get("points", []) if seat_event else []
+        target = clicked[0].get("customdata", [None, None, ""])[2] if clicked else ""
+        if target and target != bioguide and target in label_of:
+            st.session_state["me_pending"] = label_of[target]
+            st.session_state["me_seat_clicks"] = st.session_state.get("me_seat_clicks", 0) + 1
+            st.rerun()
 
     # Same question, different president
     st.subheader("Same question, different president")

@@ -274,3 +274,13 @@ def test_home_lookup_and_unity_chart():
 def test_page_explainers():
     for page in ("views/10_All_Votes.py", "views/11_Platform_Votes.py", "views/13_Campaign_Statements.py"):
         assert "What this means" in html(open_page(page))
+
+
+def test_member_page_seat_map_highlights_member():
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=120)
+    at.query_params["member"] = "F000466"
+    at.run()
+    at.switch_page("views/2_Member_Explorer.py")
+    at.run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert any("seat is ringed" in c.value for c in at.caption)
