@@ -7,7 +7,7 @@ st.title("Methodology & Sources")
 st.markdown("Transparent definitions so anyone can understand (and critique) the numbers.")
 st.page_link("views/9_How_It_Works.py", label="New here? Start with How We Measure Consistency, a step-by-step example")
 
-st.header("Data Coverage")
+st.header("Data coverage")
 st.markdown("""
 - **Years:** the 110th Congress (2007) to the present. Votes before 2007 are not included, so a member who served
   earlier is scored only on votes from 2007 on, and their profile says the data starts in 2007.
@@ -15,7 +15,7 @@ st.markdown("""
 - **Chambers:** House and Senate. Non-voting delegates appear in member lists but are left out of Ideology Drift.
 """)
 
-st.header("Primary Data Source")
+st.header("Primary data source")
 st.markdown("""
 All ideology scores and member biographical data shown on this site come from:
 
@@ -26,7 +26,7 @@ https://voteview.com/
 Voteview provides the research-standard DW-NOMINATE scores and the underlying roll-call matrix for the U.S. Congress from 1789 to the present. Data are updated as new votes occur.
 """)
 
-st.header("DW-NOMINATE Ideology Score (Dimension 1)")
+st.header("DW-NOMINATE ideology score (first dimension)")
 st.markdown("""
 DW-NOMINATE is a scaling procedure that places legislators in a low-dimensional space based solely on their recorded floor votes. 
 
@@ -37,7 +37,7 @@ DW-NOMINATE is a scaling procedure that places legislators in a low-dimensional 
 These scores are **not** opinions or survey responses. They are statistical summaries of actual voting behavior.
 """)
 
-st.header("Party Unity Rate")
+st.header("Party unity rate")
 st.markdown("""
 The **party unity rate** is the classic measure of how often a member votes with their own party.
 
@@ -50,7 +50,7 @@ Scores are computed separately for each Congress and chamber, so a member's rate
 Party majorities are set by Democrats and Republicans. Independents who caucus with a party (such as Sanders and King with the Democrats) are scored against that party's majority, using the caucus records in the public congress-legislators dataset. Independents who caucus with neither party have no unity rate.
 """)
 
-st.header("Party Cohesion Proxy")
+st.header("Party cohesion proxy")
 st.markdown("""
 A second, ideology-based measure shows who sits near the center of their party versus the wings:
 
@@ -61,7 +61,7 @@ A second, ideology-based measure shows who sits near the center of their party v
 A member can have a high party unity rate and still sit toward their party's wing. The two measures answer different questions.
 """)
 
-st.header("Key Vote Series")
+st.header("Key vote series")
 st.markdown("""
 The Key Votes page groups high-profile roll calls into series. Three series are chosen by a fixed rule:
 
@@ -76,7 +76,7 @@ It is labeled as hand-picked on the page.
 For every vote, the page shows the Yea–Nay split for each party and lists each Democrat or Republican who voted against their party's majority. If a party splits exactly evenly, it has no majority position and none of its members are counted as breaking with it.
 """)
 
-st.header("All Votes and Member Voting Records")
+st.header("All Votes and member voting records")
 st.markdown("""
 The All Votes page lists every House and Senate roll call since 2007, refreshed twice a week. For each vote it shows
 each party's Yea–Nay split and lists every Democrat and Republican who voted against their own party's majority (a
@@ -113,7 +113,7 @@ counts every roll call where the party took a side, including lopsided and proce
 count than the party unity rate, which uses only party-line votes.
 """)
 
-st.header("Comparing Two Members")
+st.header("Comparing two members")
 st.markdown("""
 Compare Members uses every roll call where both members actually voted Yea or Nay while serving in the same chamber during the same Congress. "Voted the same way" is the share of those votes where their votes matched. The same figure is shown for party-unity votes only. Members who never served in the same chamber at the same time can be compared on party unity but not vote by vote.
 """)
@@ -156,7 +156,7 @@ bills, and members of both parties back the president far more often when their 
 bills in a category are not identical, so a changed vote can reflect a changed bill; every vote is listed on the page.
 """)
 
-st.header("The President's Stated Positions")
+st.header("The president's stated positions")
 st.markdown("""
 The White House's Office of Management and Budget issues **Statements of Administration Policy** giving the president's official position on bills before a floor vote. The site reads every statement from 2009 on (from the public archive maintained by the @unitedstates project) and records whether the president **supported** or **opposed** the bill, based on the statement's own wording ("The Administration strongly supports…", or a veto threat against the bill as written). Statements that take no clear position are not used.
 
@@ -190,7 +190,7 @@ their party's platform", not that they broke a personal promise.
   answers for those who don't.
 """)
 
-st.header("Keeping It Neutral")
+st.header("Keeping it neutral")
 st.markdown("""
 **Rules the site follows on every page**
 
@@ -235,7 +235,7 @@ st.markdown("""
   individual vote is still listed on the Platform Votes and member pages.
 """)
 
-st.header("What This Site Does *Not* Do")
+st.header("What this site does *not* do")
 st.markdown("""
 - It does not assign moral judgments (“good” or “bad” members).
 - It does not claim to know a legislator’s motives or private beliefs.
@@ -245,7 +245,7 @@ st.markdown("""
 The goal is descriptive: show the patterns that exist in the official voting record and let readers draw their own conclusions.
 """)
 
-st.header("Updates & Reproducibility")
+st.header("Updates and reproducibility")
 st.markdown("""
 - Member files and roll-call vote files are re-downloaded from Voteview twice a week by an automatic job (`scripts/refresh_data.py`), which recomputes every number shown here.
 - Before new data is published, `scripts/validate_data.py` checks it (complete chambers, vote totals matching official counts, no sudden drops). If a check fails, nothing is published and a notice appears on the site until a refresh succeeds.

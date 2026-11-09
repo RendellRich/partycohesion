@@ -7,10 +7,11 @@ from html import escape
 import pandas as pd
 import streamlit as st
 
-from chart_utils import ACCENT, MUTED, PARTY_COLORS, PATTERN_COLORS, VOTE_COLORS
+from chart_utils import PATTERN_COLORS
+from theme import text_on, to_mode, tokens
 
-SURFACE = "#21201D"
-BORDER = "#3A3733"
+PARTY_VARS = {"Democrat": "var(--pc-dem)", "Republican": "var(--pc-rep)", "Independent": "var(--pc-ind)"}
+VOTE_VARS = {"Yea": "var(--pc-yea)", "Nay": "var(--pc-nay)"}
 
 STATES = {
     "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas", "CA": "California", "CO": "Colorado",
@@ -41,58 +42,63 @@ CSS = f"""
 .stApp h1 {{ font-family: {SERIF}; font-weight: 700; letter-spacing: -0.01em; }}
 .stApp h2, .stApp h3 {{ font-family: {SANS}; font-weight: 700; }}
 .stApp [data-testid="stMetricValue"], .pc-stat, .pc-metric-value {{ font-variant-numeric: tabular-nums; }}
-.stApp a:focus-visible, .stApp button:focus-visible {{ outline: 2px solid {ACCENT}; outline-offset: 2px; }}
-.stApp [data-testid="stMain"] [data-testid="stPageLink-NavLink"] p {{ color: {ACCENT}; font-weight: 600; }}
+.stApp a:focus-visible, .stApp button:focus-visible {{ outline: 2px solid var(--pc-accent); outline-offset: 2px; }}
+.stApp [data-testid="stMain"] [data-testid="stPageLink-NavLink"] p {{ color: var(--pc-accent); font-weight: 600; }}
 .stApp [data-testid="stMain"] [data-testid="stPageLink-NavLink"]:hover p {{ text-decoration: underline; }}
 .pc-hero {{ font-family: {SERIF}; font-size: 2.6rem; font-weight: 700; line-height: 1.15; max-width: 22ch;
             margin: 0.5rem 0 1rem 0; letter-spacing: -0.01em; }}
-.pc-intro {{ color: {MUTED}; font-size: 1.05rem; line-height: 1.6; max-width: 72ch; margin-bottom: 1.25rem; }}
-.pc-card {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 10px; padding: 20px; height: 100%; }}
-.pc-eyebrow {{ color: {ACCENT}; font-size: 0.9rem; font-weight: 600; }}
+.pc-intro {{ color: var(--pc-muted); font-size: 1.05rem; line-height: 1.6; max-width: 72ch; margin-bottom: 1.25rem; }}
+.pc-card {{ background: var(--pc-surface); border: 1px solid var(--pc-border); border-radius: 10px; padding: 20px; height: 100%; }}
+.pc-eyebrow {{ color: var(--pc-accent); font-size: 0.9rem; font-weight: 600; }}
 .pc-stat {{ font-size: 2.4rem; font-weight: 700; line-height: 1.2; margin: 6px 0 8px 0; }}
-.pc-body {{ color: {MUTED}; font-size: 1rem; line-height: 1.5; }}
-.pc-metric {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 10px; padding: 14px 16px; height: 100%; }}
+.pc-body {{ color: var(--pc-muted); font-size: 1rem; line-height: 1.5; }}
+.pc-metric {{ background: var(--pc-surface); border: 1px solid var(--pc-border); border-radius: 10px; padding: 14px 16px; height: 100%; }}
 .pc-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 4px 0 16px 0; }}
-.pc-metric-label {{ color: {MUTED}; font-size: 0.85rem; font-weight: 600; }}
+.pc-metric-label {{ color: var(--pc-muted); font-size: 0.85rem; font-weight: 600; }}
 .pc-metric-value {{ font-size: 2rem; line-height: 1.25; margin: 4px 0; }}
 .pc-metric-value.pc-long {{ font-size: 1.35rem; padding: 6px 0 5px 0; }}
-.pc-metric-note {{ color: {MUTED}; font-size: 0.85rem; }}
+.pc-metric-note {{ color: var(--pc-muted); font-size: 0.85rem; }}
 .pc-name {{ display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 1.6rem; font-weight: 600; }}
-.pc-place {{ color: {MUTED}; font-size: 1rem; margin: 4px 0 12px 0; }}
+.pc-place {{ color: var(--pc-muted); font-size: 1rem; margin: 4px 0 12px 0; }}
 .pc-tag {{ display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; }}
 .pc-dot {{ width: 10px; height: 10px; border-radius: 50%; display: inline-block; }}
-.pc-badge {{ display: inline-block; padding: 2px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; color: #171614; }}
-.pc-table {{ width: 100%; border-collapse: separate; border-spacing: 0; background: {SURFACE};
-             border: 1px solid {BORDER}; border-radius: 10px; overflow: hidden; margin-bottom: 0.5rem; }}
-.pc-table th {{ color: {MUTED}; font-size: 0.85rem; font-weight: 600; text-align: left; padding: 12px 16px; }}
-.pc-table td {{ padding: 12px 16px; border-top: 1px solid {BORDER}; }}
-.pc-table td.pc-muted {{ color: {MUTED}; }}
+.pc-badge {{ display: inline-block; padding: 2px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }}
+.pc-table {{ width: 100%; border-collapse: separate; border-spacing: 0; background: var(--pc-surface);
+             border: 1px solid var(--pc-border); border-radius: 10px; overflow: hidden; margin-bottom: 0.5rem; }}
+.pc-table th {{ color: var(--pc-muted); font-size: 0.85rem; font-weight: 600; text-align: left; padding: 12px 16px; }}
+.pc-table td {{ padding: 12px 16px; border-top: 1px solid var(--pc-border); }}
+.pc-table td.pc-muted {{ color: var(--pc-muted); }}
 .pc-bars {{ display: grid; grid-template-columns: 130px minmax(120px, 1fr) 140px; gap: 10px 12px; align-items: center; margin: 14px 0 8px 0; }}
 .pc-bar {{ display: flex; gap: 2px; height: 22px; }}
 .pc-bar span {{ display: block; height: 100%; border-radius: 3px; }}
 .pc-chips {{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }}
-.pc-explain {{ border-left: 3px solid {ACCENT}; background: {SURFACE}; border-radius: 0 8px 8px 0; padding: 12px 16px;
-               max-width: 72ch; color: #E7E5E4; font-size: 0.98rem; line-height: 1.55; margin: 0 0 18px 0; }}
-.pc-explain-title {{ color: {ACCENT}; font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }}
+.pc-explain {{ border-left: 3px solid var(--pc-accent); background: var(--pc-surface); border-radius: 0 8px 8px 0; padding: 12px 16px;
+               max-width: 72ch; color: var(--pc-body); font-size: 0.98rem; line-height: 1.55; margin: 0 0 18px 0; }}
+.pc-explain-title {{ color: var(--pc-accent); font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }}
 .pc-share {{ display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 4px 0; }}
-.pc-share span {{ color: {MUTED}; font-size: 0.9rem; margin-right: 4px; }}
-.pc-share a {{ border: 1px solid {BORDER}; border-radius: 999px; padding: 4px 12px; font-size: 0.9rem; font-weight: 600;
-              color: #FAFAFA !important; text-decoration: none; }}
-.pc-share a:hover {{ border-color: {ACCENT}; }}
+.pc-share span {{ color: var(--pc-muted); font-size: 0.9rem; margin-right: 4px; }}
+.pc-share a {{ border: 1px solid var(--pc-border); border-radius: 999px; padding: 4px 12px; font-size: 0.9rem; font-weight: 600;
+              color: var(--pc-text) !important; text-decoration: none; }}
+.pc-share a:hover {{ border-color: var(--pc-accent); }}
 .pc-person {{ display: grid; grid-template-columns: 112px 1fr; gap: 18px; align-items: start; margin: 6px 0 14px 0; }}
-.pc-person img {{ width: 112px; border-radius: 8px; border: 1px solid {BORDER}; }}
-.pc-facts {{ color: {MUTED}; font-size: 0.95rem; line-height: 1.7; }}
-.pc-facts b {{ color: #FAFAFA; font-weight: 600; }}
-.pc-facts a {{ color: {ACCENT}; }}
+.pc-person img {{ width: 112px; border-radius: 8px; border: 1px solid var(--pc-border); }}
+.pc-facts {{ color: var(--pc-muted); font-size: 0.95rem; line-height: 1.7; }}
+.pc-facts b {{ color: var(--pc-text); font-weight: 600; }}
+.pc-facts a {{ color: var(--pc-accent); }}
 @media (max-width: 640px) {{ .pc-person {{ grid-template-columns: 80px 1fr; }} .pc-person img {{ width: 80px; }}
                              .pc-hero {{ font-size: 2rem; }} }}
-.pc-chip {{ border: 1px solid {BORDER}; border-radius: 999px; padding: 3px 10px; font-size: 0.85rem; font-weight: 600; }}
+.pc-chip {{ border: 1px solid var(--pc-border); border-radius: 999px; padding: 3px 10px; font-size: 0.85rem; font-weight: 600; }}
 </style>
 """
 
 
 def inject_css() -> None:
-    st.markdown(CSS, unsafe_allow_html=True)
+    """Site styles plus the color variables for the visitor's light or dark theme."""
+    t = tokens()
+    names = {"bg": "bg", "surface": "surface", "border": "border", "text": "text", "body": "body", "muted": "muted",
+             "accent": "accent", "dem": "dem", "rep": "rep", "ind": "ind", "yea": "yea", "nay": "nay"}
+    root = "".join(f"--pc-{css}: {t[key]}; " for key, css in names.items())
+    st.markdown(f"<style>:root {{ {root}}}</style>" + CSS, unsafe_allow_html=True)
 
 
 def intro(text: str) -> None:
@@ -128,14 +134,15 @@ def metric_row(items: list[tuple[str, str, str]]) -> None:
 
 
 def party_tag(party: str) -> str:
-    color = PARTY_COLORS.get(party, MUTED)
+    color = PARTY_VARS.get(party, "var(--pc-muted)")
     return f'<span class="pc-tag"><span class="pc-dot" style="background:{color}"></span>{escape(party)}</span>'
 
 
 def pattern_badge(label: str) -> str:
     if label not in PATTERN_COLORS:
-        return f'<span style="color:{MUTED}">{escape(label)}</span>'
-    return f'<span class="pc-badge" style="background:{PATTERN_COLORS[label]}">{escape(label)}</span>'
+        return f'<span style="color:var(--pc-muted)">{escape(label)}</span>'
+    fill = to_mode(PATTERN_COLORS[label])
+    return f'<span class="pc-badge" style="background:{fill};color:{text_on(fill)}">{escape(label)}</span>'
 
 
 def html_table(header: list[str], rows: list[list[str]], raw_cols: tuple[int, ...] = (), muted_cols: tuple[int, ...] = ()) -> None:
@@ -225,12 +232,12 @@ def vote_card(v: pd.Series, broke: pd.DataFrame, link: str | None = None) -> Non
     for party, y, n in parties:
         if y + n == 0:
             continue
-        seg = "".join(f'<span style="width:{max(cnt / widest * 100, 1.2 if cnt else 0):.1f}%;background:{VOTE_COLORS[k]}"></span>'
+        seg = "".join(f'<span style="width:{max(cnt / widest * 100, 1.2 if cnt else 0):.1f}%;background:{VOTE_VARS[k]}"></span>'
                       for cnt, k in ((y, "Yea"), (n, "Nay")) if cnt)
         bars += f'<div>{party_tag(party)}</div><div class="pc-bar">{seg}</div>' \
                 f'<div class="pc-body">{int(y)} Yea · {int(n)} Nay</div>'
     legend = " ".join(f'<span class="pc-tag" style="margin-right:14px"><span class="pc-dot" style="border-radius:2px;'
-                      f'background:{VOTE_COLORS[k]}"></span>{k}</span>' for k in ("Yea", "Nay"))
+                      f'background:{VOTE_VARS[k]}"></span>{k}</span>' for k in ("Yea", "Nay"))
     eyebrow = f"{v['chamber']} · {fmt_date(v['date'])} · roll call {int(v['rollnumber'])}"
     result = f"{v['vote_question']} · {v['vote_result']}, {int(v['yea_count'])} Yea to {int(v['nay_count'])} Nay"
     if broke.empty:
@@ -240,7 +247,7 @@ def vote_card(v: pd.Series, broke: pd.DataFrame, link: str | None = None) -> Non
         who = (f'<div style="margin-top:14px;font-weight:600">{len(broke)} member{"s" if len(broke) != 1 else ""} voted '
                f"against their party's majority</div>{chips(names)}")
     source = (f'<div style="margin-top:14px"><a href="{escape(link)}" target="_blank" rel="noopener" '
-              f'style="color:{ACCENT}">Full record on Voteview</a></div>') if link else ""
+              f'style="color:var(--pc-accent)">Full record on Voteview</a></div>') if link else ""
     st.markdown(f'<div class="pc-card"><div class="pc-eyebrow">{escape(eyebrow)}</div>'
                 f'<div style="font-size:1.4rem;font-weight:600;margin:6px 0 4px 0">{escape(str(v["label"]))}</div>'
                 f'<div class="pc-body">{escape(result)}</div><div class="pc-bars">{bars}</div>'

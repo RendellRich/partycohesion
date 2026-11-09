@@ -13,6 +13,7 @@ import streamlit as st
 from chart_utils import PAIR_COLORS, ordinal, show_chart
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import platform_record
+from theme import to_mode
 from ui import explainer, STATES, card, display_name, fmt_date, html_table, inject_css, intro, last_name, metric_card, party_tag, pattern_badge
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -88,7 +89,7 @@ def member_card(rows: pd.DataFrame, color: str, newest: int) -> None:
         value = f"{u['party_unity_pct']:.1f}%"
         note = f"{int(u['votes_with_party']):,} of {int(u['unity_votes_cast']):,} party-line votes"
     st.markdown(
-        f'<div class="pc-card" style="border-top: 4px solid {color}">'
+        f'<div class="pc-card" style="border-top: 4px solid {to_mode(color)}">'
         f'<div class="pc-name">{escape(display_name(last["name"]))} {party_tag(last["party"])}</div>'
         f'<div class="pc-place">{escape(place)}</div>'
         f'<div class="pc-metric-label">{escape(label)}</div><div class="pc-metric-value">{escape(value)}</div>'
@@ -102,7 +103,7 @@ newest = int(members["congress"].max())
 st.title("Compare Members")
 intro("Pick any two members to see how often they voted the same way while serving together, their party unity side "
       "by side, and the key votes where they split.")
-explainer('Pick two members to see how often they voted the same way while serving together. Members of the '
+explainer('Members of the '
           'same party agree on most votes, so the surprises are a low number between two allies or a high one '
           'across parties.')
 

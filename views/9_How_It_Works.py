@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pandas as pd
 import plotly.graph_objects as go
+
+from theme import FONT, text_on, to_mode
 import streamlit as st
 
 from chart_utils import ACCENT, BG, PATTERN_COLORS, show_chart
@@ -46,7 +48,7 @@ def scale_chart(shift: float | None, name: str) -> go.Figure:
     for lo, hi, label in bands:
         fig.add_shape(type="rect", x0=lo, x1=hi, y0=0, y1=1, fillcolor=PATTERN_COLORS[label], line=dict(color=BG, width=2))
         fig.add_annotation(x=(lo + hi) / 2, y=0.5, text=label.replace(" with the ", "<br>with the ").replace("Partly ", "Partly<br>"), showarrow=False,
-                           font=dict(color="#171614", size=12))
+                           font=dict(color=text_on(to_mode(PATTERN_COLORS[label])), size=12, family=FONT), name="fixed_band_label")
     if shift is not None:
         fig.add_shape(type="line", x0=shift, x1=shift, y0=-0.15, y1=1.15, line=dict(color=ACCENT, width=4))
         fig.add_annotation(x=shift, y=1.15, yanchor="bottom", text=f"{name}: {shift:+.0f}", showarrow=False,
