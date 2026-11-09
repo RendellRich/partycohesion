@@ -18,6 +18,7 @@ if drop_changed_local_modules():
 
 from chart_utils import EXPORT_SIZES, DEFAULT_EXPORT, clear_cache_if_data_changed
 from site_status import show_refresh_notice
+import theme
 from ui import inject_css, share_bar
 
 st.set_page_config(
@@ -56,12 +57,15 @@ pages = {
 }
 
 nav = st.navigation(pages)
+theme.sync()  # keeps the site's colors in step with the light/dark setting
 inject_css()  # site styles for every page, including pages that don't load them themselves
 
 with st.sidebar:
     st.radio("Chart download size", list(EXPORT_SIZES), key="export_size",
              index=list(EXPORT_SIZES).index(DEFAULT_EXPORT))
     st.caption("Use the camera icon on any chart to download a PNG at this size.")
+    st.caption("Light or dark: open the ⋮ menu at the top right, choose Settings, then pick a theme. Charts and "
+               "downloads follow your choice.")
 
 clear_cache_if_data_changed()  # new data from the twice-weekly refresh shows up without a restart
 show_refresh_notice()

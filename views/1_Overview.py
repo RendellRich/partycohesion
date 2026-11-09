@@ -5,8 +5,10 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
-from chart_utils import show_chart, ordinal, chamber_label, PARTY_COLORS
-from ui import explainer
+from chart_utils import BG, PARTY_COLORS, chamber_label, ordinal, show_chart
+from ui import explainer, intro, metric_row
+
+ORDER = {"party": ["Democrat", "Republican"], "chamber": ["House", "Senate"]}
 
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "members_processed.csv"
@@ -18,14 +20,15 @@ def load_members():
 df = load_members()
 
 st.title("Overview")
-st.markdown("Party and ideology patterns in recent Congresses. Scores are derived from roll-call voting behavior.")
-explainer('This is the big picture for one Congress: how tightly each party votes together and how far apart '
-          'the two parties sit. Pick a Congress and chamber to compare years.')
+intro("How tightly each party votes together, and how far apart the parties sit, Congress by Congress. Every number "
+      "comes from roll-call votes.")
+explainer("Pick a Congress and a chamber. The first chart shows how far apart the two parties sit on Voteview's "
+          "ideology scale. The next ones show how often members side with their own party when the parties split.")
 
 # Filters
 col_f1, col_f2 = st.columns(2)
 with col_f1:
-    congress = st.selectbox("Congress", options=sorted(df["congress"].unique(), reverse=True), index=0)
+    congress = st.selectbox("Congress", options=sorted(df["congress"].unique(), reverse=True), index=0, format_func=ordinal)
 with col_f2:
     chamber = st.selectbox("Chamber", options=["House", "Senate", "Both"], index=0)
 
@@ -40,27 +43,21 @@ party_counts = filtered["party"].value_counts()
 dem = filtered[filtered["party"] == "Democrat"]
 rep = filtered[filtered["party"] == "Republican"]
 
-m1, m2, m3, m4 = st.columns(4)
-with m1:
-    st.metric("Democrats", len(dem))
-with m2:
-    st.metric("Republicans", len(rep))
-with m3:
-    if len(dem) > 0:
-        st.metric("Dem. median ideology (Dim 1)", f"{dem['nominate_dim1'].median():.3f}")
-    else:
-        st.metric("Dem. median ideology", "—")
-with m4:
-    if len(rep) > 0:
-        st.metric("Rep. median ideology (Dim 1)", f"{rep['nominate_dim1'].median():.3f}")
-    else:
-        st.metric("Rep. median ideology", "—")
+def median_score(rows: pd.DataFrame) -> str:
+    return f"{rows['nominate_dim1'].median():+.2f}" if len(rows) else "none"
 
-st.markdown("---")
+
+metric_row([
+    ("Democrats", f"{len(dem):,}", "members who served"),
+    ("Republicans", f"{len(rep):,}", "members who served"),
+    ("Typical Democrat's ideology score", median_score(dem), "median, on a scale of -1 to +1"),
+    ("Typical Republican's ideology score", median_score(rep), "median, on a scale of -1 to +1"),
+])
 
 # Ideology distribution
-st.subheader("Ideology Distribution (DW-NOMINATE Dimension 1)")
-st.caption("Negative values lean more liberal; positive values lean more conservative. This is the primary dimension recovered from roll-call votes.")
+st.subheader("Where members sit on the ideology scale")
+st.caption("Voteview's ideology score (DW-NOMINATE, first dimension) runs from -1 to +1. Lower scores lean liberal and "
+           "higher scores lean conservative. It is estimated from roll-call votes alone.")
 
 plot_df = filtered[filtered["party"].isin(["Democrat", "Republican"])].copy()
 if not plot_df.empty:
@@ -70,22 +67,23 @@ if not plot_df.empty:
         color="party",
         nbins=40,
         barmode="overlay",
-        opacity=0.7,
         color_discrete_map=PARTY_COLORS,
-        labels={"nominate_dim1": "DW-NOMINATE Dimension 1", "count": "Members"},
+        category_orders=ORDER,
+        labels={"nominate_dim1": "Ideology score", "count": "Members"},
         title=None,
     )
+    fig.update_traces(marker_line=dict(color=BG, width=1), opacity=1)
     fig.update_layout(
-        legend_title_text="Party",
+        yaxis_title="Members",
         height=420,
         margin=dict(l=40, r=40, t=30, b=40),
     )
-    show_chart(fig, f"Ideology distribution, {ordinal(congress)} Congress, {chamber_label(chamber)}", f"ideology_{congress}_{chamber.lower()}")
+    show_chart(fig, f"Members by ideology score, {ordinal(congress)} Congress, {chamber_label(chamber)}", f"ideology_{congress}_{chamber.lower()}")
 else:
     st.info("No data for the selected filters.")
 
 # Party unity distribution
-st.subheader("Party Unity Rates")
+st.subheader("How often members vote with their party")
 st.caption(
     "Share of party-unity votes (a majority of Democrats opposed a majority of Republicans) "
     "on which each member voted with their own party's majority. Computed from Voteview roll-call records."
@@ -93,11 +91,9 @@ st.caption(
 
 unity_df = plot_df.dropna(subset=["party_unity_pct"])
 if not unity_df.empty:
-    u1, u2 = st.columns(2)
-    for col, party in zip((u1, u2), ("Democrat", "Republican")):
-        vals = unity_df.loc[unity_df["party"] == party, "party_unity_pct"]
-        with col:
-            st.metric(f"{party} median unity", f"{vals.median():.1f}%" if len(vals) else "—")
+    medians = unity_df.groupby("party")["party_unity_pct"].median()
+    metric_row([(f"Typical {p}", f"{medians[p]:.1f}%" if p in medians else "none", "median share of party-line votes "
+                 "cast with own party") for p in ("Democrat", "Republican")])
     fig_u = px.box(
         unity_df,
         x="party",
@@ -106,12 +102,14 @@ if not unity_df.empty:
         points="all",
         hover_name="name",
         color_discrete_map=PARTY_COLORS,
-        labels={"party_unity_pct": "Party Unity %", "party": "Party"},
+        category_orders=ORDER,
+        labels={"party_unity_pct": "Votes with own party (%)", "party": ""},
     )
+    fig_u.update_traces(marker=dict(size=6, line=dict(color=BG, width=1)), jitter=0.4, pointpos=0)
     fig_u.update_layout(showlegend=False, height=420, margin=dict(l=40, r=40, t=30, b=40))
-    show_chart(fig_u, f"Party unity rates, {ordinal(congress)} Congress, {chamber_label(chamber)}", f"party_unity_{congress}_{chamber.lower()}")
+    show_chart(fig_u, f"Share of party-line votes cast with own party, {ordinal(congress)} Congress, {chamber_label(chamber)}", f"party_unity_{congress}_{chamber.lower()}")
 
-st.subheader("Average Party Unity Across Recent Congresses")
+st.subheader("Party unity over time")
 unity_trend = (
     df[df["party"].isin(["Democrat", "Republican"])]
     .groupby(["congress", "chamber", "party"])["party_unity_pct"]
@@ -127,14 +125,16 @@ fig_ut = px.line(
     facet_col="chamber",
     markers=True,
     color_discrete_map=PARTY_COLORS,
-    labels={"party_unity_pct": "Mean Party Unity %", "congress": "Congress"},
+    category_orders=ORDER,
+    labels={"party_unity_pct": "Average votes with own party (%)", "congress": "Congress"},
 )
+fig_ut.update_traces(line_width=2, marker=dict(size=8, line=dict(color=BG, width=2)))
 fig_ut.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
 fig_ut.update_layout(height=400, margin=dict(l=40, r=40, t=40, b=40))
-show_chart(fig_ut, "Average party unity by Congress", "party_unity_trend")
+show_chart(fig_ut, "Average share of party-line votes cast with own party, by Congress", "party_unity_trend")
 
 # Cohesion proxy distribution
-st.subheader("Cohesion Proxy Distribution")
+st.subheader("How close members sit to their party's middle")
 st.caption(
     "Higher values mean a member's ideology score sits closer to their party's median in that chamber and Congress. "
     "This is a separate, ideology-based measure. It complements the party unity rate above; it does not replace it."
@@ -147,14 +147,16 @@ if "cohesion_proxy" in plot_df.columns and not plot_df.empty:
         y="cohesion_proxy",
         color="party",
         color_discrete_map=PARTY_COLORS,
+        category_orders=ORDER,
         points="all",
-        labels={"cohesion_proxy": "Cohesion Proxy (0–100)", "party": "Party"},
+        labels={"cohesion_proxy": "Closeness to party median (0 to 100)", "party": ""},
     )
+    fig2.update_traces(marker=dict(size=6, line=dict(color=BG, width=1)), jitter=0.4, pointpos=0)
     fig2.update_layout(showlegend=False, height=420, margin=dict(l=40, r=40, t=30, b=40))
-    show_chart(fig2, f"Cohesion proxy, {ordinal(congress)} Congress, {chamber_label(chamber)}", f"cohesion_proxy_{congress}_{chamber.lower()}")
+    show_chart(fig2, f"Closeness to party median ideology, {ordinal(congress)} Congress, {chamber_label(chamber)}", f"cohesion_proxy_{congress}_{chamber.lower()}")
 
 # Party median comparison over recent Congresses
-st.subheader("Party Median Ideology Across Recent Congresses")
+st.subheader("How far apart the parties sit over time")
 trend = (
     df[df["party"].isin(["Democrat", "Republican"])]
     .groupby(["congress", "chamber", "party"])["nominate_dim1"]
@@ -170,11 +172,13 @@ fig3 = px.line(
     facet_col="chamber",
     markers=True,
     color_discrete_map=PARTY_COLORS,
-    labels={"nominate_dim1": "Median Dim 1", "congress": "Congress"},
+    category_orders=ORDER,
+    labels={"nominate_dim1": "Median ideology score", "congress": "Congress"},
 )
+fig3.update_traces(line_width=2, marker=dict(size=8, line=dict(color=BG, width=2)))
 fig3.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
 fig3.update_layout(height=400, margin=dict(l=40, r=40, t=40, b=40))
-show_chart(fig3, "Party median ideology by Congress", "party_median_ideology_trend")
+show_chart(fig3, "Median ideology score of each party, by Congress", "party_median_ideology_trend")
 
 st.markdown("---")
 st.caption("Source: Voteview (member and roll-call vote files). Ideology scores are DW-NOMINATE estimates. Party unity rates are computed from individual roll-call votes. The cohesion proxy is derived from distance to the party median within chamber and Congress.")

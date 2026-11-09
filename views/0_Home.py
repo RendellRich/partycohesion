@@ -10,7 +10,8 @@ import streamlit as st
 
 import plotly.graph_objects as go
 
-from chart_utils import BG, MUTED, PARTY_COLORS, ordinal, show_chart
+from chart_utils import BG, PARTY_COLORS, ordinal, show_chart
+from seat_map import seat_map
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import all_member_platform_votes, load_platform, party_totals
 from ui import card, display_name, fmt_date, inject_css
@@ -49,29 +50,23 @@ who = st.selectbox("Look up your representative or senator", list(labels), index
 if who:
     st.switch_page("views/2_Member_Explorer.py", query_params={"member": labels[who]})
 
-# Party unity over time: the one chart on Home
-unity = (members[members["party"].isin(["Democrat", "Republican"])]
-         .groupby(["congress", "party"])["party_unity_pct"].mean().reset_index())
-unity["year"] = 2 * unity["congress"] + 1787
-fig = go.Figure()
-for party in ("Democrat", "Republican"):
-    u = unity[unity["party"] == party]
-    fig.add_trace(go.Scatter(
-        x=u["year"], y=u["party_unity_pct"], name=party, mode="lines+markers",
-        line=dict(color=PARTY_COLORS[party], width=2), marker=dict(size=8, line=dict(color=BG, width=2)),
-        customdata=u["congress"].map(ordinal),
-        hovertemplate=f"{party}s, %{{customdata}} Congress (%{{x}}): %{{y:.1f}}%<extra></extra>"))
-    end = u.iloc[-1]
-    fig.add_annotation(x=end["year"], y=end["party_unity_pct"], text=f"{party}s {end['party_unity_pct']:.0f}%",
-                       xanchor="left", xshift=10, showarrow=False, font=dict(size=13))
-fig.update_layout(height=360, hovermode="x unified", margin=dict(r=140, l=10, b=10),
-                  legend=dict(orientation="h", y=1.02, x=0, yanchor="bottom"),
-                  yaxis=dict(range=[80, 100], ticksuffix="%", title=None),
-                  xaxis=dict(dtick=4, title=None, range=[2005.5, int(unity["year"].max()) + 0.8]))
-show_chart(fig, "Share of party-line votes cast with their own party, average member, by Congress",
-           "party_unity_over_time")
-st.caption("A party-line vote is one where most Democrats and most Republicans voted on opposite sides. The vertical "
-           "axis starts at 80% so the change between Congresses is visible.")
+# The chamber at a glance: every current member as one seat, arranged left to right by ideology score
+chamber = st.segmented_control("Chamber", ["House", "Senate"], default="House", key="home_chamber",
+                               label_visibility="collapsed") or "House"
+in_chamber = (current[current["chamber"] == chamber].sort_values("party_unity_pct")
+              .drop_duplicates("icpsr", keep="last").copy())
+in_chamber["label"] = [f"{display_name(r.name)} ({r.party[0]}-{r.state_abbrev})" for r in in_chamber.itertuples()]
+event = show_chart(seat_map(in_chamber, chamber), f"The {chamber}, {ordinal(latest)} Congress",
+                   f"seat_map_{chamber.lower()}",
+                   key=f"seat_map_{chamber}_{st.session_state.get('seat_clicks', 0)}", on_select="rerun")
+st.caption("One dot per member, placed left to right by their Voteview ideology score (lower scores lean liberal, "
+           "higher scores lean conservative). Hover a dot for their record "
+           "with their party; click it to open their page. The count includes members who left office and their "
+           "replacements.")
+picked = (event or {}).get("selection", {}).get("points", []) if event else []
+if picked and picked[0].get("customdata") and picked[0]["customdata"][2]:
+    st.session_state["seat_clicks"] = st.session_state.get("seat_clicks", 0) + 1  # a fresh chart next visit
+    st.switch_page("views/2_Member_Explorer.py", query_params={"member": picked[0]["customdata"][2]})
 st.write("")
 
 # Finding 1: Position Flips, current members
@@ -153,6 +148,31 @@ with f3:
     st.page_link("views/13_Campaign_Statements.py", label="Read the statements")
 
 st.write("")
+# Party unity over time: the one chart on Home
+unity = (members[members["party"].isin(["Democrat", "Republican"])]
+         .groupby(["congress", "party"])["party_unity_pct"].mean().reset_index())
+unity["year"] = 2 * unity["congress"] + 1787
+fig = go.Figure()
+for party in ("Democrat", "Republican"):
+    u = unity[unity["party"] == party]
+    fig.add_trace(go.Scatter(
+        x=u["year"], y=u["party_unity_pct"], name=party, mode="lines+markers",
+        line=dict(color=PARTY_COLORS[party], width=2), marker=dict(size=8, line=dict(color=BG, width=2)),
+        customdata=u["congress"].map(ordinal),
+        hovertemplate=f"{party}s, %{{customdata}} Congress (%{{x}}): %{{y:.1f}}%<extra></extra>"))
+    end = u.iloc[-1]
+    fig.add_annotation(x=end["year"], y=end["party_unity_pct"], text=f"{party}s {end['party_unity_pct']:.0f}%",
+                       xanchor="left", xshift=10, showarrow=False, font=dict(size=13))
+fig.update_layout(height=360, hovermode="x unified", margin=dict(r=140, l=10, b=10),
+                  legend=dict(orientation="h", y=1.02, x=0, yanchor="bottom"),
+                  yaxis=dict(range=[80, 100], ticksuffix="%", title=None),
+                  xaxis=dict(dtick=4, title=None, range=[2005.5, int(unity["year"].max()) + 0.8]))
+show_chart(fig, "Share of party-line votes cast with their own party, average member, by Congress",
+           "party_unity_over_time")
+st.caption("A party-line vote is one where most Democrats and most Republicans voted on opposite sides. The vertical "
+           "axis starts at 80% so the change between Congresses is visible.")
+st.write("")
+
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Congress", ordinal(latest), help="House and Senate")
 m2.metric("Members scored", f"{current['party_unity_pct'].notna().sum():,}")
