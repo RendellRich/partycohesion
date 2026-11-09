@@ -64,8 +64,8 @@ with st.sidebar:
     st.radio("Chart download size", list(EXPORT_SIZES), key="export_size",
              index=list(EXPORT_SIZES).index(DEFAULT_EXPORT))
     st.caption("Use the camera icon on any chart to download a PNG at this size.")
-    st.caption("Light or dark: open the ⋮ menu at the top right, choose Settings, then pick a theme. Charts and "
-               "downloads follow your choice.")
+    st.caption("Light or dark: open the three-dot menu at the top right, choose Settings, then pick a theme. "
+               "Charts and downloads follow your choice.")
 
 clear_cache_if_data_changed()  # new data from the twice-weekly refresh shows up without a restart
 show_refresh_notice()
