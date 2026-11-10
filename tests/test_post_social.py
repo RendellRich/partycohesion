@@ -59,7 +59,7 @@ def test_facebook_looks_up_page_id_from_token(meta_env, monkeypatch):
         def __call__(self, req, timeout=None):
             if req.full_url.split("?")[0].endswith("/me"):
                 self.calls.append(("GET", req.full_url.split("?")[0], {}))
-                return io.BytesIO(json.dumps({"id": "999"}).encode())
+                return io.BytesIO(json.dumps({"id": "999", "name": "PartyCohesion", "category": "Website"}).encode())
             return super().__call__(req, timeout)
 
     fake = WithMe()
@@ -170,9 +170,18 @@ def test_check_setup_reports_page_without_posting(meta_env, capsys, monkeypatch)
 
     def fake(req, timeout=None):
         calls.append((req.get_method(), req.full_url.split("?")[0]))
-        return io.BytesIO(json.dumps({"id": "999", "name": "PartyCohesion"}).encode())
+        return io.BytesIO(json.dumps({"id": "999", "name": "PartyCohesion", "category": "Website"}).encode())
 
     assert ps.check_setup(opener=fake) == 0
     assert calls == [("GET", f"https://graph.facebook.com/{ps.GRAPH_VERSION}/me")]
     out = capsys.readouterr().out
     assert "PartyCohesion" in out and "SECRETVALUE123" not in out
+
+
+def test_personal_token_is_refused(meta_env, monkeypatch, capsys):
+    monkeypatch.delenv("META_PAGE_ID")
+    person = lambda req, timeout=None: io.BytesIO(json.dumps({"id": "1", "name": "Some Person"}).encode())
+    with pytest.raises(ps.MetaError):
+        ps.page_id("tok", opener=person)
+    assert ps.check_setup(opener=person) == 1
+    assert "not the Page token" in capsys.readouterr().out
