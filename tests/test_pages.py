@@ -221,6 +221,27 @@ def test_campaign_statements_other_topics():
         assert len(at.dataframe[0].value) > 100
 
 
+def test_floor_statements_on_ukraine_topic():
+    at = open_page("views/13_Campaign_Statements.py")
+    assert "Said on the floor of Congress" not in [s.value for s in at.subheader]
+    at.selectbox(key="cmp_topic").set_value("Military aid to Ukraine").run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert "Said on the floor of Congress" in [s.value for s in at.subheader]
+    text = html(at)
+    assert "Welch" in text and "Netanyahu" in text and "Rubio" in text
+    floor = at.dataframe[0].value
+    assert len(floor) == 122 and set(floor["Chamber"]) == {"House", "Senate"}
+
+
+def test_floor_statement_quotes_are_sourced():
+    import pandas as pd
+    f = pd.read_csv(ROOT / "data" / "floor_statements_ukraine.csv", dtype=str).fillna("")
+    quoted = f[f["quote"] != ""]
+    assert quoted["source_url"].str.startswith("https://www.govinfo.gov/content/pkg/CREC-").all()
+    assert set(f["stance"]) <= {"Supports more aid", "Opposes more aid", "Supports helping Ukraine, with conditions",
+                                "No clear stance"}
+
+
 def test_campaign_statements_on_member_page():
     at = open_page("views/2_Member_Explorer.py")
     box = at.selectbox(key="me_member")
