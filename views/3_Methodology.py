@@ -115,6 +115,27 @@ counts every roll call where the party took a side, including lopsided and proce
 count than the party unity rate, which uses only party-line votes.
 """)
 
+st.header("Same Bill, Different Vote")
+st.markdown("""
+A bill can get more than one up-or-down vote in the same chamber and Congress. The site counts the votes where Yea
+means supporting the bill itself: passage (including suspension of the rules), the final version (a conference report,
+or agreeing to the other chamber's amendment), and veto overrides. Procedural votes are left out: cloture, motions to
+recommit or table, the previous question, rules and amendments, because voting against one of those and for passage
+is the same position.
+
+A member **changed their vote** when they voted Yea on one of these votes and Nay on another for the same bill. Only
+votes cast on the floor count (Voteview cast codes 1 and 6), not paired or announced positions.
+
+A member **changed while their party didn't** when most members of the party they caucus with voted the same way on
+both of the member's votes. This separates individual changes from cases where the whole party changed, which usually
+means the bill itself changed a lot.
+
+Each bill's current title comes from its GovInfo bill status file (the title Congress.gov shows, which becomes the
+enacted short title). When that title shares almost no words with how the first vote described the bill, the site
+marks the **title as changed**: sometimes a rename, sometimes a bill number used as the vehicle for a different bill.
+A roll call can't show a member's reasons, and the text often changes between votes.
+""")
+
 st.header("Comparing two members")
 st.markdown("""
 Compare Members uses every roll call where both members actually voted Yea or Nay while serving in the same chamber during the same Congress. "Voted the same way" is the share of those votes where their votes matched. The same figure is shown for party-unity votes only. Members who never served in the same chamber at the same time can be compared on party unity but not vote by vote.
