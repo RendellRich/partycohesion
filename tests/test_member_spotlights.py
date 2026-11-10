@@ -88,3 +88,9 @@ def test_title_follows_the_bill_when_the_senate_swaps_its_text():
     final vote was on that version. The title shown for those votes is the sanctions one."""
     assert "Russian Federation" in ms.title_for(D, "HR5334", "2026-09-16")
     assert ms.title_for(D, "S1318", "2026-06-05") == "Fallen Servicemembers Religious Heritage Restoration Act"
+
+
+def test_names_are_the_ones_members_go_by():
+    import pandas as pd
+    assert ms.spoken_name(pd.Series({"name": "Krishnamoorthi, S. Raja", "full_name": "Raja Krishnamoorthi"})) == "Raja Krishnamoorthi"
+    assert ms.spoken_name(pd.Series({"name": "Crow, Jason", "full_name": "Jason Crow"})) == "Jason Crow"

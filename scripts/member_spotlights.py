@@ -52,6 +52,9 @@ def load() -> dict:
     apart = changes[changes["apart"]].groupby("icpsr").size().rename("changed_apart")
     cur = cur.merge(missed, on=["chamber", "icpsr"], how="left").merge(apart, on="icpsr", how="left")
     cur["changed_apart"] = cur["changed_apart"].fillna(0).astype(int)
+    # The name members go by ("Raja Krishnamoorthi"), from Congress.gov, where Voteview has "Krishnamoorthi, S. Raja".
+    details = pd.read_csv(DATA / "member_details.csv", usecols=["bioguide_id", "full_name"])
+    cur = cur.merge(details.drop_duplicates("bioguide_id"), on="bioguide_id", how="left")
     summary = pd.read_csv(DATA / "unity_summary.csv")
     votes = pd.read_csv(DATA / "all_votes.csv")
     votes = all_votes = votes[votes["congress"] == latest]
@@ -201,6 +204,16 @@ def purpose(r: pd.Series, n: int = 180) -> str | None:
     return f"{text} (amendment by Rep. {m.group(1)})" if m else text
 
 
+def spoken_name(row: pd.Series) -> str:
+    """'Jason Crow'. When Voteview's first name is only an initial ("S. Krishnamoorthi"), the Congress.gov name with
+    middle initials dropped ("Raja Krishnamoorthi")."""
+    name = display_name(row["name"])
+    full = row.get("full_name")
+    if re.match(r"^[A-Z]\.\s", name) and isinstance(full, str):
+        return re.sub(r"\s+", " ", re.sub(r"\b[A-Z]\.\s", "", full).replace(", Jr.", " Jr.")).strip()
+    return name
+
+
 def stats(d: dict, bioguide: str) -> dict:
     m = d["members"]
     row = m[m["bioguide_id"] == bioguide].iloc[0]
@@ -208,7 +221,8 @@ def stats(d: dict, bioguide: str) -> dict:
     peers = same[same["unity_votes_cast"] >= MIN_VOTES]
     below = (peers["party_unity_pct"] < row["party_unity_pct"]).mean() * 100
     return {
-        "row": row, "name": display_name(row["name"]), "party": row["caucus"], "chamber": row["chamber"],
+        "row": row,
+        "name": spoken_name(row), "party": row["caucus"], "chamber": row["chamber"],
         "state": STATES.get(row["state_abbrev"], row["state_abbrev"]), "abbrev": row["state_abbrev"],
         "pct": float(row["party_unity_pct"]), "with": int(row["votes_with_party"]), "cast": int(row["unity_votes_cast"]),
         # same average as the Overview page and the Senate card
