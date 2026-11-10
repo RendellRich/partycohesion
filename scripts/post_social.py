@@ -13,7 +13,7 @@ Two ways to use it, both run by .github/workflows/post-social.yml:
 Add --dry-run to either to print what would be posted without calling Meta.
 
 Settings come from environment variables (GitHub repository secrets in the workflow):
-  META_PAGE_ID        the Facebook Page's ID
+  META_PAGE_ID        optional, the Facebook Page's ID (looked up from the Page token when not set)
   META_PAGE_TOKEN     a Page access token with pages_manage_posts (and instagram_content_publish for Instagram)
   META_IG_USER_ID     the Instagram professional account's ID (linked to that Page)
   META_IG_TOKEN       optional, a separate token for Instagram if the Page token is refused there
@@ -109,8 +109,14 @@ def graph_get(path: str, params: dict, opener=urllib.request.urlopen) -> dict:
         return json.loads(r.read().decode())
 
 
+def page_id(token: str, opener=urllib.request.urlopen) -> str:
+    """META_PAGE_ID if set; otherwise the Page the token belongs to (a Page token's /me is the Page)."""
+    return os.environ.get("META_PAGE_ID") or graph_get("me", {"fields": "id", "access_token": token}, opener)["id"]
+
+
 def post_facebook(card: str, caption: str, opener=urllib.request.urlopen) -> str:
-    page, token = os.environ["META_PAGE_ID"], os.environ["META_PAGE_TOKEN"]
+    token = os.environ["META_PAGE_TOKEN"]
+    page = page_id(token, opener)
     out = graph_post(f"{page}/photos", {"url": image_url(card, "facebook"), "message": caption,
                                         "access_token": token}, opener)
     return out.get("post_id") or out["id"]
@@ -131,7 +137,7 @@ def post_instagram(card: str, caption: str, opener=urllib.request.urlopen, wait=
 
 
 def configured(network: str) -> bool:
-    need = ["META_PAGE_ID", "META_PAGE_TOKEN"] if network == "facebook" else ["META_IG_USER_ID", "META_PAGE_TOKEN"]
+    need = ["META_PAGE_TOKEN"] if network == "facebook" else ["META_IG_USER_ID", "META_PAGE_TOKEN"]
     return all(os.environ.get(k) for k in need)
 
 

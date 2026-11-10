@@ -52,6 +52,22 @@ def test_facebook_posts_wide_image_with_caption(meta_env):
     assert body["message"] == "Hello\nhttps://x.test/"
 
 
+def test_facebook_looks_up_page_id_from_token(meta_env, monkeypatch):
+    monkeypatch.delenv("META_PAGE_ID")
+
+    class WithMe(FakeMeta):
+        def __call__(self, req, timeout=None):
+            if req.full_url.split("?")[0].endswith("/me"):
+                self.calls.append(("GET", req.full_url.split("?")[0], {}))
+                return io.BytesIO(json.dumps({"id": "999"}).encode())
+            return super().__call__(req, timeout)
+
+    fake = WithMe()
+    assert ps.configured("facebook")
+    ps.post_facebook("senate-unity", "Hi", opener=fake)
+    assert fake.calls[-1][1].endswith("/999/photos")
+
+
 def test_instagram_creates_container_waits_then_publishes(meta_env):
     fake = FakeMeta(statuses=("IN_PROGRESS", "FINISHED"))
     waits = []
