@@ -1,0 +1,6 @@
+Member spotlight: Bill Cassidy (R-LA), Senate.
+In the current Congress, Bill Cassidy voted with the Republican majority on 781 of 798 party-line votes (97.9%). The Senate Republican average is 98.6%.
+
+Members are featured in a fixed random rotation, not chosen by hand.
+Data: Voteview
+https://partycohesion.streamlit.app/Member_Explorer?member=C001075

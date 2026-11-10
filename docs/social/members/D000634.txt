@@ -1,0 +1,6 @@
+Member spotlight: Troy Downing (R-MT), House.
+In the current Congress, Troy Downing voted with the Republican majority on 468 of 471 party-line votes (99.4%). The House Republican average is 97.1%.
+
+Members are featured in a fixed random rotation, not chosen by hand.
+Data: Voteview
+https://partycohesion.streamlit.app/Member_Explorer?member=D000634
