@@ -5,6 +5,8 @@ Live app: https://partycohesion.streamlit.app
 
 Numbers below come from the app's data files (Voteview roll calls through Sept. 30, 2026). They change as new votes are recorded, so re-check each number against the app before posting.
 
+**Ready-made cards:** posts 11 to 14 come with finished images in `docs/social/` (wide 1200×627 for LinkedIn and X, tall 1080×1350 for Instagram and Facebook). Rebuild them after a data refresh with `python scripts/make_social_cards.py`. Each post can link to its share page instead of the app, so the link preview shows the card.
+
 **How to get the chart:** open the page listed under each post, pick the download size in the sidebar (X or Instagram), then click the camera icon on the chart. Every chart already carries its title and the source line.
 
 **Style rules:** describe, don't judge. Say "voted with their party's majority X% of the time," not "loyal" or "broke ranks to…". Name the source. Never imply motive.
@@ -29,8 +31,8 @@ https://partycohesion.streamlit.app
 
 How often members of the 119th Congress voted with their own party on party-line votes:
 
-Democrats: 96.3% on average
-Republicans: 97.5% on average
+Democrats: 96.2% on average
+Republicans: 97.4% on average
 
 Based on 1,313 roll calls where most Democrats and most Republicans voted on opposite sides.
 
@@ -46,7 +48,7 @@ Average party unity among Senate Republicans:
 110th Congress (2007–08): 85.3%
 119th Congress (2025–26): 98.6%
 
-Senate Democrats over the same span: 91.5% and 95.4%.
+Senate Democrats over the same span: 91.6% and 95.3%.
 
 Each member's rate is computed separately for each Congress.
 
@@ -162,3 +164,72 @@ Data: Voteview
 
 6/ All data comes from Voteview's official roll-call records. Methodology: https://partycohesion.streamlit.app
 Code: https://github.com/RendellRich/partycohesion
+
+---
+
+## Post 11: Same bill, different vote
+**Card:** `docs/social/same-bill-different-vote-wide.png` (tall version for Instagram)
+**Link:** https://rendellrich.github.io/partycohesion/same-bill-different-vote/
+
+Most bills get more than one floor vote: passage, then the final version after the other chamber changes it.
+
+Since 2007, members of Congress voted for a bill at one stage and against it at another 3,718 times while most of their own party voted the same way both times.
+
+The count peaked in 2009 to 2010 (903) and has been under 200 per Congress since 2021.
+
+Bills change between votes, so a different vote is not a contradiction. The new page shows both votes side by side with the bill title, so you can see what changed.
+
+Data: Voteview
+
+---
+
+## Post 12: Respect for Marriage Act
+**Card:** `docs/social/respect-for-marriage-act-wide.png`
+**Link:** https://rendellrich.github.io/partycohesion/respect-for-marriage-act/
+
+The Respect for Marriage Act had two House votes in 2022.
+
+July (passage): 47 Republicans voted Yea.
+December (final version, after the Senate added religious-liberty language): 39 Republicans voted Yea.
+
+Seven Republicans voted Yea in July and Nay in December. Two voted Nay in July and Yea in December. Three others who voted Yea in July did not vote in December.
+
+Every House Democrat who voted both times voted Yea both times.
+
+Data: Voteview, House roll calls 373 and 513
+
+---
+
+## Post 13: Floor remarks and votes
+**Card:** `docs/social/floor-remarks-wide.png`
+**Link:** https://rendellrich.github.io/partycohesion/floor-remarks/
+
+Do members vote the way they talk in floor debate?
+
+I read the Congressional Record remarks of every member who took a clear position on Ukraine aid (2023 to 2024) or the Respect for Marriage Act (2022), then checked their vote on the final bill.
+
+House: 101 of 101 voted the way they spoke.
+Senate: 44 of 47.
+
+The three senators who didn't (Merkley, Sanders, Welch) spoke in favor of Ukraine aid and voted against a final package that also carried aid for Israel and Taiwan.
+
+Data: Congressional Record (GovInfo), Voteview
+
+---
+
+## Post 14: What I built (LinkedIn, portfolio framing)
+**Card:** `docs/social/partycohesion-wide.png`
+**Link:** https://rendellrich.github.io/partycohesion/
+
+I built PartyCohesion, a free tool that answers one question with the official record: do members of Congress vote the same way no matter who is president?
+
+What's under the hood:
+- Every House and Senate roll call since 2007 from Voteview, refreshed automatically by a GitHub Actions pipeline
+- Party unity rates per member per Congress, with data validation checks before each update
+- A new view that matches a member's votes on the same bill at different stages, with bill titles from GovInfo
+- Floor remarks from the Congressional Record, read and coded by hand, next to the votes
+
+Python, pandas, Streamlit, GitHub Actions. Code and method are public.
+
+https://partycohesion.streamlit.app
+

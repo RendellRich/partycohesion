@@ -25,6 +25,7 @@ import pandas as pd
 import numpy as np
 
 from house_vote_labels import apply_labels, fetch_missing
+from vote_changes import build_vote_changes
 
 # Paths
 ROOT = Path(__file__).resolve().parent.parent
@@ -603,6 +604,9 @@ def process() -> None:
 
     print("\nBuilding position flip data…")
     build_flip_data(members, positions)
+
+    print("\nFinding members who voted both ways on the same bill…")
+    build_vote_changes(members)
 
 
 def main() -> None:

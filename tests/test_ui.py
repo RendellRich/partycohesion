@@ -43,3 +43,12 @@ def test_bill_numbers_are_recognized():
     from vote_index import bill_code
     assert bill_code("H.R. 1") == "HR1" and bill_code("s 5") == "S5" and bill_code("H.J.Res. 31") == "HJRES31"
     assert bill_code("debt limit") is None and bill_code("S") is None
+
+
+def test_bill_label():
+    from ui import bill_label
+    assert bill_label("HR8404") == "H.R. 8404"
+    assert bill_label("SJRES11") == "S.J.Res. 11"
+    assert bill_label("HCONRES5") == "H.Con.Res. 5"
+    assert bill_label("S365") == "S. 365"
+    assert bill_label("SENATE") == "SENATE"

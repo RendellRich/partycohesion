@@ -194,6 +194,18 @@ def share_bar(text: str, path: str = "", params: dict | None = None) -> None:
     st.code(url, language=None)
 
 
+BILL_PREFIXES = (("HCONRES", "H.Con.Res. "), ("SCONRES", "S.Con.Res. "), ("HJRES", "H.J.Res. "), ("SJRES", "S.J.Res. "),
+                 ("HRES", "H.Res. "), ("SRES", "S.Res. "), ("HR", "H.R. "), ("S", "S. "))
+
+
+def bill_label(bill: str) -> str:
+    """HR8404 -> H.R. 8404"""
+    for raw, nice in BILL_PREFIXES:
+        if str(bill).startswith(raw) and str(bill)[len(raw):].isdigit():
+            return nice + str(bill)[len(raw):]
+    return str(bill)
+
+
 def last_name(name: str) -> str:
     return str(name).split(",")[0].strip()
 
