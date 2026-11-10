@@ -111,8 +111,10 @@ def graph_get(path: str, params: dict, opener=urllib.request.urlopen) -> dict:
 
 def whoami(token: str, opener=urllib.request.urlopen) -> dict:
     """id, name and type ('page' or 'user') of whoever the token belongs to."""
-    me = graph_get("me", {"fields": "id,name", "metadata": "1", "access_token": token}, opener)
-    return {"id": me.get("id"), "name": me.get("name"), "type": (me.get("metadata") or {}).get("type")}
+    me = graph_get("me", {"fields": "id,name", "access_token": token}, opener)
+    info = graph_get("debug_token", {"input_token": token, "access_token": token}, opener).get("data", {})
+    return {"id": me.get("id"), "name": me.get("name"), "type": str(info.get("type", "")).lower(),
+            "expires_at": info.get("expires_at")}
 
 
 def page_id(token: str, opener=urllib.request.urlopen) -> str:
@@ -258,13 +260,12 @@ def check_setup(opener=urllib.request.urlopen) -> int:
         print(f"Meta refused the token ({e.code}): {msg or e.reason}")
         return 1
     if me.get("type") != "page":
-        print(f"Facebook: this is a personal token for \"{me.get('name')}\", not the Page token. Nothing would post. "
+        print(f"Facebook: this is a {me.get('type') or 'non-Page'} token for \"{me.get('name')}\", not a Page token. Nothing would post. "
               "Replace META_PAGE_TOKEN with the PartyCohesion access_token from me/accounts.")
         return 1
     print(f"Facebook: the token posts as the Page \"{me.get('name')}\" (Page id {me.get('id')}).")
     try:
-        info = graph_get("debug_token", {"input_token": token, "access_token": token}, opener).get("data", {})
-        exp = info.get("expires_at")
+        exp = me.get("expires_at")
         if exp == 0:
             print("Facebook: the token never expires.")
         elif exp:
