@@ -1,0 +1,13 @@
+Member spotlight: Raja Krishnamoorthi (D-IL), House.
+In the current Congress (votes through Sep 30, 2026), Raja Krishnamoorthi voted with the Democratic majority on 453 of 461 party-line votes (98.3%). The House Democratic average is 96.4%.
+
+Votes apart from most House Democrats (8 in all) included:
+- Final version of H.R. 5334, An act to impose sanctions and other measures with respect to the Russian Federation, as championed by the late Senator Lindsey O.... (Sep 16, 2026): voted Yea; most Democrats voted Nay.
+- Passing H.R. 5625, Cashless Bail Reporting Act (May 14, 2026): voted Yea; most Democrats voted Nay.
+- Passing H.R. 1346, Nationwide Consumer and Fuel Retailer Choice Act (May 13, 2026): voted Yea; most Democrats voted Nay.
+
+Missed 2.1% of roll calls this Congress. Roll call records don't give reasons for absences.
+
+Full voting record: https://partycohesion.streamlit.app/Member_Explorer?member=K000391
+Look up how your own members vote: https://partycohesion.streamlit.app
+Members are featured in a fixed random rotation, not chosen by hand. Data: Voteview, Congressional Record.

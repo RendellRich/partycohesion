@@ -8,7 +8,7 @@ IDX = fr.load_index()
 
 def test_index_shape_and_sources():
     assert list(IDX.columns) == fr.COLUMNS
-    assert set(IDX["congress"]) >= {118, 119}
+    assert set(IDX["congress"]) >= set(range(110, 120))  # 2007 on
     assert IDX["url"].str.startswith("https://www.govinfo.gov/content/pkg/CREC-").all()
     assert set(IDX["chamber"]) <= {"House", "Senate"}
 
@@ -25,3 +25,19 @@ def test_known_example_cassidy_s2():
     rec = pd.DataFrame({"congress": [119], "bill_number": ["S2"], "date": ["2026-06-05"]})
     url = fr.attach(rec, "C001075", IDX).iloc[0]
     assert url and "CREC-2026-06-04" in url
+
+
+def test_vote_explanation_is_not_remarks_on_the_bill():
+    """In the Dec 17, 2025 rule debate, Rep. Fitzpatrick only said how he would have voted on a roll call. The
+    Record's metadata lists him as speaking there; the text check must not turn that into remarks on the bills."""
+    rec = pd.DataFrame({"congress": [119, 119], "bill_number": ["HR4776", "HR3492"], "date": ["2025-12-18", "2025-12-17"]})
+    urls = fr.attach(rec, "F000466", IDX)
+    assert not any(isinstance(u, str) and "PgH5947-3" in u for u in urls)
+
+
+def test_real_remarks_are_kept():
+    """Rep. Fitzpatrick's speech for the Ukraine Support Act (H.R. 2913) on June 4, 2026, but not the rule (H.Res.
+    518) debated in the same section, which he didn't speak about."""
+    rec = pd.DataFrame({"congress": [119, 119], "bill_number": ["HR2913", "HRES518"], "date": ["2026-06-04"] * 2})
+    urls = fr.attach(rec, "F000466", IDX)
+    assert "PgH3879" in urls.iloc[0] and urls.iloc[1] is None

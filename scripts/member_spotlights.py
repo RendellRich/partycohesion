@@ -52,15 +52,66 @@ def load() -> dict:
     apart = changes[changes["apart"]].groupby("icpsr").size().rename("changed_apart")
     cur = cur.merge(missed, on=["chamber", "icpsr"], how="left").merge(apart, on="icpsr", how="left")
     cur["changed_apart"] = cur["changed_apart"].fillna(0).astype(int)
+    # The name members go by ("Raja Krishnamoorthi"), from Congress.gov, where Voteview has "Krishnamoorthi, S. Raja".
+    details = pd.read_csv(DATA / "member_details.csv", usecols=["bioguide_id", "full_name"])
+    cur = cur.merge(details.drop_duplicates("bioguide_id"), on="bioguide_id", how="left")
     summary = pd.read_csv(DATA / "unity_summary.csv")
     votes = pd.read_csv(DATA / "all_votes.csv")
-    votes = votes[(votes["congress"] == latest) & votes["party_unity_vote"]]
-    titles = pd.read_csv(DATA / "bill_titles.csv")
+    votes = all_votes = votes[votes["congress"] == latest]
+    titles = pd.read_csv(DATA / "bill_titles.csv")  # hand-checked titles win over ones read from vote descriptions
     titles = dict(zip(titles.loc[titles["congress"] == latest, "bill_number"], titles.loc[titles["congress"] == latest, "title"]))
+    votes = votes[votes["party_unity_vote"]]
     remarks = floor_remarks.load_index()
     remarks = remarks[remarks["congress"] == latest]
     return {"members": cur, "latest": latest, "through": mc.fmt_date(summary["latest_vote_date"].max()),
-            "votes": votes, "titles": titles, "remarks": remarks}
+            "votes": votes, "titles": titles, "title_votes": title_votes(all_votes), "remarks": remarks}
+
+
+# Questions whose vote description is the bill's own title (others describe an amendment or motion instead).
+TITLE_QUESTIONS = re.compile(r"passage|suspend the rules|motion to proceed|joint resolution|concurrent resolution|"
+                             r"^on (?:agreeing to )?the resolution|conference report|veto|motion to commit|recommit", re.I)
+# Votes on an amendment or motion, where the vote description says what that amendment or motion would do.
+PURPOSE_QUESTIONS = re.compile(r"(?<!concur in the senate )(?<!concur in senate )amendment|^on the motion$|motion to table|motion to waive|point of order", re.I)
+RULE = re.compile(r"^providing for (?:the )?consideration of (?:the )?(?:bill|joint resolution|concurrent resolution|"
+                  r"resolution)s? \(([^)]+)\)", re.I)
+HOUSE_AMENDMENT = re.compile(r"^(.+?) of [A-Z][A-Za-z ]+? (?:Part [A-Z] )?Amendment No\. \d+ to [^:]+:\s*", re.I)
+
+
+def bill_key(text: str) -> str:
+    """'H.R. 2913' -> 'HR2913', as in the bill_number column."""
+    return re.sub(r"[^A-Z0-9]", "", text.upper())
+
+
+def title_votes(votes: pd.DataFrame) -> pd.DataFrame:
+    """Votes whose description is the bill's own title: passage, taking it up, and the like. Not the final-version
+    votes (concurring, conference reports), whose description keeps the original title even when the other chamber
+    replaced the bill's text, and not rules."""
+    q = votes["vote_question"].fillna("")
+    v = votes[q.str.contains(TITLE_QUESTIONS) & ~q.str.contains(r"concur|conference", case=False)
+              & votes["bill_number"].notna() & votes["vote_desc"].notna()
+              & ~votes["vote_desc"].fillna("").map(lambda t: bool(RULE.search(t)))]
+    return v[["bill_number", "date", "chamber", "vote_desc"]].assign(n=v["vote_desc"].str.len())
+
+
+LONG_TITLE = re.compile(r"^(?:A|An) (?:original )?(?:bill|act|joint resolution|concurrent resolution|resolution)\b", re.I)
+
+
+def title_for(d: dict, bill: str, date: str) -> str | None:
+    """The bill's title as of a vote: from the latest vote on the bill itself on or before that day (the Senate can
+    swap a whole new text into a House bill), preferring a short title over a long "A bill to ..." one, and the
+    House's on a tie. Hand-checked titles win."""
+    if bill in d["titles"]:
+        return d["titles"][bill]
+    t = d["title_votes"]
+    t = t[t["bill_number"] == bill]
+    if t.empty:
+        return None
+    before = t[t["date"] <= date]
+    t = before if len(before) else t
+    short = t[~t["vote_desc"].str.match(LONG_TITLE)]  # "Ukraine Support Act" reads better than "A bill to ..."
+    t = short if len(short) else t
+    t = t[t["date"] == t["date"].max()]
+    return t.sort_values(["chamber", "n"], key=lambda c: c.map({"House": 0, "Senate": 1}) if c.name == "chamber" else c)["vote_desc"].iloc[0]
 
 
 SUBSTANTIVE = re.compile(r"^on passage|suspend the rules and pass|^on (?:the )?joint resolution$|conference report|"
@@ -84,7 +135,10 @@ def apart_votes(d: dict, row: pd.Series) -> pd.DataFrame:
     x = x[x["vote"] != x["party_vote"]].copy()
     x["remarks_url"] = floor_remarks.attach(x, row["bioguide_id"], d["remarks"])
     q = x["vote_question"].fillna("")
-    x["substantive"] = q.str.contains(SUBSTANTIVE)
+    # A special rule ("Providing for consideration of the bill (H.R. 2913) ...") is procedure on another bill.
+    rule = x["vote_desc"].fillna("").str.extract(RULE, expand=False)
+    x["rule_for"] = rule.map(lambda b: bill_key(b) if isinstance(b, str) else None)
+    x["substantive"] = q.str.contains(SUBSTANTIVE) & x["rule_for"].isna()
     x["shown"] = ~q.str.contains(NOT_SHOWN)
     return x
 
@@ -94,9 +148,9 @@ KINDS = [(re.compile(r"cloture on the motion to proceed", re.I), "Cloture on tak
          (re.compile(r"motion to discharge", re.I), "Discharging"),
          (re.compile(r"motion to table", re.I), "Tabling"),
          (re.compile(r"cloture", re.I), "Cloture on"),
+         (re.compile(r"conference report|concur in", re.I), "Final version of"),
          (re.compile(r"amendment", re.I), "An amendment to"),
          (re.compile(r"veto|objections of the president", re.I), "Overriding the veto of"),
-         (re.compile(r"conference report|concur in", re.I), "Final version of"),
          (re.compile(r"nomination", re.I), "Nomination:"),
          (re.compile(r"passage|suspend the rules and pass|joint resolution|resolution", re.I), "Passing"),
          (re.compile(r"recommit", re.I), "Sending back to committee"),
@@ -114,19 +168,50 @@ def pick(x: pd.DataFrame, n: int) -> pd.DataFrame:
     x = x[x["shown"]].copy()
     x["has_remarks"] = x["remarks_url"].notna()
     x = x.sort_values(["substantive", "has_remarks", "date"], ascending=False)
-    x["key"] = x["bill_number"].fillna(x["vote_desc"].fillna("") + x["date"])
+    x["key"] = x["rule_for"].fillna(x["bill_number"]).fillna(x["vote_desc"].fillna("") + x["date"])
     return x.drop_duplicates("key").head(n)
 
 
-def describe(d: dict, r: pd.Series) -> str:
-    bill = r["bill_number"] if isinstance(r["bill_number"], str) else ""
-    title = d["titles"].get(bill) or (r["vote_desc"] if isinstance(r["vote_desc"], str) else r["vote_question"])
-    title = re.sub(r"\s+", " ", str(title)).strip().rstrip(".")
-    if len(title) > 70:
-        title = title[:67].rsplit(" ", 1)[0] + "..."
+def short(text: str, n: int) -> str:
+    text = re.sub(r"\s+", " ", str(text)).strip().rstrip(".")
+    return text if len(text) <= n else text[:n - 3].rsplit(" ", 1)[0].rstrip(",;:") + "..."
+
+
+def describe(d: dict, r: pd.Series, n: int = 70) -> str:
+    """What the vote was on: the kind of vote, the bill and the bill's title."""
+    desc = r["vote_desc"] if isinstance(r["vote_desc"], str) else ""
+    if isinstance(r.get("rule_for"), str):
+        bill, what = r["rule_for"], "The rule for debating"
+        if str(r["vote_question"]).lower().startswith("on ordering the previous question"):
+            what = "Ending debate on the rule for"
+    else:
+        bill, what = (r["bill_number"] if isinstance(r["bill_number"], str) else ""), kind(r["vote_question"])
+    title = title_for(d, bill, r["date"]) if bill else None
+    title = title or ("" if PURPOSE_QUESTIONS.search(str(r["vote_question"])) else desc)
     label = bill_label(bill) if bill else ""
-    what = f"{label}, {title}" if label else title
-    return f"{kind(r['vote_question'])} {what}"
+    if label and title:
+        return f"{what} {label}, {short(title, n)}"
+    return f"{what} {label or short(title or desc or r['vote_question'], n)}"
+
+
+def purpose(r: pd.Series, n: int = 180) -> str | None:
+    """For a vote on an amendment or motion, what the vote record says it would do, and whose amendment it was."""
+    desc = r["vote_desc"] if isinstance(r["vote_desc"], str) else ""
+    if not desc or isinstance(r.get("rule_for"), str) or not PURPOSE_QUESTIONS.search(str(r["vote_question"])):
+        return None
+    m = HOUSE_AMENDMENT.match(desc)
+    text = short(desc[m.end():] if m else desc, n)
+    return f"{text} (amendment by Rep. {m.group(1)})" if m else text
+
+
+def spoken_name(row: pd.Series) -> str:
+    """'Jason Crow'. When Voteview's first name is only an initial ("S. Krishnamoorthi"), the Congress.gov name with
+    middle initials dropped ("Raja Krishnamoorthi")."""
+    name = display_name(row["name"])
+    full = row.get("full_name")
+    if re.match(r"^[A-Z]\.\s", name) and isinstance(full, str):
+        return re.sub(r"\s+", " ", re.sub(r"\b[A-Z]\.\s", "", full).replace(", Jr.", " Jr.")).strip()
+    return name
 
 
 def stats(d: dict, bioguide: str) -> dict:
@@ -136,7 +221,8 @@ def stats(d: dict, bioguide: str) -> dict:
     peers = same[same["unity_votes_cast"] >= MIN_VOTES]
     below = (peers["party_unity_pct"] < row["party_unity_pct"]).mean() * 100
     return {
-        "row": row, "name": display_name(row["name"]), "party": row["caucus"], "chamber": row["chamber"],
+        "row": row,
+        "name": spoken_name(row), "party": row["caucus"], "chamber": row["chamber"],
         "state": STATES.get(row["state_abbrev"], row["state_abbrev"]), "abbrev": row["state_abbrev"],
         "pct": float(row["party_unity_pct"]), "with": int(row["votes_with_party"]), "cast": int(row["unity_votes_cast"]),
         # same average as the Overview page and the Senate card
@@ -194,8 +280,9 @@ ADJ = {"Democrat": "Democratic", "Republican": "Republican", "Independent": "Ind
 
 
 def compare_bar(s: dict, width: int, fs: int) -> str:
-    """Member's rate as a bar on an 80 to 100% scale (clamped), with a tick and label for the party average."""
-    lo = 80
+    """Member's rate as a bar on an 80 to 100% scale, with a tick and label for the party average. The scale starts
+    lower (70, 60, ...) when the member's rate is below 80%, so the bar is never empty."""
+    lo = min(80, 10 * int((min(s["pct"], s["avg"]) - 2) // 10))
 
     def x(v):
         return max(0.0, min(1.0, (v - lo) / (100 - lo))) * width
@@ -203,7 +290,7 @@ def compare_bar(s: dict, width: int, fs: int) -> str:
     col = mc.PARTY.get(s["party"], mc.C["ind"])
     ax = x(s["avg"])
     anchor, tx = ("end", width) if ax > width * 0.7 else ("start", 0) if ax < width * 0.3 else ("middle", ax)
-    label = f"{s['chamber']} {ADJ[s['party']]} average {s['avg']:.1f}%  ·  scale 80 to 100%"
+    label = f"{s['chamber']} {ADJ[s['party']]} average {s['avg']:.1f}%  ·  scale {lo} to 100%"
     h = fs * 2.6
     return (f'<svg width="{width}" height="{h:.0f}" viewBox="0 0 {width} {h:.0f}">'
             f'<rect x="0" y="{fs * 0.4:.0f}" width="{width}" height="{fs * 0.5:.0f}" rx="{fs * 0.25:.0f}" fill="{mc.C["border"]}"/>'
@@ -217,7 +304,8 @@ def apart_lines(d: dict, s: dict, n: int) -> list[dict]:
     out = []
     plural = f"{s['party']}s"
     for _, r in pick(s["apart"], n).iterrows():
-        out.append({"what": describe(d, r), "date": mc.fmt_date(r["date"]), "vote": r["vote"],
+        out.append({"what": describe(d, r), "full": describe(d, r, 140), "purpose": purpose(r),
+                    "date": mc.fmt_date(r["date"]), "vote": r["vote"],
                     "party_vote": r["party_vote"], "plural": plural, "remarks": r["remarks_url"]})
     return out
 
@@ -233,7 +321,7 @@ def apart_html(d: dict, s: dict, n: int, fs: int) -> str:
     for a in apart_lines(d, s, n):
         meta = f"{a['date']} · Voted {a['vote']}; most {a['plural']} voted {a['party_vote']}"
         if isinstance(a["remarks"], str):
-            meta += " · Spoke on the floor about it"
+            meta += " · Spoke about it in the Congressional Record"
         items.append(f'<li><div class="body">{escape(a["what"])}</div>'
                      f'<div class="muted" style="font-size:{fs * 0.82:.0f}px;margin-top:2px">{escape(meta)}</div></li>')
     return head + f'<ul class="facts" style="font-size:{fs}px;margin-top:6px">{"".join(items)}</ul>'
@@ -292,16 +380,18 @@ def caption(d: dict, s: dict) -> str:
     group = f"{s['chamber']} {s['party']}s"
     lines = [
         f"Member spotlight: {s['name']} ({abbr}-{s['abbrev']}), {s['chamber']}.",
-        f"In the current Congress, {s['name']} voted with the {ADJ[s['party']]} majority on {s['with']} of {s['cast']} "
+        f"In the current Congress (votes through {s['through']}), {s['name']} voted with the {ADJ[s['party']]} majority on {s['with']} of {s['cast']} "
         f"party-line votes ({s['pct']:.1f}%). The {s['chamber']} {ADJ[s['party']]} average is {s['avg']:.1f}%.",
         "",
     ]
     if len(s["apart"]):
         lines.append(f"Votes apart from most {group} ({len(s['apart'])} in all) included:")
         for a in apart_lines(d, s, 3):
-            lines.append(f"- {a['what']} ({a['date']}): voted {a['vote']}; most {a['plural']} voted {a['party_vote']}.")
+            lines.append(f"- {a['full']} ({a['date']}): voted {a['vote']}; most {a['plural']} voted {a['party_vote']}.")
+            if a["purpose"]:
+                lines.append(f"  From the vote record: {a['purpose']}")
             if isinstance(a["remarks"], str):
-                lines.append(f"  Floor remarks: {a['remarks']}")
+                lines.append(f"  In their own words: {a['remarks']}")
     else:
         lines.append(f"Voted with most {group} on every party-line vote this Congress.")
     lines += ["", missed_line(s), "",
@@ -324,10 +414,12 @@ def render(d: dict, bioguides: list[str]) -> list[Path]:
                 pg.set_content(card(d, s, size), wait_until="networkidle")
                 pg.evaluate("document.fonts.ready")
                 pg.wait_for_timeout(300)
-                path = OUT / f"{b}-{size}.png"
-                pg.screenshot(path=str(path))
-                if size == "tall":
-                    pg.screenshot(path=str(OUT / f"{b}-tall.jpg"), type="jpeg", quality=92)
+                # Facebook gets the wide PNG, Instagram the tall JPEG; no tall PNG, to keep the repository small.
+                path = OUT / (f"{b}-wide.png" if size == "wide" else f"{b}-tall.jpg")
+                if size == "wide":
+                    pg.screenshot(path=str(path))
+                else:
+                    pg.screenshot(path=str(path), type="jpeg", quality=90)
                 paths.append(path)
                 pg.close()
             (OUT / f"{b}.txt").write_text(caption(d, s) + "\n")

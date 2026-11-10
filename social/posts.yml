@@ -1,12 +1,17 @@
 # Posts that go out automatically to the PartyCohesion Facebook Page and Instagram account.
 #
-# The "Post to Facebook and Instagram" workflow checks this file every morning and posts each entry on or after its
-# post_on date, once per network. Anyone can propose a post: add an entry in a pull request, and it goes out after
-# the pull request is merged. An entry more than 7 days late is skipped; change post_on to send it.
+# The "Post to Facebook and Instagram" workflow checks this file every hour and posts each entry once its post_on date
+# and time have come, once per network, one entry per run. Anyone can propose a post: add an entry in a pull request,
+# and it goes out after the pull request is merged. An entry more than 7 days late is skipped; change post_on to
+# send it. Member spotlights and the weekly finding card are added by scripts/schedule_posts.py, in a weekly pull
+# request from the "Queue member spotlights" workflow.
 #
 #   id:        unique name for the post (never reuse one; social/posted.csv tracks what already went out)
-#   card:      partycohesion, same-bill-different-vote, respect-for-marriage-act, senate-unity or floor-remarks
-#   post_on:   date to post (YYYY-MM-DD); goes out on the first morning run on or after it
+#   card:      partycohesion, same-bill-different-vote, respect-for-marriage-act, senate-unity, floor-remarks, or
+#              member/<Bioguide ID> for a member spotlight (its card and caption are in docs/social/members/)
+#   post_on:   date to post (YYYY-MM-DD)
+#   time:      optional, Eastern time in quotes ("19:35"); 09:00 if left out. Goes out on the first hourly run after it
+#   expires_after_days: optional, how late it can still go out (7 by default; 1 for spotlights)
 #   networks:  optional, [facebook, instagram] by default
 #   caption:   optional; without it the card's caption from docs/social/captions.json is used. Facebook gets the
 #              link; on Instagram, a line that is only a link becomes "Link in bio."
@@ -24,3 +29,62 @@
 - id: respect-for-marriage-act-2026-12
   card: respect-for-marriage-act
   post_on: 2026-12-03
+
+- id: spotlight-119-C001121
+  card: member/C001121
+  post_on: 2026-11-11
+  time: "19:35"
+  expires_after_days: 1
+
+- id: spotlight-119-D000634
+  card: member/D000634
+  post_on: 2026-11-13
+  time: "11:45"
+  expires_after_days: 1
+
+- id: spotlight-119-W000830
+  card: member/W000830
+  post_on: 2026-11-15
+  time: "16:50"
+  expires_after_days: 1
+
+- id: spotlight-119-C001075
+  card: member/C001075
+  post_on: 2026-11-16
+  time: "12:30"
+  expires_after_days: 1
+
+- id: spotlight-119-K000391
+  card: member/K000391
+  post_on: 2026-11-18
+  time: "11:45"
+  expires_after_days: 1
+
+- id: spotlight-119-F000466
+  card: member/F000466
+  post_on: 2026-11-19
+  time: "18:10"
+  expires_after_days: 1
+
+- id: spotlight-119-C001136
+  card: member/C001136
+  post_on: 2026-11-20
+  time: "11:45"
+  expires_after_days: 1
+
+- id: spotlight-119-S001227
+  card: member/S001227
+  post_on: 2026-11-22
+  time: "18:10"
+  expires_after_days: 1
+
+- id: same-bill-different-vote-2026-11-23
+  card: same-bill-different-vote
+  post_on: 2026-11-23
+  time: "09:15"
+
+- id: spotlight-119-B001292
+  card: member/B001292
+  post_on: 2026-11-24
+  time: "19:35"
+  expires_after_days: 1

@@ -1,13 +1,21 @@
-"""Index of who spoke on the floor about which bill, from the Congressional Record (GovInfo), for "In their own
-words" links. One row per member per bill per Record section: data/floor_remarks_index.csv.
+"""Index of who spoke about which bill in the Congressional Record (GovInfo), for the "In their own words" links.
+One row per member per bill per Record section: data/floor_remarks_index.csv.gz.
 
 Each day's Congressional Record on GovInfo has MODS metadata listing every section (granule) with its title, a
-link to the text, every member who spoke (with Bioguide ID) and the bills it references. This keeps sections where
-a member spoke and a bill is referenced, which links a member to their own remarks on that bill. It records only
-that they spoke and where; it does not code what they said. Stances are coded by hand separately, in
-data/floor_statements.csv.
+link to the text, every member who spoke (with Bioguide ID) and the bills it references. That metadata is only the
+starting point: a member counts as "speaking" in a section even when all they said was "had I been present, I would
+have voted yea on Roll Call No. 343". So each candidate is checked against the section's text:
 
-No API key: www.govinfo.gov serves the sitemaps and MODS files directly. Downloads are cached in --cache.
+  - the member's own remarks in the section, minus short procedural lines ("I yield back", "I ask unanimous
+    consent") and statements explaining a missed vote, must come to at least MIN_WORDS words, and
+  - unless the section is about that bill (it's in the section's headline, with at most one other), the member's
+    remarks must name the bill, by number (H.R. 2913) or by its short title (Ukraine Support Act). That covers a
+    rule for debating several bills at once, and a bill that only comes up in passing.
+
+It records only that they spoke about the bill and where; it does not code what they said. Stances are coded by
+hand separately, in data/floor_statements.csv.
+
+No API key: www.govinfo.gov serves the sitemaps, MODS and text files directly. Downloads are cached in --cache.
 
   python scripts/floor_remarks_index.py --years 2025 2026
 """
@@ -16,7 +24,10 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures as cf
+import html
 import re
+import sys
+import time
 import urllib.request
 from pathlib import Path
 from xml.etree import ElementTree as ET
@@ -24,24 +35,38 @@ from xml.etree import ElementTree as ET
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "data" / "floor_remarks_index.csv"
+sys.path.insert(0, str(ROOT))
+from floor_remarks import granule_url  # noqa: E402
+OUT = ROOT / "data" / "floor_remarks_index.csv.gz"
 NS = {"m": "http://www.loc.gov/mods/v3"}
 M = "{http://www.loc.gov/mods/v3}"
 SKIP_TITLES = re.compile(r"^(PRAYER|PLEDGE OF ALLEGIANCE|THE JOURNAL|ADJOURNMENT|RECESS|EXECUTIVE COMMUNICATIONS|"
                          r"PUBLIC BILLS AND RESOLUTIONS|ADDITIONAL SPONSORS|DAILY DIGEST|AMENDMENTS SUBMITTED|"
-                         r"TEXT OF AMENDMENTS|STATEMENTS ON INTRODUCED BILLS)", re.I)
-COLUMNS = ["bioguide_id", "congress", "bill_number", "date", "chamber", "url"]
+                         r"TEXT OF AMENDMENTS|STATEMENTS ON INTRODUCED BILLS|PERSONAL EXPLANATION|"
+                         r"SUBMITTED RESOLUTIONS|REPORTS? OF COMMITTEES?|CONSTITUTIONAL AUTHORITY STATEMENT)", re.I)
+COLUMNS = ["bioguide_id", "congress", "bill_number", "date", "chamber", "granule"]
+MIN_WORDS = 60
+
+# A speaker's turn starts a paragraph: "  Mr. FITZPATRICK. Mr. Speaker, ..." or "  The PRESIDING OFFICER. ..."
+TURN = re.compile(r"^  ((?:Mr|Mrs|Ms|Miss|Madam)\. [A-Z][A-Za-z'\-]*(?: [A-Z][A-Za-z'\-]*)*(?: of [A-Z][A-Za-z .]+?)?"
+                  r"|The (?:[A-Z][A-Za-z]* )*?(?:SPEAKER|PRESIDENT|OFFICER|CHAIR|CHAIRMAN|CLERK)"
+                  r"(?: pro tempore)?(?: \([^)]*\))?)\. ", re.M)
+MISSED_VOTE = re.compile(r"had I been present|would have voted|unable to (?:be present|vote|cast)|I was absent|"
+                         r"missed (?:the |a |several |roll ?call)|not present for|was not recorded|"
+                         r"inadvertently voted|intended to vote", re.I)
 
 
-def fetch(url: str, dest: Path) -> Path | None:
+def fetch(url: str, dest: Path, tries: int = 3) -> Path | None:
     if dest.exists() and dest.stat().st_size > 0:
         return dest
-    try:
-        with urllib.request.urlopen(url, timeout=120) as r:
-            dest.write_bytes(r.read())
-        return dest
-    except Exception:
-        return None
+    for attempt in range(tries):
+        try:
+            with urllib.request.urlopen(url, timeout=120) as r:
+                dest.write_bytes(r.read())
+            return dest
+        except Exception:
+            time.sleep(2 * (attempt + 1))
+    return None
 
 
 def days(years: list[int], cache: Path) -> list[str]:
@@ -54,6 +79,7 @@ def days(years: list[int], cache: Path) -> list[str]:
 
 
 def parse(path: Path) -> list[dict]:
+    """Candidate rows from one day's MODS: every speaker in a section times every bill it references."""
     try:
         root = ET.parse(path).getroot()
     except ET.ParseError:
@@ -64,20 +90,164 @@ def parse(path: Path) -> list[dict]:
         title = (g.findtext("m:titleInfo/m:title", default="", namespaces=NS) or "").strip()
         if not title or SKIP_TITLES.match(title):
             continue
-        url = next((u.text for u in g.findall("m:location/m:url", NS) if u.get("displayLabel") == "HTML rendition"),
-                   None)
-        speakers = {(c.get("bioGuideId"), c.get("chamber")) for c in g.iter(f"{M}congMember")
-                    if c.get("role") == "SPEAKING" and c.get("bioGuideId")}
-        bills = {(b.get("congress"), f"{b.get('type', '').upper()}{b.get('number')}") for b in g.iter(f"{M}bill")
-                 if b.get("congress") and b.get("number")}
-        for bio, chamber in speakers:
+        access = g.findtext(".//m:accessId", default="", namespaces=NS)
+        if not access:
+            continue
+        cls = g.findtext(".//m:granuleClass", default="", namespaces=NS)
+        speakers = {}
+        for c in g.iter(f"{M}congMember"):
+            if c.get("role") == "SPEAKING" and c.get("bioGuideId"):
+                parsed = next((n.text for n in c.findall("m:name", NS) if n.get("type") == "parsed"), "") or ""
+                speakers[c.get("bioGuideId")] = (c.get("chamber"), parsed.strip())
+        bills, headline = set(), set()
+        for b in g.iter(f"{M}bill"):
+            if b.get("congress") and b.get("number"):
+                key = (b.get("congress"), f"{b.get('type', '').upper()}{b.get('number')}")
+                bills.add(key)
+                if b.get("context") == "HEADERLINE":  # the section is about this bill
+                    headline.add(key)
+        for bio, (chamber, parsed) in speakers.items():
             for congress, bill in bills:
                 rows.append({"bioguide_id": bio, "congress": int(congress), "bill_number": bill, "date": date,
-                             "chamber": {"H": "House", "S": "Senate"}.get(chamber or "", chamber or ""), "url": url})
+                             "chamber": {"H": "House", "S": "Senate"}.get(chamber or "", chamber or ""),
+                             "granule": access.removeprefix(f"CREC-{date}-"), "parsed": parsed,
+                             "extension": cls == "EXTENSIONS", "n_bills": len(bills),
+                             "headline": (congress, bill) in headline, "n_headline": len(headline)})
     return rows
 
 
-def build(years: list[int], cache: Path, workers: int = 8, recent: int | None = None) -> pd.DataFrame:
+def text_of(path: Path) -> str:
+    raw = path.read_text(errors="ignore")
+    m = re.search(r"<pre>(.*)</pre>", raw, re.S)
+    return html.unescape(re.sub(r"<[^>]+>", "", m.group(1) if m else raw))
+
+
+def norm(name: str) -> str:
+    return re.sub(r"\s+", " ", name).strip().upper()
+
+
+def turns(text: str) -> list[tuple[str, str]]:
+    """(speaker label, what they said) for each turn in a section, in order."""
+    marks = list(TURN.finditer(text))
+    return [(m.group(1), text[m.end():(marks[i + 1].start() if i + 1 < len(marks) else len(text))])
+            for i, m in enumerate(marks)]
+
+
+# Sentences that run the floor rather than say anything about the bill, and the clerk's narration that follows them.
+PROCEDURE = re.compile(r"\byield|reserve the balance|unanimous consent|absence of a quorum|move that the committee|"
+                       r"do now rise|motion was agreed to|motion to reconsider|committee rose|recorded vote|yeas and nays|"
+                       r"immediate consideration|\bcall up\b|the clerk (?:will|read|designated)|without objection|"
+                       r"the question is|\bI move\b|point of order|pursuant to (?:house )?resolution|reported that|"
+                       r"assumed the chair|having had under consideration|I thank the (?:gentle|chair|ranking|senator|"
+                       r"majority|minority)|necessarily absent|if present and voting|result (?:of the vote )?was "
+                       r"announced|vote was taken|minute vote|minutes remaining|\byeas \d|not voting|^so the |"
+                       r"^stated (?:for|against)|journal of proceedings|morning hour|calendar no\.|two leaders|"
+                       r"deemed expired|invoke cloture|the senate (?:resume|vote|proceed|stand)|\badjourn|"
+                       r"printed in the record|ordered to be printed", re.I)
+
+
+def clean(said: str) -> str:
+    """The member's own sentences: quoted documents (indented), page markers and procedural sentences removed."""
+    lines = [ln for ln in said.split("\n") if not re.match(r"\s{4,}\S", ln) and "[[Page" not in ln]
+    sentences = re.split(r"(?<=[.?!])\s+", re.sub(r"\s+", " ", " ".join(lines)))
+    return " ".join(x for x in sentences if not PROCEDURE.search(x))
+
+
+def substantive(said: str) -> str:
+    """A turn's own words, unless it is a short procedural line or explains a missed vote."""
+    said = clean(said)
+    words = len(said.split())
+    if words < 40 or (MISSED_VOTE.search(said) and words < 150):
+        return ""
+    return said
+
+
+def own_remarks(text: str, parsed: str, extension: bool) -> str:
+    """What this member said in the section, procedural lines and missed-vote statements left out."""
+    if extension:  # an Extension of Remarks is one member's written statement
+        body = re.split(r"\bin the (?:house of representatives|senate)\b", text, maxsplit=1, flags=re.I)[-1]
+        return substantive(body)
+    ts = turns(text)
+    want = norm(parsed)
+    mine = [s for label, s in ts if norm(label) == want]
+    if not mine and want:  # "Mr. GARCIA" in the metadata, "Mr. GARCIA of Texas" in the text, or the other way
+        surname = want.split(" OF ")[0]
+        labels = {norm(label) for label, _ in ts if norm(label).split(" OF ")[0] == surname}
+        if len(labels) == 1:
+            mine = [s for label, s in ts if norm(label) in labels]
+    return "\n".join(substantive(s) for s in mine).strip()
+
+
+PREFIX = {"HR": r"H\.\s?R\.|House Bill", "S": r"S\.|Senate Bill", "HRES": r"H\.\s?Res\.|House Resolution",
+          "SRES": r"S\.\s?Res\.|Senate Resolution", "HJRES": r"H\.\s?J\.\s?Res\.|House Joint Resolution",
+          "SJRES": r"S\.\s?J\.\s?Res\.|Senate Joint Resolution",
+          "HCONRES": r"H\.\s?Con\.\s?Res\.|House Concurrent Resolution",
+          "SCONRES": r"S\.\s?Con\.\s?Res\.|Senate Concurrent Resolution"}
+
+
+def names_bill(said: str, bill: str, title: str | None) -> bool:
+    m = re.fullmatch(r"([A-Z]+?)(\d+)", bill)
+    if m and m.group(1) in PREFIX and re.search(rf"(?:{PREFIX[m.group(1)]})\s?{m.group(2)}\b", said, re.I):
+        return True
+    if title and len(title) <= 80:  # a short title such as "Ukraine Support Act", not "A bill to ..."
+        core = re.sub(r"\s+of \d{4}$|\s+\d{4}$", "", title.strip().rstrip("."))
+        return len(core) >= 8 and core.lower() in re.sub(r"\s+", " ", said).lower()
+    return False
+
+
+def short_titles() -> dict:
+    """(congress, bill) -> short title, from House vote descriptions in data/all_votes.csv."""
+    path = ROOT / "data" / "all_votes.csv"
+    if not path.exists():
+        return {}
+    v = pd.read_csv(path, usecols=["congress", "chamber", "bill_number", "vote_question", "vote_desc"])
+    v = v[(v["chamber"] == "House") & v["bill_number"].notna() & v["vote_desc"].notna()
+          & v["vote_question"].str.contains(r"passage|suspend the rules", case=False, na=False)]
+    v = v.assign(n=v["vote_desc"].str.len()).sort_values("n")
+    return {(c, b): t for c, b, t in v.drop_duplicates(["congress", "bill_number"])[["congress", "bill_number", "vote_desc"]].values}
+
+
+def needs_name(r) -> bool:
+    """Whether the member must name the bill for their remarks to count as being about it. Not when the section is
+    about that bill alone or with one other; yes when it is a rule for debating several bills, or the bill only comes
+    up in a section about something else."""
+    if r.headline:
+        return r.n_headline > 2
+    return r.n_headline > 0 or r.n_bills > 2
+
+
+def verify(rows: pd.DataFrame, cache: Path, workers: int = 20) -> pd.DataFrame:
+    """Keep the rows where the member's own remarks in that section are substantive and about that bill."""
+    if rows.empty:
+        return rows
+    cache.mkdir(parents=True, exist_ok=True)
+    sections = rows[["date", "granule"]].drop_duplicates()
+    with cf.ThreadPoolExecutor(workers) as ex:
+        paths = list(ex.map(lambda dg: fetch(granule_url(*dg), cache / f"CREC-{dg[0]}-{dg[1]}.htm"),
+                            sections.itertuples(index=False, name=None)))
+    texts = {(d, g): text_of(p) for (d, g), p in zip(sections.itertuples(index=False, name=None), paths) if p}
+    if len(texts) < len(sections):
+        print(f"Could not download {len(sections) - len(texts)} of {len(sections)} sections; their rows are left out. "
+              "Run again to retry them.")
+    titles = short_titles()
+    keep, said = [], {}
+    for r in rows.itertuples(index=False):
+        text = texts.get((r.date, r.granule))
+        if text is None:
+            keep.append(False)
+            continue
+        k = (r.date, r.granule, r.bioguide_id)
+        if k not in said:
+            said[k] = own_remarks(text, r.parsed, r.extension)
+        words = said[k]
+        ok = len(words.split()) >= MIN_WORDS
+        if ok and needs_name(r):
+            ok = names_bill(words, r.bill_number, titles.get((r.congress, r.bill_number)))
+        keep.append(ok)
+    return rows[keep]
+
+
+def build(years: list[int], cache: Path, workers: int = 8, recent: int | None = None) -> tuple[pd.DataFrame, list[str]]:
     cache.mkdir(parents=True, exist_ok=True)
     ids = days(years, cache)
     if recent:
@@ -86,11 +256,13 @@ def build(years: list[int], cache: Path, workers: int = 8, recent: int | None = 
         paths = list(ex.map(lambda i: fetch(f"https://www.govinfo.gov/metadata/pkg/{i}/mods.xml", cache / f"{i}.xml"),
                             ids))
     rows = [r for p in paths if p for r in parse(p)]
-    df = pd.DataFrame(rows, columns=COLUMNS)
+    df = pd.DataFrame(rows, columns=COLUMNS + ["parsed", "extension", "n_bills", "headline", "n_headline"])
     # Keep remarks about bills of the same Congress, one row per member, bill and section.
     df = df[df["congress"].isin({(y - 1789) // 2 + 1 for y in years})]
-    return df.drop_duplicates(["bioguide_id", "bill_number", "date", "url"]).sort_values(
-        ["congress", "bill_number", "date", "bioguide_id"])
+    df = df.drop_duplicates(["bioguide_id", "bill_number", "date", "granule"])
+    df = verify(df, cache / "html")
+    read = [i.removeprefix("CREC-") for i, p in zip(ids, paths) if p]
+    return df[COLUMNS].sort_values(["congress", "bill_number", "date", "bioguide_id"]), read
 
 
 def main() -> None:
@@ -99,14 +271,15 @@ def main() -> None:
     ap.add_argument("--cache", type=Path, default=Path("/tmp/crec/mods"))
     ap.add_argument("--recent", type=int, help="only re-read the last N days of the Record (for the twice-weekly refresh)")
     a = ap.parse_args()
-    df = build(a.years, a.cache, recent=a.recent)
+    df, read = build(a.years, a.cache, recent=a.recent)
     old = pd.read_csv(OUT)[COLUMNS] if OUT.exists() else pd.DataFrame(columns=COLUMNS)
     if a.recent:
-        keep = old[~old["date"].isin(df["date"].unique())] if len(df) else old
+        keep = old[~old["date"].isin(read)]
     else:
         keep = old[~old["congress"].isin(df["congress"].unique())]
-    out = pd.concat([keep, df]).drop_duplicates(["bioguide_id", "bill_number", "date", "url"])
-    out.sort_values(["congress", "bill_number", "date", "bioguide_id"]).to_csv(OUT, index=False)
+    out = pd.concat([keep, df]).drop_duplicates(["bioguide_id", "bill_number", "date", "granule"])
+    out.sort_values(["congress", "bill_number", "date", "bioguide_id"]).to_csv(
+        OUT, index=False, compression={"method": "gzip", "mtime": 0})
     print(f"{len(df):,} member-bill remarks for Congress {sorted(df['congress'].unique())} -> {OUT.relative_to(ROOT)}")
 
 

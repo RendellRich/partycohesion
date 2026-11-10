@@ -1,12 +1,13 @@
 Member spotlight: Bill Cassidy (R-LA), Senate.
-In the current Congress, Bill Cassidy voted with the Republican majority on 781 of 798 party-line votes (97.9%). The Senate Republican average is 98.6%.
+In the current Congress (votes through Sep 30, 2026), Bill Cassidy voted with the Republican majority on 781 of 798 party-line votes (97.9%). The Senate Republican average is 98.6%.
 
 Votes apart from most Senate Republicans (17 in all) included:
-- Passing H.Con.Res. 86, A concurrent resolution directing the President, pursuant to... (Jun 23, 2026): voted Yea; most Republicans voted Nay.
-- A motion on S. 2, To prohibit the Department of Justice from using taxpayer funds to... (Jun 5, 2026): voted Yea; most Republicans voted Nay.
-  Floor remarks: https://www.govinfo.gov/content/pkg/CREC-2026-06-04/html/CREC-2026-06-04-pt1-PgS2545-8.htm
-- An amendment to S. 2296, To amend title 32, United States Code, to clarify certain... (Oct 9, 2025): voted Yea; most Republicans voted Nay.
-  Floor remarks: https://www.govinfo.gov/content/pkg/CREC-2025-09-10/html/CREC-2025-09-10-pt1-PgS6512-3.htm
+- Passing H.Con.Res. 86, Directing the President, pursuant to section 5(c) of the War Powers Resolution, to remove United States Armed Forces from hostilities... (Jun 23, 2026): voted Yea; most Republicans voted Nay.
+- A motion on S. 2, An original bill to provide for reconciliation pursuant to title II of S. Con. Res. 33 (Jun 5, 2026): voted Yea; most Republicans voted Nay.
+  From the vote record: To prohibit the Department of Justice from using taxpayer funds to make settlement payments to individuals convicted of assaulting law enforcement officers on January 6, 2021
+  In their own words: https://www.govinfo.gov/content/pkg/CREC-2026-06-04/html/CREC-2026-06-04-pt1-PgS2545-8.htm
+- An amendment to H.R. 5334, An act to impose sanctions and other measures with respect to the Russian Federation, as championed by the late Senator Lindsey O.... (Aug 7, 2026): voted Yea; most Republicans voted Nay.
+  From the vote record: To strike the provision relating to duties on countries that purchase Russian-origin crude oil or natural gas or facilitate sanctions evasion
 
 Missed 5.5% of roll calls this Congress. Roll call records don't give reasons for absences.
 

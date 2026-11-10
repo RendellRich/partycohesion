@@ -1,0 +1,11 @@
+Member spotlight: Eric Schmitt (R-MO), Senate.
+In the current Congress (votes through Sep 30, 2026), Eric Schmitt voted with the Republican majority on 829 of 830 party-line votes (99.9%). The Senate Republican average is 98.6%.
+
+Votes apart from most Senate Republicans (1 in all) included:
+- Taking up S. 1318, Fallen Servicemembers Religious Heritage Restoration Act (Jun 5, 2026): voted Nay; most Republicans voted Yea.
+
+Missed 1.2% of roll calls this Congress. Roll call records don't give reasons for absences.
+
+Full voting record: https://partycohesion.streamlit.app/Member_Explorer?member=S001227
+Look up how your own members vote: https://partycohesion.streamlit.app
+Members are featured in a fixed random rotation, not chosen by hand. Data: Voteview, Congressional Record.

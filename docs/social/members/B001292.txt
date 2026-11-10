@@ -1,0 +1,15 @@
+Member spotlight: Donald Beyer (D-VA), House.
+In the current Congress (votes through Sep 30, 2026), Donald Beyer voted with the Democratic majority on 457 of 460 party-line votes (99.3%). The House Democratic average is 96.4%.
+
+Votes apart from most House Democrats (3 in all) included:
+- Passing H.R. 3383, Increasing Investor Opportunities Act (Dec 11, 2025): voted Yea; most Democrats voted Nay.
+- An amendment to H.R. 8800, National Defense Authorization Act for Fiscal Year 2027 (Jul 22, 2026): voted Yea; most Democrats voted Nay.
+  From the vote record: Amendment sought to authorize the Secretary to approve any eligible investor and cleared investment professional who meets the program's statutory and regulatory requirements... (amendment by Rep. Issa)
+- An amendment to H.R. 7567, Farm, Food, and National Security Act (Apr 30, 2026): voted Yea; most Democrats voted Nay.
+  From the vote record: Amendment sought to add "soda" to the definition of ineligible items and defines soda as a carbonated beverage containing more than 1 gram of added sugar, artificial sweetener... (amendment by Rep. Self)
+
+Missed 2.2% of roll calls this Congress. Roll call records don't give reasons for absences.
+
+Full voting record: https://partycohesion.streamlit.app/Member_Explorer?member=B001292
+Look up how your own members vote: https://partycohesion.streamlit.app
+Members are featured in a fixed random rotation, not chosen by hand. Data: Voteview, Congressional Record.

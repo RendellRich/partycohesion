@@ -1,0 +1,13 @@
+Member spotlight: Herbert Conaway Jr. (D-NJ), House.
+In the current Congress (votes through Sep 30, 2026), Herbert Conaway Jr. voted with the Democratic majority on 446 of 463 party-line votes (96.3%). The House Democratic average is 96.4%.
+
+Votes apart from most House Democrats (17 in all) included:
+- Passing H.R. 5625, Cashless Bail Reporting Act (May 14, 2026): voted Yea; most Democrats voted Nay.
+- Passing S. 1318, Fallen Servicemembers Religious Heritage Restoration Act (Apr 29, 2026): voted Yea; most Democrats voted Nay.
+- Passing H.R. 3383, Increasing Investor Opportunities Act (Dec 11, 2025): voted Yea; most Democrats voted Nay.
+
+Missed 2.2% of roll calls this Congress. Roll call records don't give reasons for absences.
+
+Full voting record: https://partycohesion.streamlit.app/Member_Explorer?member=C001136
+Look up how your own members vote: https://partycohesion.streamlit.app
+Members are featured in a fixed random rotation, not chosen by hand. Data: Voteview, Congressional Record.

@@ -1,12 +1,12 @@
 name: Post to Facebook and Instagram
 
-# Every morning, posts the entries in social/posts.yml that are due to the PartyCohesion Facebook Page and Instagram
-# account, then records them in social/posted.csv so nothing posts twice. Can also be started by hand from the
+# Every hour from 6 AM to 11 PM Eastern, posts the next entry in social/posts.yml whose date and time have come to the
+# PartyCohesion Facebook Page and Instagram account, then records it in social/posted.csv so nothing posts twice. Can also be started by hand from the
 # Actions tab to post one card now. Setup (Meta app, Page, tokens, secrets) is in SOCIAL_POSTING.md; until the
 # secrets are added, each network is skipped with a message.
 on:
   schedule:
-    - cron: "17 13 * * *"
+    - cron: "7 0-4,11-23 * * *"  # UTC
   workflow_dispatch:
     inputs:
       card:

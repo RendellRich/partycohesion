@@ -117,28 +117,38 @@ count than the party unity rate, which uses only party-line votes.
 
 st.header("Floor remarks links")
 st.markdown("""
-In a member's voting record, **Their floor remarks** links to where they spoke in the Congressional Record during
-debate on that bill. Each day's Record on GovInfo lists every section with the members who spoke in it, by Bioguide
-ID, and the bills it references. A link appears when the member spoke in a section that references the bill, within
-30 days before the vote or a week after; if there are several, the one closest to the vote is used.
+In a member's voting record, **Their remarks** links to where they spoke about that bill in the Congressional Record.
+Each day's Record on GovInfo lists every section with the members who spoke in it, by Bioguide ID, and the bills it
+references. That list is only the starting point, because it counts a member as speaking even when all they said
+was how they would have voted on a roll call they missed. So each link is checked against the section's text:
 
-The link shows *where* they spoke, not *what* they said. It is not coded or summarized. Read it to see their reasons
-in their own words. Coverage starts with the 118th Congress (2023) and updates twice a week. The hand-coded stances
-on the Campaign Statements page are a separate, smaller dataset.
+- The member's own words in the section have to come to at least 60, leaving out procedural lines ("I yield back",
+  "I ask unanimous consent"), statements explaining a missed vote, and documents read into the Record.
+- Unless the section is about that bill, the member has to name it, by number (H.R. 2913) or by its short title.
+  That covers debate on a rule for several bills at once, and bills that only come up in passing.
+
+A link appears when a checked remark falls within 30 days before the vote or a week after; if there are several,
+the one closest to the vote is used. The link shows *where* they spoke, not *what* they said. It is not coded or
+summarized. Read it to see their reasons in their own words. Coverage starts with the 110th Congress (2007) and
+updates twice a week. The hand-coded stances on the Campaign Statements page are a separate, smaller dataset.
 """)
 
 st.header("Member spotlights")
 st.markdown("""
 The project's Facebook Page posts a spotlight card for one member at a time: their party unity rate this Congress
 next to their party's average, up to three party-line votes where they voted apart from most of their party, a link to
-their floor remarks on those bills when there are any, and their missed-vote rate.
+their remarks on those bills in the Congressional Record when there are any, and their missed-vote rate.
 
 - **Who is featured** is set by a fixed rule, never chosen by hand. Every current member with at least 50 party-line
   votes is shuffled with a published seed (119), then the order alternates Democrats and Republicans, and every fourth
   spotlight is a senator. The code is `scripts/member_spotlights.py`, so anyone can reproduce the order.
 - **Which votes are shown** is also a fixed rule: votes on a bill, resolution or nomination itself before procedural
-  ones, then votes the member spoke about on the floor, then the most recent, one per bill. The total number of
-  votes apart from their party is always given.
+  ones (a rule for debating a bill counts as procedural), then votes the member spoke about in the Record, then the
+  most recent, one per bill. The total number of votes apart from their party is always given. For an amendment or
+  motion, the caption adds what the vote record says it would do.
+- **When they post** is set by `scripts/schedule_posts.py`: a spotlight every one or two days at a different time of
+  day, and one of the site's finding cards each week. Each week it queues the next posts in a pull request that is
+  reviewed before anything goes out.
 - **Missed votes** come with a reminder that roll call records don't give reasons for absences.
 - Cards never use photos and never say or suggest why a member voted as they did.
 """)
