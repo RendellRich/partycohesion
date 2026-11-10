@@ -1,0 +1,44 @@
+name: Keep the app awake
+
+# Streamlit Community Cloud puts an app to sleep after 12 hours without a visitor, and the next visitor has to click a
+# button and wait. This visits the app every 6 hours like a real visitor (and clicks the button if it is asleep), so
+# people following a link from LinkedIn or the portfolio land on the site. Can also be started by hand from the
+# Actions tab.
+on:
+  schedule:
+    - cron: "41 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: keep-awake
+  cancel-in-progress: true
+
+jobs:
+  visit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install a headless browser
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Visit the app
+        run: python scripts/keep_awake.py
+
+      - name: Save a screenshot if it failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: keep-awake-failure
+          path: keep-awake-failure.png
+          if-no-files-found: ignore
