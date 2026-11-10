@@ -1,100 +1,110 @@
 # PartyCohesion
 
-Neutral, data-first view of U.S. Congressional voting patterns and party cohesion.
+**Do members of Congress vote the same way no matter who is president?**
 
-**Primary source**: [Voteview](https://voteview.com/) (Lewis, Poole, Rosenthal, Boche, Rudkin & Sonnet).
+PartyCohesion is a free, neutral site built on the official roll-call record. It covers every House and Senate vote since 2007: 19,574 roll calls and 1,344 members. It shows how often each member sides with their party, whether their vote on the same question changes when the White House changes hands, and how their votes line up with what they said on the campaign trail and on the floor of Congress. It has no scorecards and no opinions, just the votes and the method.
 
-## Features
+**Live site:** https://partycohesion.streamlit.app
 
-- **Overview** — Party unity rates, ideology distributions, cohesion proxy, and party trends from the 110th Congress (2007) to the present
-- **Member Explorer** — Search any member, view party unity %, ideology score, and their unity rate across every Congress they served in
-- **Key Votes** — Party unity by Congress, plus high-profile vote series (funding bills, Cabinet confirmations, biggest party breaks) showing each party's split and every member who voted against their party
-- **Compare Members** — Two members side by side: party unity over time, vote-by-vote agreement while serving together, and key votes where they split
-- **Position Flips** — Whether members cast the same vote on debt limits, stopgap funding and war powers limits under presidents of both parties
-- **Ideology Drift** — How far each member's per-Congress ideology score moved compared with their party
-- **Methodology** — Clear definitions of party unity, DW-NOMINATE, and the cohesion proxy
-- **About** — Project purpose and independence statement
+![Home page in the dark theme: the House drawn as a half circle of 450 dots, one per member, ordered by ideology score](docs/images/home-dark.png)
 
-## Quick Start (Local)
+<p>
+<img src="docs/images/home-light.png" width="62%" alt="Home page in the light theme">
+<img src="docs/images/home-phone.png" width="30%" alt="Home page on a phone">
+</p>
+
+## What you can find
+
+| Page | What it answers |
+|---|---|
+| **Members** | One member's full record: party unity, whether their votes shift with the president, their seat in the chamber, and every roll call they cast |
+| **Position Flips** | Did a member cast the same vote on debt limits, stopgap funding and war powers under presidents of both parties? |
+| **Platform Votes** | Votes where the two party platforms took opposite positions, and who voted against their own party's platform |
+| **Cosponsored, Then Voted No** | Members who signed on to a bill and then voted against it, and whether its text had changed first |
+| **Campaign Statements and Votes** | What House candidates wrote on their campaign websites, and what members of both chambers said in floor debates, next to how they voted |
+| **Key Votes** | The highest-profile votes in each Congress and exactly who crossed party lines |
+| **All Votes** | Search every roll call by bill number or title |
+| **Compare Members** | Two members side by side: agreement while serving together and where they split |
+| **Overview, Ideology Drift** | Party unity and ideology trends, Congress by Congress |
+| **How We Measure Consistency, Methodology** | Every definition, cutoff and data source |
+
+<img src="docs/images/member-page.png" width="49%" alt="A member page: headline numbers and the Senate seat map with the member's seat ringed">
+<img src="docs/images/floor-remarks.png" width="49%" alt="Floor remarks on the Respect for Marriage Act, with a member's own words explaining his changed vote">
+
+## How it's built
+
+**Data, all public and free.** No paid APIs.
+
+| Source | Used for |
+|---|---|
+| [Voteview](https://voteview.com/) (UCLA) | Every roll call, every member's vote, DW-NOMINATE ideology scores |
+| [GovInfo](https://www.govinfo.gov/) bill status files | Sponsors, cosponsors and amendments, for Cosponsored, Then Voted No |
+| [GovInfo](https://www.govinfo.gov/) Congressional Record | Floor remarks, with each speaker identified by their official Bioguide ID |
+| [CampaignView](https://doi.org/10.7910/DVN/JIEAPT) (Harvard Dataverse, CC0) | House candidates' campaign website issue pages, 2018 to 2022 |
+| [Statements of Administration Policy](https://github.com/unitedstates/statements-of-administration-policy) | The president's stated position on a bill |
+| [The American Presidency Project](https://www.presidency.ucsb.edu/) | Party platform text |
+| [@unitedstates/congress-legislators](https://github.com/unitedstates/congress-legislators) | Member details and photos |
+
+**Pipeline**
+- `scripts/refresh_data.py` downloads Voteview, rebuilds every derived table and stores each Congress's votes as a compact NumPy matrix.
+- A GitHub Action runs it twice a week. Before anything is committed, `scripts/validate_data.py` checks member counts, value ranges, and key vote totals against the official Yea and Nay counts, so a bad download never reaches the live site.
+- The scripts for the other sources (`cosponsor_votes.py`, `campaign_statements.py`, `floor_statements.py`, `build_president_positions.py`, `member_details.py`) each write one tidy CSV in `data/`.
+
+**Hand-coded stances.** Campaign statements and floor remarks are read and coded by a person: supports, opposes, conditions, or no clear stance. Keyword rules alone got only about a third of floor remarks right, so none are coded automatically. Every floor quote was checked word for word against the Congressional Record before publishing, and links to the full remarks.
+
+**App.** Streamlit with Plotly.
+- Light and dark themes, which follow the visitor's device and switch from Settings. Every chart color is a theme token, so pages carry no theme logic.
+- Chart colors pass contrast checks in both themes.
+- Long chart titles wrap on phone-width screens.
+- Shareable deep links, such as `?member=F000466`.
+
+**Tests.** 109 pytest tests, run on every pull request. They render every page with Streamlit's AppTest, check the data files, and check the theme contrast math.
+
+## Neutral by design
+
+1. Primary sources first. The official record comes before anyone's interpretation.
+2. The same rules for every member of both parties.
+3. Plain words: a vote goes in the "same direction" or a "different direction" as a statement. Never "broke a promise."
+4. Scores link back to the votes behind them, and the method is public.
+
+## Run it locally
 
 ```bash
+git clone https://github.com/RendellRich/partycohesion.git
 cd partycohesion
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 streamlit run app.py
+pytest                             # optional: run the tests
 ```
 
-Open the URL shown in the terminal (usually http://localhost:8501).
-
-## Refresh the Data
-
-From the project root:
+### Refresh the data
 
 ```bash
 python scripts/refresh_data.py
+python scripts/validate_data.py
 ```
 
-`scripts/build_president_positions.py` reads the White House's Statements of Administration Policy (2009 on) into `data/president_positions.csv`; the scheduled refresh re-reads the current administration's statements. This downloads the latest Voteview member file and the House and Senate vote and roll-call files from the 110th Congress to the newest one, then rebuilds `data/members_processed.csv` and `data/unity_summary.csv`. It also rebuilds the key vote series in `data/key_votes.csv` and `data/key_vote_defectors.csv`. Raw downloads are cached in `data/raw/` (git-ignored). Commit the updated CSVs and Streamlit Cloud redeploys automatically.
+Raw downloads are cached in `data/raw/` (git-ignored). Commit the updated CSVs, and Streamlit Community Cloud redeploys on its own. To run the scheduled refresh by hand, go to GitHub, open **Actions**, choose **Refresh Voteview data**, and select **Run workflow**.
 
-### Automatic refresh
+### Add your own key votes
 
-A GitHub Action (`.github/workflows/refresh-data.yml`) runs the refresh every Monday and Thursday and commits the data files when Voteview has new votes. Streamlit Cloud then redeploys on its own. Before committing, `scripts/validate_data.py` checks the new data; if it fails, nothing is committed, GitHub emails a failure notice, and the site shows a small warning until a refresh succeeds. To run it by hand: GitHub → **Actions** → **Refresh Voteview data** → **Run workflow**.
-
-## Add Your Own Key Votes
-
-To add a hand-picked series (for example, signature legislation), add rows to `data/key_votes_custom.csv`:
+Add rows to `data/key_votes_custom.csv` (the roll call number is in the **Roll Call** column on the Key Votes page), then refresh:
 
 ```csv
 series,congress,chamber,rollnumber,note
 Signature Legislation,119,House,123,Final passage
 ```
 
-The roll call number is shown in the **Roll Call** column on the Key Votes page. Then run `python scripts/refresh_data.py` and commit the updated data files.
+## Data notes
 
-## Deploy to Streamlit Community Cloud (Free)
+- **Ideology:** DW-NOMINATE first dimension. Lower scores lean liberal, higher scores lean conservative.
+- **Party unity:** a party-unity vote is a roll call where most voting Democrats opposed most voting Republicans. A member's rate is the share of those votes (Yea or Nay only) on which they sided with their own party's majority.
+- **Coverage:** House and Senate, 110th Congress (2007) to the present. New Congresses are picked up automatically.
 
-1. Create a public GitHub repository and push this entire folder.
-2. Go to [https://share.streamlit.io](https://share.streamlit.io) and sign in with GitHub.
-3. Click **New app**.
-4. Select your repository, branch (`main`), and main file path: `app.py`.
-5. Click **Deploy**.
+## Attribution
 
-The live app is at **https://partycohesion.streamlit.app**.
+Educational and non-commercial use is welcome. Please credit **Voteview** for the underlying votes and scores, the other sources above where their data appears, and **PartyCohesion** for the presentation.
 
-You can embed it elsewhere by appending `?embed=true` to the URL.
-
-### Suggested GitHub steps
-
-```bash
-cd partycohesion
-git init
-git add .
-git commit -m "Initial PartyCohesion Streamlit app"
-# Create a new empty repo on GitHub, then:
-git remote add origin https://github.com/YOUR_USERNAME/partycohesion.git
-git branch -M main
-git push -u origin main
-```
-
-Then follow the Streamlit Cloud steps above.
-
-## Data Notes
-
-- **Ideology**: DW-NOMINATE Dimension 1 (negative ≈ more liberal, positive ≈ more conservative).
-- **Party unity %**: For each Congress and chamber, a party-unity vote is a roll call where a majority of voting Democrats opposed a majority of voting Republicans. A member's rate is the share of those votes (Yea/Nay only) on which they sided with their own party's majority. Only Democrats and Republicans are scored.
-- **Cohesion proxy**: Within each Congress + chamber + party, members are ranked by absolute distance from the party median on Dimension 1. Score of 100 = closest to the party median; lower scores = further toward the ideological wing.
-- Coverage: House and Senate, 110th Congress to the present. New Congresses are picked up automatically by the refresh script.
-
-## Project Principles
-
-1. Primary sources over interpretation
-2. Minimal editorial language
-3. Transparent methodology
-4. No opaque partisan scorecards
-5. Expandable to additional data domains later
-
-## License / Attribution
-
-Educational and non-commercial use is fine.  
-Please credit **Voteview** for the underlying scores and **PartyCohesion** for the presentation if you reuse charts or the application structure.
+Built by [Rendell Rich](https://github.com/RendellRich).
