@@ -40,3 +40,11 @@ def test_cards_have_no_em_dashes(f):
                 continue
             assert "—" not in fn(f, size), slug
         assert "—" not in title + desc, slug
+
+
+def test_senate_card_claim_matches_data(f):
+    moves = cards.handoffs(f["senate"])
+    html = cards.card_senate(f, "wide")
+    holds = all((after > before) == (cards.president_party(c) == party) for c, party, before, after in moves)
+    assert ("changes of president" in html) == (bool(moves) and holds)
+    assert f"{f['senate'].iloc[-1]['Republican']:.1f}%" in html

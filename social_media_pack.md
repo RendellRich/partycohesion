@@ -5,7 +5,7 @@ Live app: https://partycohesion.streamlit.app
 
 Numbers below come from the app's data files (Voteview roll calls through Sept. 30, 2026). They change as new votes are recorded, so re-check each number against the app before posting.
 
-**Ready-made cards:** posts 11 to 14 come with finished images in `docs/social/` (wide 1200×627 for LinkedIn and X, tall 1080×1350 for Instagram and Facebook). Rebuild them after a data refresh with `python scripts/make_social_cards.py`. Each post can link to its share page instead of the app, so the link preview shows the card.
+**Ready-made cards:** posts 11 to 15 come with finished images in `docs/social/` (wide 1200×627 for LinkedIn and X, tall 1080×1350 for Instagram and Facebook). Rebuild them after a data refresh with `python scripts/make_social_cards.py`. Each post can link to its share page instead of the app, so the link preview shows the card.
 
 **How to get the chart:** open the page listed under each post, pick the download size in the sidebar (X or Instagram), then click the camera icon on the chart. Every chart already carries its title and the source line.
 
@@ -232,4 +232,21 @@ What's under the hood:
 Python, pandas, Streamlit, GitHub Actions. Code and method are public.
 
 https://partycohesion.streamlit.app
+
+---
+
+## Post 15: Senate unity and the White House
+**Card:** `docs/social/senate-unity-wide.png`
+**Link:** https://rendellrich.github.io/partycohesion/senate-unity/
+
+How often do senators vote with their own party? It depends on who is president.
+
+Senate Republicans: 87.6% in 2021 to 2022 (Biden), 98.6% in 2025 to 2026 (Trump).
+Senate Democrats: 99.0% in 2021 to 2022, 95.3% in 2025 to 2026.
+
+At each of the last three changes of president (2017, 2021, 2025), the new president's party in the Senate voted together more often than in the Congress before, and the other party less often.
+
+The 2025 to 2026 Congress is still in session.
+
+Data: Voteview
 
