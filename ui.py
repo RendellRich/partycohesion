@@ -178,7 +178,8 @@ SITE = "https://partycohesion.streamlit.app"
 
 
 def share_bar(text: str, path: str = "", params: dict | None = None) -> None:
-    """Share links for LinkedIn, X, Facebook, Reddit and email, plus the page link to copy. path is the page's URL path
+    """Share links for LinkedIn, X, Facebook, Reddit, email and Instagram (through the share cards), plus the page
+    link to copy. path is the page's URL path
     (e.g. "Members"); params are query parameters that open the same view (e.g. a member's profile)."""
     from urllib.parse import quote, urlencode
     url = f"{SITE}/{path}".rstrip("/") + (f"?{urlencode(params)}" if params else "")
@@ -187,7 +188,9 @@ def share_bar(text: str, path: str = "", params: dict | None = None) -> None:
              ("X", f"https://twitter.com/intent/tweet?text={t}&url={u}"),
              ("Facebook", f"https://www.facebook.com/sharer/sharer.php?u={u}"),
              ("Reddit", f"https://www.reddit.com/submit?url={u}&title={t}"),
-             ("Email", f"mailto:?subject={t}&body={quote(text + chr(10) + chr(10) + url, safe='')}")]
+             ("Email", f"mailto:?subject={t}&body={quote(text + chr(10) + chr(10) + url, safe='')}"),
+             # Instagram has no share link, so this opens the card page with images sized for it and a share button
+             ("Instagram", "https://rendellrich.github.io/partycohesion/cards/")]
     st.markdown('<div class="pc-share"><span>Share</span>' + "".join(
         f'<a href="{escape(h)}" target="_blank" rel="noopener" aria-label="Share on {n}">{n}</a>' for n, h in links)
         + "</div>", unsafe_allow_html=True)

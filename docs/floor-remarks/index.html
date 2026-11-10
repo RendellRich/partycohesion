@@ -18,17 +18,54 @@
 <meta name="twitter:description" content="What members said in floor debate on Ukraine aid and the Respect for Marriage Act, next to how they voted. From the Congressional Record.">
 <meta name="twitter:image" content="https://rendellrich.github.io/partycohesion/social/floor-remarks-wide.png">
 <style>
-body { margin: 0; background: #171614; color: #FAFAFA; font: 18px/1.5 'Public Sans', system-ui, sans-serif;
-  display: flex; min-height: 100vh; align-items: center; justify-content: center; }
-main { max-width: 760px; padding: 32px 20px; text-align: center; }
+body { margin: 0; background: #171614; color: #FAFAFA; font: 18px/1.5 'Public Sans', system-ui, sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 32px 20px 48px; text-align: center; }
 img { width: 100%; height: auto; border-radius: 10px; border: 1px solid #3A3733; }
-a.button { display: inline-block; margin-top: 24px; padding: 12px 22px; border-radius: 8px; background: #E9C46A;
-  color: #171614; font-weight: 700; text-decoration: none; }
-a.button:focus-visible { outline: 3px solid #FAFAFA; outline-offset: 3px; }
 p { color: #E7E5E4; }
+a.button, button { display: inline-block; margin: 6px 4px 0; padding: 10px 18px; border-radius: 8px; font: 600 16px/1.2
+  'Public Sans', system-ui, sans-serif; text-decoration: none; cursor: pointer; border: 1px solid #3A3733;
+  background: transparent; color: #FAFAFA; }
+a.primary { background: #E9C46A; border-color: #E9C46A; color: #171614; font-weight: 700; }
+a.button:focus-visible, button:focus-visible { outline: 3px solid #FAFAFA; outline-offset: 3px; }
+.share { margin-top: 28px; padding-top: 20px; border-top: 1px solid #3A3733; }
+.share h2 { font-size: 16px; font-weight: 600; color: #A8A29E; margin: 0 0 6px; }
+.hint { font-size: 14px; color: #A8A29E; margin-top: 10px; }
+[hidden] { display: none !important; }
 </style></head>
 <body><main>
 <img src="https://rendellrich.github.io/partycohesion/social/floor-remarks-wide.png" alt="What members said in floor debate on Ukraine aid and the Respect for Marriage Act, next to how they voted. From the Congressional Record." width="1200" height="627">
 <p>What members said in floor debate on Ukraine aid and the Respect for Marriage Act, next to how they voted. From the Congressional Record.</p>
-<a class="button" href="https://partycohesion.streamlit.app/Campaign_Statements">Open PartyCohesion</a>
-</main></body></html>
+<a class="button primary" href="https://partycohesion.streamlit.app/Campaign_Statements">Open PartyCohesion</a><a class="button" href="https://rendellrich.github.io/partycohesion/cards/">More cards</a>
+<div class="share"><h2>Share this card</h2><a class="button" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Frendellrich.github.io%2Fpartycohesion%2Ffloor-remarks%2F" target="_blank" rel="noopener">LinkedIn</a><a class="button" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Frendellrich.github.io%2Fpartycohesion%2Ffloor-remarks%2F" target="_blank" rel="noopener">Facebook</a><a class="button" href="https://twitter.com/intent/tweet?text=Members%20who%20took%20a%20clear%20position%20in%20floor%20debate%20on%20Ukraine%20aid%20%282023%20to%202024%29%20or%20the%20Respect%20for%20Marriage%20Act%20%282022%29%2C%20and%20how%20they%20voted%20on%20the%20final%20bill%3A%20101%20of%20101%20House%20members%20and%2044%20of%2047%20senators%20voted%20the%20way%20they%20spoke.&amp;url=https%3A%2F%2Frendellrich.github.io%2Fpartycohesion%2Ffloor-remarks%2F" target="_blank" rel="noopener">X</a>
+<button type="button" data-share-image="https://rendellrich.github.io/partycohesion/social/floor-remarks-tall.jpg" data-text="Members who took a clear position in floor debate on Ukraine aid (2023 to 2024) or the Respect for Marriage Act (2022), and how they voted on the final bill: 101 of 101 House members and 44 of 47 senators voted the way they spoke.
+
+Data: Congressional Record (GovInfo), Voteview
+https://rendellrich.github.io/partycohesion/floor-remarks/" hidden>Share image (Instagram, Facebook)</button>
+<a class="button" href="https://rendellrich.github.io/partycohesion/social/floor-remarks-tall.jpg" download="floor-remarks-partycohesion.jpg">Download for Instagram</a>
+<button type="button" data-copy="Members who took a clear position in floor debate on Ukraine aid (2023 to 2024) or the Respect for Marriage Act (2022), and how they voted on the final bill: 101 of 101 House members and 44 of 47 senators voted the way they spoke.
+
+Data: Congressional Record (GovInfo), Voteview
+https://rendellrich.github.io/partycohesion/floor-remarks/">Copy caption</button>
+<p class="hint">For Instagram: on a phone, use Share image. On a computer, download the image and copy the caption.</p>
+</div>
+</main><script>
+document.querySelectorAll('[data-share-image]').forEach(function (btn) {
+  var img = btn.getAttribute('data-share-image'), text = btn.getAttribute('data-text');
+  if (!navigator.canShare) return;
+  try { if (!navigator.canShare({ files: [new File([''], 'card.jpg', { type: 'image/jpeg' })] })) return; }
+  catch (e) { return; }
+  btn.hidden = false;
+  btn.addEventListener('click', function () {
+    fetch(img).then(function (r) { return r.blob(); }).then(function (b) {
+      return navigator.share({ files: [new File([b], img.split('/').pop(), { type: 'image/jpeg' })], text: text });
+    }).catch(function () {});
+  });
+});
+document.querySelectorAll('[data-copy]').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    navigator.clipboard.writeText(btn.getAttribute('data-copy')).then(function () {
+      var old = btn.textContent; btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = old; }, 1500);
+    });
+  });
+});
+</script></body></html>
