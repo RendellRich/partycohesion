@@ -173,7 +173,8 @@ def test_check_setup_reports_page_without_posting(meta_env, capsys, monkeypatch)
         return io.BytesIO(json.dumps({"id": "999", "name": "PartyCohesion", "metadata": {"type": "page"}}).encode())
 
     assert ps.check_setup(opener=fake) == 0
-    assert calls == [("GET", f"https://graph.facebook.com/{ps.GRAPH_VERSION}/me")]
+    assert [c[0] for c in calls] == ["GET", "GET"]  # reads only, never a POST
+    assert [c[1].rsplit("/", 1)[-1] for c in calls] == ["me", "debug_token"]
     out = capsys.readouterr().out
     assert "PartyCohesion" in out and "SECRETVALUE123" not in out
 
