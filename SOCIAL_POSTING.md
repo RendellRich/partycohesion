@@ -34,8 +34,8 @@ The rest of this page covers one-time setup for posting as the project. It is fr
    - `GET me/accounts`. It returns the Page's `id` and `access_token`. A Page token made from a long-lived user token doesn't expire.
    - `GET <page id>?fields=instagram_business_account`. It returns the Instagram account's `id`.
 6. **Add the secrets to GitHub.** In the repo, go to Settings → Secrets and variables → Actions → New repository secret, and add:
-   - `META_PAGE_ID`: the Page id
-   - `META_PAGE_TOKEN`: the Page access token
+   - `META_PAGE_TOKEN`: the Page access token (the only secret Facebook posting needs)
+   - `META_PAGE_ID`: optional; the script looks up the Page from the token
    - `META_IG_USER_ID`: the Instagram account id
    - `META_IG_TOKEN`: optional. Add the long-lived user token here only if Instagram refuses the Page token.
 

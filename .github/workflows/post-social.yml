@@ -10,10 +10,10 @@ on:
   workflow_dispatch:
     inputs:
       card:
-        description: "Card to post now (leave as 'queue' to post whatever in social/posts.yml is due)"
+        description: "Card to post now ('queue' posts whatever in social/posts.yml is due; 'check' only tests the setup)"
         type: choice
         default: queue
-        options: [queue, partycohesion, same-bill-different-vote, respect-for-marriage-act, senate-unity, floor-remarks]
+        options: [queue, check, partycohesion, same-bill-different-vote, respect-for-marriage-act, senate-unity, floor-remarks]
       networks:
         description: "Where to post"
         type: choice
@@ -60,7 +60,9 @@ jobs:
           CAPTION: ${{ inputs.caption }}
           DRY: ${{ inputs.dry_run && '--dry-run' || '' }}
         run: |
-          if [ "$CARD" = "queue" ]; then
+          if [ "$CARD" = "check" ]; then
+            python scripts/post_social.py --check
+          elif [ "$CARD" = "queue" ]; then
             python scripts/post_social.py --due $DRY
           else
             python scripts/post_social.py --card "$CARD" --networks "$NETWORKS" --caption "$CAPTION" $DRY
