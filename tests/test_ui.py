@@ -43,3 +43,17 @@ def test_bill_numbers_are_recognized():
     from vote_index import bill_code
     assert bill_code("H.R. 1") == "HR1" and bill_code("s 5") == "S5" and bill_code("H.J.Res. 31") == "HJRES31"
     assert bill_code("debt limit") is None and bill_code("S") is None
+
+
+def test_share_bar_has_linkedin_and_member_link():
+    from streamlit.testing.v1 import AppTest
+
+    def page():
+        from ui import share_bar
+        share_bar("Mike Gallagher (R-WI): voting record on PartyCohesion", "Member_Explorer", {"member": "G000579"})
+
+    at = AppTest.from_function(page).run()
+    links = " ".join(m.value for m in at.markdown)
+    assert "linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fpartycohesion.streamlit.app%2FMember_Explorer%3Fmember%3DG000579" in links
+    assert links.index("LinkedIn") < links.index(">X<")
+    assert at.code[0].value == "https://partycohesion.streamlit.app/Member_Explorer?member=G000579"

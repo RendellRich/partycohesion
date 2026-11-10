@@ -178,12 +178,13 @@ SITE = "https://partycohesion.streamlit.app"
 
 
 def share_bar(text: str, path: str = "", params: dict | None = None) -> None:
-    """Share links for X, Facebook, Reddit and email, plus the page link to copy. path is the page's URL path
+    """Share links for LinkedIn, X, Facebook, Reddit and email, plus the page link to copy. path is the page's URL path
     (e.g. "Members"); params are query parameters that open the same view (e.g. a member's profile)."""
     from urllib.parse import quote, urlencode
     url = f"{SITE}/{path}".rstrip("/") + (f"?{urlencode(params)}" if params else "")
     u, t = quote(url, safe=""), quote(text, safe="")
-    links = [("X", f"https://twitter.com/intent/tweet?text={t}&url={u}"),
+    links = [("LinkedIn", f"https://www.linkedin.com/sharing/share-offsite/?url={u}"),
+             ("X", f"https://twitter.com/intent/tweet?text={t}&url={u}"),
              ("Facebook", f"https://www.facebook.com/sharer/sharer.php?u={u}"),
              ("Reddit", f"https://www.reddit.com/submit?url={u}&title={t}"),
              ("Email", f"mailto:?subject={t}&body={quote(text + chr(10) + chr(10) + url, safe='')}")]
