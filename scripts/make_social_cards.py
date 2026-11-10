@@ -1,0 +1,410 @@
+"""Share images for social posts and link previews, built from the site's data so the numbers stay current.
+
+Writes PNGs to docs/social/ in two sizes:
+  *-wide.png  1200 x 627   LinkedIn and X posts, and link previews
+  *-tall.png  1080 x 1350  portrait posts (LinkedIn and Instagram feeds)
+and the link-preview pages in docs/ (one per card), which GitHub Pages can serve so a shared link shows the card.
+
+Run from the project root after a data refresh:  python scripts/make_social_cards.py
+Needs Playwright with Chromium (pip install playwright && python -m playwright install chromium); not used by the app.
+"""
+
+from html import escape
+from pathlib import Path
+import sys
+
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from seat_map import seat_positions  # noqa: E402
+from ui import display_name  # noqa: E402
+
+DATA = ROOT / "data"
+OUT = ROOT / "docs" / "social"
+PAGES = ROOT / "docs"
+SITE = "https://partycohesion.streamlit.app"
+PAGES_URL = "https://rendellrich.github.io/partycohesion"
+SIZES = {"wide": (1200, 627), "tall": (1080, 1350)}
+
+C = {"bg": "#171614", "surface": "#21201D", "border": "#3A3733", "text": "#FAFAFA", "body": "#E7E5E4",
+     "muted": "#A8A29E", "accent": "#E9C46A", "dem": "#5A97D2", "rep": "#E06C6C", "ind": "#A8A29E"}
+PARTY = {"Democrat": C["dem"], "Republican": C["rep"], "Independent": C["ind"]}
+FONTS = ("https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&"
+         "family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap")
+
+
+def fmt_date(value) -> str:
+    ts = pd.Timestamp(value)
+    return f"{ts:%b} {ts.day}, {ts.year}"
+
+
+# ---------------------------------------------------------------- data
+
+def facts() -> dict:
+    members = pd.read_csv(DATA / "members_processed.csv")
+    summary = pd.read_csv(DATA / "unity_summary.csv")
+    changes = pd.read_csv(DATA / "vote_changes.csv")
+    bills = pd.read_csv(DATA / "vote_change_bills.csv")
+    floor = pd.read_csv(DATA / "floor_statements.csv")
+    latest = int(members["congress"].max())
+    through = fmt_date(summary["latest_vote_date"].max())
+
+    house = (members[(members["congress"] == latest) & (members["chamber"] == "House")]
+             .sort_values("party_unity_pct").drop_duplicates("icpsr", keep="last"))
+
+    apart = changes[changes["apart"]]
+    by_congress = apart.groupby("congress").size().reindex(range(110, latest + 1), fill_value=0)
+
+    rfma = changes[(changes["congress"] == 117) & (changes["chamber"] == "House") & (changes["bill_number"] == "HR8404")]
+    rfma_bill = bills[(bills["congress"] == 117) & (bills["chamber"] == "House") & (bills["bill_number"] == "HR8404")].iloc[0]
+    r_yea, r_yea_ids = {}, {}
+    for roll in (int(rfma_bill["first_roll"]), int(rfma_bill["final_roll"])):
+        v = pd.read_csv(DATA / "raw" / "H117_votes.csv") if (DATA / "raw" / "H117_votes.csv").exists() else None
+        if v is not None:
+            m = members[(members["congress"] == 117) & (members["chamber"] == "House")][["icpsr", "caucus"]]
+            t = v[(v["rollnumber"] == roll) & (v["cast_code"] == 1)].merge(m, on="icpsr")
+            r_yea[roll] = int((t["caucus"] == "Republican").sum())
+            r_yea_ids[roll] = set(t.loc[t["caucus"] == "Republican", "icpsr"])
+    rfma_skipped = 0
+    if r_yea_ids:
+        first_r, final_r = int(rfma_bill["first_roll"]), int(rfma_bill["final_roll"])
+        cast_final = v[v["rollnumber"] == final_r].set_index("icpsr")["cast_code"]
+        rfma_skipped = sum(1 for i in r_yea_ids[first_r] if cast_final.get(i) not in (1, 6))
+
+    sup, opp = {"Supports more aid", "Supports the bill"}, {"Opposes more aid", "Opposes the bill"}
+    g = floor[floor["stance"].isin(sup | opp) & floor["vote_final"].isin(["Yea", "Nay"])].copy()
+    g["match"] = (g["stance"].isin(sup) & (g["vote_final"] == "Yea")) | (g["stance"].isin(opp) & (g["vote_final"] == "Nay"))
+    fr = g.groupby("chamber")["match"].agg(["sum", "size"]).astype(int)
+    exceptions = g[~g["match"]]
+
+    chances = int(bills["voted_twice"].sum())
+    return {
+        "latest": latest, "through": through, "house": house,
+        "changes": len(changes), "apart": len(apart), "apart_members": apart["icpsr"].nunique(),
+        "chances": chances, "bills": len(bills), "by_congress": by_congress,
+        "rfma": rfma, "rfma_bill": rfma_bill, "rfma_r_yea": r_yea, "rfma_skipped": rfma_skipped,
+        "floor": fr, "floor_exceptions": exceptions,
+    }
+
+
+# ---------------------------------------------------------------- drawing helpers
+
+def hemicycle_svg(house: pd.DataFrame, width: int) -> str:
+    m = house.sort_values("nominate_dim1", na_position="last").reset_index(drop=True)
+    seats = seat_positions(len(m), 12)
+    m = pd.concat([m, seats], axis=1)
+    h = width * 0.52
+    r = width / 2 * 0.97
+    dot = width / 120
+    circles = "".join(
+        f'<circle cx="{width / 2 + x * r:.1f}" cy="{h - 4 - y * r:.1f}" r="{dot:.1f}" fill="{PARTY.get(p, C["ind"])}"/>'
+        for x, y, p in zip(m["x"], m["y"], m["party"]))
+    return f'<svg width="{width}" height="{h:.0f}" viewBox="0 0 {width} {h:.0f}">{circles}</svg>'
+
+
+def bars_svg(series: pd.Series, width: int, height: int, latest: int) -> str:
+    top = series.max()
+    n = len(series)
+    gap = 10
+    bw = (width - gap * (n - 1)) / n
+    label_h, value_h = 26, 26
+    plot_h = height - label_h - value_h
+    out = []
+    for i, (congress, v) in enumerate(series.items()):
+        x = i * (bw + gap)
+        bh = max(2, plot_h * v / top)
+        y = value_h + plot_h - bh
+        fill = C["accent"] if congress != latest else C["muted"]
+        start = 2 * congress + 1787
+        out.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{bw:.1f}" height="{bh:.1f}" rx="3" fill="{fill}"/>')
+        out.append(f'<text x="{x + bw / 2:.1f}" y="{y - 8:.1f}" text-anchor="middle" class="v">{v:,}</text>')
+        out.append(f'<text x="{x + bw / 2:.1f}" y="{height - 4}" text-anchor="middle" class="l">{start}</text>')
+    return (f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}">'
+            f'<style>.v{{font:600 15px "Public Sans";fill:{C["body"]}}}.l{{font:400 14px "Public Sans";'
+            f'fill:{C["muted"]}}}</style>{"".join(out)}</svg>')
+
+
+def dots_svg(total: int, filled: int, color: str, width: int, per_row: int) -> str:
+    gap = width / per_row
+    rad = gap * 0.36
+    rows = -(-total // per_row)
+    h = rows * gap
+    out = []
+    for i in range(total):
+        cx, cy = (i % per_row) * gap + gap / 2, (i // per_row) * gap + gap / 2
+        if i < filled:
+            out.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{rad:.1f}" fill="{color}"/>')
+        else:
+            out.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{rad - 1.5:.1f}" fill="none" stroke="{C["muted"]}" '
+                       f'stroke-width="2"/>')
+    return f'<svg width="{width}" height="{h:.0f}" viewBox="0 0 {width} {h:.0f}">{"".join(out)}</svg>'
+
+
+# ---------------------------------------------------------------- cards
+
+def page(body: str, size: str, extra_css: str = "") -> str:
+    w, h = SIZES[size]
+    pad = 64 if size == "wide" else 80
+    return f"""<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="{FONTS}">
+<style>
+* {{ box-sizing: border-box; margin: 0; padding: 0; }}
+body {{ width: {w}px; height: {h}px; background: {C['bg']}; color: {C['text']};
+  font-family: 'Public Sans', sans-serif; }}
+.card {{ width: {w}px; height: {h}px; padding: {pad}px; display: flex; flex-direction: column; position: relative;
+  border-top: 6px solid {C['accent']}; }}
+h1 {{ font-family: 'Source Serif 4', serif; font-weight: 700; color: {C['text']}; letter-spacing: -0.01em; text-wrap: balance; }}
+.body {{ color: {C['body']}; }}
+.muted {{ color: {C['muted']}; }}
+.accent {{ color: {C['accent']}; }}
+.foot {{ margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end;
+  font-size: 18px; color: {C['muted']}; border-top: 1px solid {C['border']}; padding-top: 18px; }}
+.brand {{ font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 24px; color: {C['text']}; }}
+.brand span {{ color: {C['accent']}; }}
+{extra_css}
+</style></head><body><div class="card">{body}</div></body></html>"""
+
+
+def foot(source: str, size: str) -> str:
+    url = SITE.replace("https://", "")
+    if size == "wide":
+        return (f'<div class="foot"><div class="brand">Party<span>Cohesion</span></div>'
+                f'<div style="text-align:right">{escape(source)}<br>{url}</div></div>')
+    return (f'<div class="foot" style="flex-direction:column;align-items:flex-start;gap:6px">'
+            f'<div class="brand">Party<span>Cohesion</span> <span style="font-family:Public Sans;font-weight:400;'
+            f'font-size:20px;color:{C["muted"]}">· {url}</span></div><div>{escape(source)}</div></div>')
+
+
+def card_home(f: dict, size: str) -> str:
+    src = f"Data: Voteview (UCLA), every roll call through {f['through']}"
+    if size == "wide":
+        body = f"""
+<div style="display:flex;gap:48px;align-items:center;flex:1">
+  <div style="flex:1.05">
+    <h1 style="font-size:50px;line-height:1.08">Do members of Congress vote the same way no matter who is president?</h1>
+    <p class="body" style="font-size:23px;line-height:1.45;margin-top:22px">Every House and Senate roll call since
+    2007, from the official record. How often each member votes with their party, and when that changes.</p>
+  </div>
+  <div style="flex:0.95;display:flex;flex-direction:column;align-items:center">
+    {hemicycle_svg(f['house'], 470)}
+    <div class="muted" style="font-size:17px;margin-top:10px">One dot per House member, ordered by voting record</div>
+  </div>
+</div>{foot(src, size)}"""
+    else:
+        body = f"""
+<h1 style="font-size:66px;line-height:1.07;margin-top:24px">Do members of Congress vote the same way no matter who is president?</h1>
+<p class="body" style="font-size:30px;line-height:1.45;margin-top:30px">Every House and Senate roll call since 2007,
+from the official record. How often each member votes with their party, and when that changes.</p>
+<div style="margin-top:60px;display:flex;flex-direction:column;align-items:center">{hemicycle_svg(f['house'], 900)}
+<div class="muted" style="font-size:22px;margin-top:14px">One dot per House member, ordered by voting record</div></div>
+{foot(src, size)}"""
+    return page(body, size)
+
+
+def card_same_bill(f: dict, size: str) -> str:
+    latest = f["latest"]
+    src = f"Voteview roll calls, 2007 through {f['through']}. Passage, final-version and veto-override votes only."
+    note = (f"Bars: each Congress (two years), labeled by the year it began. The {2 * latest + 1787} bar is a "
+            "Congress still in session.")
+    stat = f"{f['apart']:,}"
+    line = ("times a member of Congress voted for a bill at one stage and against it at another, "
+            "while most of their own party voted the same way both times.")
+    if size == "wide":
+        body = f"""
+<h1 style="font-size:46px;line-height:1.1">Same bill, different vote</h1>
+<div style="display:flex;gap:56px;margin-top:26px;flex:1">
+  <div style="flex:0.9">
+    <div class="accent" style="font-family:'Source Serif 4';font-weight:700;font-size:96px;line-height:1">{stat}</div>
+    <p class="body" style="font-size:23px;line-height:1.42;margin-top:14px">{line}</p>
+  </div>
+  <div style="flex:1.1">{bars_svg(f['by_congress'], 560, 250, latest)}
+    <p class="muted" style="font-size:16px;margin-top:10px;line-height:1.4">{note}</p></div>
+</div>{foot(src, size)}"""
+    else:
+        body = f"""
+<h1 style="font-size:64px;line-height:1.08;margin-top:24px">Same bill, different vote</h1>
+<div class="accent" style="font-family:'Source Serif 4';font-weight:700;font-size:150px;line-height:1;margin-top:48px">{stat}</div>
+<p class="body" style="font-size:32px;line-height:1.42;margin-top:18px">{line}</p>
+<div style="margin-top:56px">{bars_svg(f['by_congress'], 920, 330, latest)}</div>
+<p class="muted" style="font-size:21px;margin-top:12px;line-height:1.4">{note}</p>
+{foot(src, size)}"""
+    return page(body, size)
+
+
+def card_marriage(f: dict, size: str) -> str:
+    rf, bill = f["rfma"], f["rfma_bill"]
+    first, final = int(bill["first_roll"]), int(bill["final_roll"])
+    yea_first, yea_final = f["rfma_r_yea"].get(first), f["rfma_r_yea"].get(final)
+    to_nay = [f"{display_name(n)} ({s})" for n, s in rf[rf["direction"] == "Yea to Nay"][["name", "state_abbrev"]].itertuples(index=False)]
+    to_yea = [f"{display_name(n)} ({s})" for n, s in rf[rf["direction"] == "Nay to Yea"][["name", "state_abbrev"]].itertuples(index=False)]
+    src = "Voteview roll calls 373 (July 19, 2022) and 513 (Dec. 8, 2022), House Clerk numbering"
+    d1, d2 = fmt_date(bill["first_date"]), fmt_date(bill["final_date"])
+    n = len(rf)
+    head = f"{n} House Republicans voted differently in December than in July"
+    skipped = f["rfma_skipped"]
+    note2 = (f" {skipped} other Republicans who voted Yea in July did not vote in December." if skipped else "")
+
+    def stat_block(label, value, sub, fs):
+        return (f'<div style="flex:1;background:{C["surface"]};border:1px solid {C["border"]};border-radius:12px;'
+                f'padding:{fs * 0.9:.0f}px {fs:.0f}px"><div class="muted" style="font-size:{fs * 0.72:.0f}px">{label}</div>'
+                f'<div style="font-family:Source Serif 4;font-weight:700;font-size:{fs * 2.3:.0f}px;line-height:1.1;'
+                f'color:{C["rep"]}">{value}</div><div class="body" style="font-size:{fs * 0.72:.0f}px">{sub}</div></div>')
+
+    def names(title, items, fs):
+        return (f'<div style="flex:1"><div class="accent" style="font-weight:600;font-size:{fs}px;margin-bottom:6px">'
+                f'{title}</div><div class="body" style="font-size:{fs * 0.92:.0f}px;line-height:1.45">'
+                f'{"<br>".join(escape(x) for x in items)}</div></div>')
+
+    if size == "wide":
+        body = f"""
+<div class="muted" style="font-size:19px">Respect for Marriage Act (H.R. 8404)</div>
+<h1 style="font-size:36px;line-height:1.15;margin-top:6px">{head}</h1>
+<div style="display:flex;gap:34px;margin-top:22px;flex:1">
+  <div style="flex:0.9;display:flex;flex-direction:column;gap:14px">
+    {stat_block(f"Passage · {d1}", yea_first, "Republicans voted Yea", 22)}
+    {stat_block(f"Final version · {d2}", yea_final, "Republicans voted Yea", 22)}
+  </div>
+  <div style="flex:1.1;display:flex;gap:26px">
+    {names("Yea, then Nay", to_nay, 19)}{names("Nay, then Yea", to_yea, 19)}
+  </div>
+</div>
+<p class="muted" style="font-size:16px;margin:10px 0 14px">Between the votes, the Senate added religious-liberty language.{note2}
+Every House Democrat who voted both times voted Yea both times.</p>{foot(src, size)}"""
+    else:
+        body = f"""
+<div class="muted" style="font-size:26px;margin-top:16px">Respect for Marriage Act (H.R. 8404)</div>
+<h1 style="font-size:52px;line-height:1.12;margin-top:10px">{head}</h1>
+<div style="display:flex;gap:24px;margin-top:40px">
+  {stat_block(f"Passage · {d1}", yea_first, "Republicans voted Yea", 28)}
+  {stat_block(f"Final version · {d2}", yea_final, "Republicans voted Yea", 28)}
+</div>
+<div style="display:flex;gap:40px;margin-top:44px">{names("Yea, then Nay", to_nay, 28)}{names("Nay, then Yea", to_yea, 28)}</div>
+<p class="muted" style="font-size:22px;margin-top:36px;line-height:1.4">Between the votes, the Senate added religious-liberty
+language.{note2} Every House Democrat who voted both times voted Yea both times.</p>{foot(src, size)}"""
+    return page(body, size)
+
+
+def card_floor(f: dict, size: str) -> str:
+    fr = f["floor"]
+    h_ok, h_n = int(fr.loc["House", "sum"]), int(fr.loc["House", "size"])
+    s_ok, s_n = int(fr.loc["Senate", "sum"]), int(fr.loc["Senate", "size"])
+    exc = f["floor_exceptions"]
+    exc_names = ", ".join(display_name(n).split()[-1] for n in exc["name"])
+    src = "Congressional Record (GovInfo), floor debate 2022 to 2024, each member's remarks read and coded by hand"
+    head = "Said it on the floor, then voted that way"
+    sub = ("Members who took a clear position in floor debate on Ukraine aid (2023 to 2024) or the Respect for "
+           "Marriage Act (2022), and how they voted on the final bill.")
+    note = (f"The {len(exc)} senators who didn't ({exc_names}) spoke for Ukraine aid and voted against a final package "
+            "that also carried aid for Israel and Taiwan.")
+
+    def block(label, ok, n, width, per_row, fs):
+        return (f'<div><div style="display:flex;align-items:baseline;gap:12px;margin-bottom:10px">'
+                f'<span style="font-family:Source Serif 4;font-weight:700;font-size:{fs * 2:.0f}px" class="accent">{ok} of {n}</span>'
+                f'<span class="body" style="font-size:{fs:.0f}px">{label}</span></div>'
+                f'{dots_svg(n, ok, C["accent"], width, per_row)}</div>')
+
+    if size == "wide":
+        body = f"""
+<h1 style="font-size:44px;line-height:1.1">{head}</h1>
+<p class="body" style="font-size:20px;line-height:1.4;margin-top:10px;max-width:980px">{sub}</p>
+<div style="display:flex;gap:56px;margin-top:22px;flex:1">
+  <div style="flex:1.25">{block("House members", h_ok, h_n, 560, 26, 22)}</div>
+  <div style="flex:0.75">{block("senators", s_ok, s_n, 320, 12, 22)}</div>
+</div>
+<p class="muted" style="font-size:16px;line-height:1.4;margin-bottom:14px">{note}</p>{foot(src, size)}"""
+    else:
+        body = f"""
+<h1 style="font-size:60px;line-height:1.08;margin-top:24px">{head}</h1>
+<p class="body" style="font-size:28px;line-height:1.42;margin-top:20px">{sub}</p>
+<div style="margin-top:48px">{block("House members", h_ok, h_n, 920, 22, 30)}</div>
+<div style="margin-top:40px">{block("senators", s_ok, s_n, 920, 22, 30)}</div>
+<p class="muted" style="font-size:22px;line-height:1.4;margin-top:32px">{note}</p>{foot(src, size)}"""
+    return page(body, size)
+
+
+CARDS = {
+    "partycohesion": (card_home, "PartyCohesion",
+                      "Do members of Congress vote the same way no matter who is president? Every House and Senate "
+                      "roll call since 2007, from the official record.", ""),
+    "same-bill-different-vote": (card_same_bill, "Same bill, different vote · PartyCohesion",
+                                 "Members of Congress who voted for a bill at one stage and against it at another, "
+                                 "while most of their party didn't change. From the official roll-call record.",
+                                 "Same_Bill_Different_Vote"),
+    "respect-for-marriage-act": (card_marriage, "Respect for Marriage Act: House votes that changed · PartyCohesion",
+                                 "Nine House Republicans voted differently on the final version (December 2022) than on "
+                                 "passage (July 2022). From the official roll-call record.",
+                                 "Same_Bill_Different_Vote"),
+    "floor-remarks": (card_floor, "Said it on the floor, then voted that way · PartyCohesion",
+                      "What members said in floor debate on Ukraine aid and the Respect for Marriage Act, next to "
+                      "how they voted. From the Congressional Record.", "Campaign_Statements"),
+}
+
+
+def share_page(slug: str, title: str, description: str, app_path: str) -> str:
+    """A small page whose link preview shows the card, with a button into the matching page of the app."""
+    target = f"{SITE}/{app_path}".rstrip("/?") if app_path else SITE
+    image = f"{PAGES_URL}/social/{slug}-wide.png"
+    url = f"{PAGES_URL}/" if slug == "partycohesion" else f"{PAGES_URL}/{slug}/"
+    t, d = escape(title), escape(description)
+    return f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{t}</title>
+<meta name="description" content="{d}">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PartyCohesion">
+<meta property="og:title" content="{t}">
+<meta property="og:description" content="{d}">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{image}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="627">
+<meta property="og:image:alt" content="{d}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{t}">
+<meta name="twitter:description" content="{d}">
+<meta name="twitter:image" content="{image}">
+<style>
+body {{ margin: 0; background: {C['bg']}; color: {C['text']}; font: 18px/1.5 'Public Sans', system-ui, sans-serif;
+  display: flex; min-height: 100vh; align-items: center; justify-content: center; }}
+main {{ max-width: 760px; padding: 32px 20px; text-align: center; }}
+img {{ width: 100%; height: auto; border-radius: 10px; border: 1px solid {C['border']}; }}
+a.button {{ display: inline-block; margin-top: 24px; padding: 12px 22px; border-radius: 8px; background: {C['accent']};
+  color: {C['bg']}; font-weight: 700; text-decoration: none; }}
+a.button:focus-visible {{ outline: 3px solid {C['text']}; outline-offset: 3px; }}
+p {{ color: {C['body']}; }}
+</style></head>
+<body><main>
+<img src="{image}" alt="{d}" width="1200" height="627">
+<p>{d}</p>
+<a class="button" href="{target}">Open PartyCohesion</a>
+</main></body></html>
+"""
+
+
+def main() -> None:
+    from playwright.sync_api import sync_playwright
+
+    f = facts()
+    OUT.mkdir(parents=True, exist_ok=True)
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        for slug, (fn, title, desc, path) in CARDS.items():
+            for size, (w, h) in SIZES.items():
+                pg = browser.new_page(viewport={"width": w, "height": h}, device_scale_factor=1)
+                pg.set_content(fn(f, size), wait_until="networkidle")
+                pg.evaluate("document.fonts.ready")
+                pg.wait_for_timeout(300)
+                pg.screenshot(path=str(OUT / f"{slug}-{size}.png"))
+                pg.close()
+            folder = PAGES if slug == "partycohesion" else PAGES / slug
+            folder.mkdir(parents=True, exist_ok=True)
+            (folder / "index.html").write_text(share_page(slug, title, desc, path))
+            print(f"Wrote {slug}: 2 images and a share page")
+        browser.close()
+
+
+if __name__ == "__main__":
+    main()
