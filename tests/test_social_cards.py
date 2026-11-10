@@ -64,6 +64,6 @@ def test_final_card_numbers_match_members_file(f):
     for x in cards.final_cells(f):
         want = m[(m["congress"] == c) & (m["chamber"] == x["chamber"]) & (m["caucus"] == x["party"])]["party_unity_pct"].mean()
         assert x["pct"] == round(want, 1)
-    cap = cards.captions(f)["congress-final"]
+    cap = cards.final_caption(f)  # captions() needs raw vote files that CI skips
     assert f"The {cards.ordinal(c)} Congress" in cap and "—" not in cap
     assert cards.change_text(1.24, 117) == "up 1.2 points from the 117th" and cards.change_text(0, 117) == "same as the 117th"
