@@ -164,7 +164,6 @@ for party in ("Democrat", "Republican"):
     fig.add_annotation(x=end["year"], y=end["party_unity_pct"], text=f"{party}s {end['party_unity_pct']:.0f}%",
                        xanchor="left", xshift=10, showarrow=False, font=dict(size=13))
 fig.update_layout(height=360, hovermode="x unified", margin=dict(r=140, l=10, b=10),
-                  legend=dict(orientation="h", y=1.02, x=0, yanchor="bottom"),
                   yaxis=dict(range=[80, 100], ticksuffix="%", title=None),
                   xaxis=dict(dtick=4, title=None, range=[2005.5, int(unity["year"].max()) + 0.8]))
 show_chart(fig, "Share of party-line votes cast with their own party, average member, by Congress",

@@ -31,7 +31,8 @@ TO_LIGHT = {DARK[k].lower(): LIGHT[k] for k in DARK if DARK[k].lower() != "#a8a2
 TO_LIGHT["#a8a29e"] = LIGHT["muted"]  # muted text and the Independent color share a hex in dark mode
 
 
-# A tiny script that reads the page's real background color and reports "light" or "dark". Streamlit's own
+# A tiny script that reads the page's real background color and reports "light" or "dark", plus whether the
+# screen is phone-narrow (charts wrap long titles only then). Streamlit's own
 # st.context.theme can be stale on first load and right after a visitor switches themes, so this reruns the page
 # whenever the reported mode and the drawn mode differ.
 _SYNC_JS = """
@@ -45,10 +46,13 @@ export default function(component) {
     const [r, g, b] = m.map(Number);
     return (0.299 * r + 0.587 * g + 0.114 * b) > 140 ? 'light' : 'dark';
   };
-  let sent = data;
+  let sent = data.mode;
+  let sentNarrow = data.narrow;
   const check = () => {
     const now = read();
     if (now && now !== sent) { sent = now; setStateValue('mode', now); }
+    const narrow = window.innerWidth < 640;
+    if (narrow !== sentNarrow) { sentNarrow = narrow; setStateValue('narrow', narrow); }
   };
   check();
   const timer = setInterval(check, 400);
@@ -63,10 +67,19 @@ def sync() -> None:
     global _sync
     if _sync is None:
         _sync = st.components.v2.component("pc_theme_sync", js=_SYNC_JS, isolate_styles=False)
-    result = _sync(key="pc_theme", data=mode(), default={"mode": None}, on_mode_change=lambda: None, height=0)
+    result = _sync(key="pc_theme", data={"mode": mode(), "narrow": narrow()}, default={"mode": None, "narrow": None},
+                   on_mode_change=lambda: None, on_narrow_change=lambda: None, height=0)
     reported = getattr(result, "mode", None)
     if reported in ("light", "dark"):
         st.session_state["pc_mode"] = reported
+    is_narrow = getattr(result, "narrow", None)
+    if isinstance(is_narrow, bool):
+        st.session_state["pc_narrow"] = is_narrow
+
+
+def narrow() -> bool:
+    """True when the visitor's screen is phone-narrow (False until the page has reported its width)."""
+    return bool(st.session_state.get("pc_narrow")) if st.runtime.exists() else False
 
 
 def mode() -> str:

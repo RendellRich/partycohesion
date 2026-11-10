@@ -5,6 +5,7 @@ matches the app theme, and a camera button that downloads a PNG sized for the pl
 in the sidebar (X or Instagram).
 """
 
+import textwrap
 from pathlib import Path
 
 import streamlit as st
@@ -65,6 +66,15 @@ def _recolor(obj) -> None:
             _recolor(child)
 
 
+TITLE_CHARS = 42  # about what fits across a phone-width chart at the title size
+
+
+def wrap_title(title: str, width: int = TITLE_CHARS) -> tuple[str, int]:
+    """Break a long chart title into lines Plotly can show without cutting it off on phones."""
+    lines = textwrap.wrap(title, width=width, break_long_words=False) or [title]
+    return "<br>".join(lines), len(lines)
+
+
 def show_chart(fig, title: str, filename: str, key: str | None = None, on_select=None):
     """Style a Plotly figure for the site and social sharing, in the visitor's light or dark theme, then render it.
     Figures are written with the dark tokens; in light mode each token is swapped for its light partner.
@@ -77,9 +87,24 @@ def show_chart(fig, title: str, filename: str, key: str | None = None, on_select
         for item in list(fig.layout.annotations or []) + list(fig.layout.shapes or []):
             if not (item.name or "").startswith("fixed"):  # "fixed..." items already picked their light color
                 _recolor(item)
-    top = max(fig.layout.margin.t or 0, 80)
+    from theme import narrow
+    text, lines = wrap_title(title, TITLE_CHARS if narrow() else 90)
+    top = max(fig.layout.margin.t or 0, 80) + 21 * (lines - 1)
+    # Legends sit in a row of their own above the plot (beside it squeezes phone-width charts), unless a page
+    # already placed one below the plot.
+    shown = [tr for tr in fig.data if tr.showlegend is not False and tr.name]
+    leg = fig.layout.legend
+    legend_top = fig.layout.showlegend is not False and len(shown) >= 2 and not (leg.y is not None and leg.y < 0)
+    if legend_top:
+        top += 26
+        bottom = fig.layout.margin.b if fig.layout.margin.b is not None else 80
+        plot_h = max((fig.layout.height or 450) - top - bottom, 100)
+        facet_labels = any(a.yref == "paper" and (a.y or 0) >= 1 and a.showarrow is False for a in fig.layout.annotations)
+        fig.update_layout(legend=dict(orientation="h", x=0, xanchor="left", yanchor="bottom",
+                                      y=1 + (24 / plot_h if facet_labels else 0), entrywidth=0))
     fig.update_layout(
-        title=dict(text=title, x=0.01, xanchor="left", y=0.97, yanchor="top", font=dict(size=17, color=t["text"])),
+        title=dict(text=text, x=0.01, xanchor="left", yref="container", y=1, yanchor="top", pad=dict(t=14),
+                   font=dict(size=16, color=t["text"])),
         paper_bgcolor=t["bg"],
         plot_bgcolor=t["bg"],
         font=dict(color=t["text"], family=FONT),
@@ -94,7 +119,9 @@ def show_chart(fig, title: str, filename: str, key: str | None = None, on_select
                      tickfont=dict(color=t["muted"]), title_font=dict(color=t["muted"]))
     fig.add_annotation(
         text=SOURCE, xref="paper", yref="paper", x=1, y=1, xanchor="right", yanchor="bottom",
-        yshift=34, showarrow=False, font=dict(size=11, color=t["muted"]),
+        yshift=top - (14 + 21 * lines + 10), showarrow=False, font=dict(size=11, color=t["muted"]),
+        # line up with the figure's right edge, not the plot's, so a wide right margin can't push it off the left
+        xshift=max((fig.layout.margin.r if fig.layout.margin.r is not None else 80) - 8, 0),
     )
     width, height = EXPORT_SIZES[st.session_state.get("export_size", DEFAULT_EXPORT)]
     config = {
