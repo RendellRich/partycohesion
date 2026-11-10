@@ -83,6 +83,8 @@ To plan by hand: `python scripts/schedule_posts.py --dry-run` prints the plan; w
 
 ## Images
 
+- Every post sends alt text for screen readers: `docs/social/alt.json` for the finding cards (written by `scripts/make_social_cards.py`) and `<Bioguide ID>.alt.txt` for spotlights. Facebook gets it as `alt_text_custom`, Instagram as `alt_text` (1,000 characters at most).
+
 - Facebook gets the wide 1200×627 PNG.
 - Instagram gets the 1080×1350 JPEG. Instagram only accepts JPEG, and 4:5 is its tallest feed size.
 - Meta fetches both from GitHub Pages, so a card must be merged and live on Pages before it can post.

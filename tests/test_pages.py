@@ -334,3 +334,16 @@ def test_member_page_lists_same_bill_changes():
     assert not at.exception, [e.value for e in at.exception]
     assert "Same bill, different vote" in [s.value for s in at.subheader]
     assert "H.R. 8404" in html(at)
+
+
+def test_home_find_members_by_zip_and_state():
+    at = open_page("views/0_Home.py")
+    at.text_input(key="home_zip").input("34219").run()  # Parrish, Florida
+    assert not at.exception, [e.value for e in at.exception]
+    labels = [b.label for b in at.button]
+    assert sum(", Senate" in b for b in labels) == 2 and any("FL-16" in b for b in labels)
+    at.text_input(key="home_zip").set_value("").run()
+    at.selectbox(key="home_state").select("WY").run()
+    assert any("WY at-large" in b.label for b in at.button)
+    at.text_input(key="home_zip").set_value("00000").run()
+    assert "isn't in the Census Bureau's ZIP list" in " ".join(c.value for c in at.caption)

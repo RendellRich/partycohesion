@@ -92,6 +92,18 @@ def check_caption(caption: str) -> None:
         raise ValueError(f"Caption is {len(caption)} characters; Instagram allows 2,200.")
 
 
+def alt_text(card: str) -> str | None:
+    """The image description for screen readers: docs/social/alt.json for finding cards, <id>.alt.txt for spotlights.
+    Meta allows up to 1,000 characters."""
+    if card.startswith("member/"):
+        path = MEMBERS / f"{card.split('/', 1)[1]}.alt.txt"
+        text = path.read_text().strip() if path.exists() else None
+    else:
+        path = CAPTIONS.parent / "alt.json"
+        text = json.loads(path.read_text()).get(card) if path.exists() else None
+    return text[:1000] if text else None
+
+
 def default_caption(card: str) -> str:
     if card.startswith("member/"):
         path = MEMBERS / f"{card.split('/', 1)[1]}.txt"
@@ -150,15 +162,19 @@ def page_id(token: str, opener=urllib.request.urlopen) -> str:
 def post_facebook(card: str, caption: str, opener=urllib.request.urlopen) -> str:
     token = os.environ["META_PAGE_TOKEN"]
     page = page_id(token, opener)
-    out = graph_post(f"{page}/photos", {"url": image_url(card, "facebook"), "message": caption,
-                                        "access_token": token}, opener)
+    params = {"url": image_url(card, "facebook"), "message": caption, "access_token": token}
+    if alt_text(card):
+        params["alt_text_custom"] = alt_text(card)
+    out = graph_post(f"{page}/photos", params, opener)
     return out.get("post_id") or out["id"]
 
 
 def post_instagram(card: str, caption: str, opener=urllib.request.urlopen, wait=time.sleep) -> str:
     ig, token = os.environ["META_IG_USER_ID"], os.environ.get("META_IG_TOKEN") or os.environ["META_PAGE_TOKEN"]
-    container = graph_post(f"{ig}/media", {"image_url": image_url(card, "instagram"),
-                                           "caption": instagram_caption(caption), "access_token": token}, opener)["id"]
+    params = {"image_url": image_url(card, "instagram"), "caption": instagram_caption(caption), "access_token": token}
+    if alt_text(card):
+        params["alt_text"] = alt_text(card)
+    container = graph_post(f"{ig}/media", params, opener)["id"]
     for _ in range(10):  # images are usually ready at once; wait up to about 30 seconds
         status = graph_get(container, {"fields": "status_code", "access_token": token}, opener).get("status_code")
         if status == "FINISHED":
@@ -252,7 +268,7 @@ def publish(card: str, network: str, caption: str, dry_run: bool) -> str | None:
     check_caption(caption)
     if dry_run:
         text = caption if network == "facebook" else instagram_caption(caption)
-        print(f"[dry run] {network}: {image_url(card, network)}\n{text}\n")
+        print(f"[dry run] {network}: {image_url(card, network)}\nAlt text: {alt_text(card) or '(none)'}\n{text}\n")
         return None
     if not configured(network):
         print(f"Skipping {network}: its settings aren't in the repository secrets yet (see SOCIAL_POSTING.md).")

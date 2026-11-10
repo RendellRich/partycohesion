@@ -94,3 +94,25 @@ def test_names_are_the_ones_members_go_by():
     import pandas as pd
     assert ms.spoken_name(pd.Series({"name": "Krishnamoorthi, S. Raja", "full_name": "Raja Krishnamoorthi"})) == "Raja Krishnamoorthi"
     assert ms.spoken_name(pd.Series({"name": "Crow, Jason", "full_name": "Jason Crow"})) == "Jason Crow"
+
+
+def test_new_congress_falls_back_to_final_record():
+    import pandas as pd
+    m = pd.read_csv(ms.DATA / "members_processed.csv")
+    assert ms.spotlight_congress(m) == (int(m["congress"].max()), True)
+    new = m[m["congress"] == m["congress"].max()].copy()
+    new["congress"] += 1
+    new["unity_votes_cast"] = 12  # the first week of a new Congress
+    newest = int(new["congress"].max())
+    assert ms.spotlight_congress(pd.concat([m, new])) == (newest - 1, False)
+    new["unity_votes_cast"] = 300
+    assert ms.spotlight_congress(pd.concat([m, new])) == (newest, True)
+
+
+def test_final_record_wording():
+    s = ms.stats(D, ms.spotlight_order(D)[0])
+    s = {**s, "current": False}
+    cap = ms.caption(D, s)
+    assert f"In the {s['latest']}th Congress" in cap and "final record" in cap
+    assert "this Congress" not in cap and "current Congress" not in cap
+    assert "final record" in ms.card(D, s, "wide")

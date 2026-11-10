@@ -6,7 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
 from chart_utils import BG, PARTY_COLORS, chamber_label, ordinal, show_chart
-from ui import explainer, intro, metric_row
+from ui import early_congress, early_congress_note, explainer, intro, metric_row
 
 ORDER = {"party": ["Democrat", "Republican"], "chamber": ["House", "Senate"]}
 
@@ -25,10 +25,14 @@ intro("How tightly each party votes together, and how far apart the parties sit,
 explainer("Pick a Congress and a chamber. The first chart shows how far apart the two parties sit on Voteview's "
           "ideology scale. The next ones show how often members side with their own party when the parties split.")
 
+if early_congress_note(df):
+    st.info(early_congress_note(df))
+
 # Filters
 col_f1, col_f2 = st.columns(2)
 with col_f1:
-    congress = st.selectbox("Congress", options=sorted(df["congress"].unique(), reverse=True), index=0, format_func=ordinal)
+    congress = st.selectbox("Congress", options=sorted(df["congress"].unique(), reverse=True),
+                            index=1 if early_congress(df) else 0, format_func=ordinal)
 with col_f2:
     chamber = st.selectbox("Chamber", options=["House", "Senate", "Both"], index=0)
 

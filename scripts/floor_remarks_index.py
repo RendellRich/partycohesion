@@ -11,6 +11,7 @@ have voted yea on Roll Call No. 343". So each candidate is checked against the s
   - unless the section is about that bill (it's in the section's headline, with at most one other), the member's
     remarks must name the bill, by number (H.R. 2913) or by its short title (Ukraine Support Act). That covers a
     rule for debating several bills at once, and a bill that only comes up in passing.
+  - and if they name a different bill from the same section but never this one, they were talking about the other.
 
 It records only that they spoke about the bill and where; it does not code what they said. Stances are coded by
 hand separately, in data/floor_statements.csv.
@@ -24,7 +25,9 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures as cf
+import functools
 import html
+import json
 import re
 import sys
 import time
@@ -43,12 +46,16 @@ M = "{http://www.loc.gov/mods/v3}"
 SKIP_TITLES = re.compile(r"^(PRAYER|PLEDGE OF ALLEGIANCE|THE JOURNAL|ADJOURNMENT|RECESS|EXECUTIVE COMMUNICATIONS|"
                          r"PUBLIC BILLS AND RESOLUTIONS|ADDITIONAL SPONSORS|DAILY DIGEST|AMENDMENTS SUBMITTED|"
                          r"TEXT OF AMENDMENTS|STATEMENTS ON INTRODUCED BILLS|PERSONAL EXPLANATION|"
-                         r"SUBMITTED RESOLUTIONS|REPORTS? OF COMMITTEES?|CONSTITUTIONAL AUTHORITY STATEMENT)", re.I)
+                         r"SUBMITTED RESOLUTIONS|REPORTS? OF COMMITTEES?|CONSTITUTIONAL AUTHORITY|NOTICES? OF HEARINGS?|"
+                         r"AUTHORITY FOR COMMITTEES TO MEET|PRIVILEGES? OF THE FLOOR|ORDERS? FOR |"
+                         r"UNANIMOUS[- ]CONSENT (?:AGREEMENT|REQUEST)|MEASURES? (?:PLACED|READ)|ENROLLED BILLS?|"
+                         r"MESSAGES? FROM THE (?:HOUSE|SENATE|PRESIDENT)|EXECUTIVE AND OTHER COMMUNICATIONS|"
+                         r"INTRODUCTION OF BILLS|LEAVE OF ABSENCE|BILLS? PRESENTED|SUBMISSION OF CONCURRENT)", re.I)
 COLUMNS = ["bioguide_id", "congress", "bill_number", "date", "chamber", "granule"]
 MIN_WORDS = 60
 
 # A speaker's turn starts a paragraph: "  Mr. FITZPATRICK. Mr. Speaker, ..." or "  The PRESIDING OFFICER. ..."
-TURN = re.compile(r"^  ((?:Mr|Mrs|Ms|Miss|Madam)\. [A-Z][A-Za-z'\-]*(?: [A-Z][A-Za-z'\-]*)*(?: of [A-Z][A-Za-z .]+?)?"
+TURN = re.compile(r"^ {1,2}((?:Mr|Mrs|Ms|Miss|Madam)\. [A-Z][A-Za-z'\-]*(?: [A-Z][A-Za-z'\-]*)*(?: of [A-Z][A-Za-z .]+?)?"
                   r"|The (?:[A-Z][A-Za-z]* )*?(?:SPEAKER|PRESIDENT|OFFICER|CHAIR|CHAIRMAN|CLERK)"
                   r"(?: pro tempore)?(?: \([^)]*\))?)\. ", re.M)
 MISSED_VOTE = re.compile(r"had I been present|would have voted|unable to (?:be present|vote|cast)|I was absent|"
@@ -106,13 +113,17 @@ def parse(path: Path) -> list[dict]:
                 bills.add(key)
                 if b.get("context") == "HEADERLINE":  # the section is about this bill
                     headline.add(key)
+        for key in bills - headline:  # the metadata doesn't always mark it; the section title often names the bill
+            if names_bill(title, key[1], short_titles().get((int(key[0]), key[1]))):
+                headline.add(key)
         for bio, (chamber, parsed) in speakers.items():
             for congress, bill in bills:
                 rows.append({"bioguide_id": bio, "congress": int(congress), "bill_number": bill, "date": date,
                              "chamber": {"H": "House", "S": "Senate"}.get(chamber or "", chamber or ""),
                              "granule": access.removeprefix(f"CREC-{date}-"), "parsed": parsed,
                              "extension": cls == "EXTENSIONS", "n_bills": len(bills),
-                             "headline": (congress, bill) in headline, "n_headline": len(headline)})
+                             "headline": (congress, bill) in headline, "n_headline": len(headline),
+                             "others": " ".join(sorted(b for c, b in bills if (c, b) != (congress, bill)))})
     return rows
 
 
@@ -146,6 +157,9 @@ PROCEDURE = re.compile(r"\byield|reserve the balance|unanimous consent|absence o
                        r"printed in the record|ordered to be printed", re.I)
 
 
+ROLL_NUMBER = re.compile(r"\broll ?call(?: vote)?(?: No\.| number)|\bRoll No\.|\brollcall votes? \d", re.I)
+
+
 def clean(said: str) -> str:
     """The member's own sentences: quoted documents (indented), page markers and procedural sentences removed."""
     lines = [ln for ln in said.split("\n") if not re.match(r"\s{4,}\S", ln) and "[[Page" not in ln]
@@ -159,14 +173,15 @@ def substantive(said: str) -> str:
     words = len(said.split())
     if words < 40 or (MISSED_VOTE.search(said) and words < 150):
         return ""
+    if MISSED_VOTE.search(said) and len(ROLL_NUMBER.findall(said)) >= 3:  # a list of how they'd have voted
+        return ""
     return said
 
 
-def own_remarks(text: str, parsed: str, extension: bool) -> str:
-    """What this member said in the section, procedural lines and missed-vote statements left out."""
+def member_turns(text: str, parsed: str, extension: bool) -> list[str]:
+    """Everything this member said in the section, one string per turn ([] if they have no turn in the text)."""
     if extension:  # an Extension of Remarks is one member's written statement
-        body = re.split(r"\bin the (?:house of representatives|senate)\b", text, maxsplit=1, flags=re.I)[-1]
-        return substantive(body)
+        return [re.split(r"\bin the (?:house of representatives|senate)\b", text, maxsplit=1, flags=re.I)[-1]]
     ts = turns(text)
     want = norm(parsed)
     mine = [s for label, s in ts if norm(label) == want]
@@ -175,7 +190,12 @@ def own_remarks(text: str, parsed: str, extension: bool) -> str:
         labels = {norm(label) for label, _ in ts if norm(label).split(" OF ")[0] == surname}
         if len(labels) == 1:
             mine = [s for label, s in ts if norm(label) in labels]
-    return "\n".join(substantive(s) for s in mine).strip()
+    return mine
+
+
+def own_remarks(text: str, parsed: str, extension: bool) -> str:
+    """What this member said in the section, procedural lines and missed-vote statements left out."""
+    return "\n".join(substantive(s) for s in member_turns(text, parsed, extension)).strip()
 
 
 PREFIX = {"HR": r"H\.\s?R\.|House Bill", "S": r"S\.|Senate Bill", "HRES": r"H\.\s?Res\.|House Resolution",
@@ -195,6 +215,7 @@ def names_bill(said: str, bill: str, title: str | None) -> bool:
     return False
 
 
+@functools.lru_cache(maxsize=1)
 def short_titles() -> dict:
     """(congress, bill) -> short title, from House vote descriptions in data/all_votes.csv."""
     path = ROOT / "data" / "all_votes.csv"
@@ -213,7 +234,7 @@ def needs_name(r) -> bool:
     up in a section about something else."""
     if r.headline:
         return r.n_headline > 2
-    return r.n_headline > 0 or r.n_bills > 2
+    return r.n_headline > 0 or r.n_bills > 1
 
 
 def verify(rows: pd.DataFrame, cache: Path, workers: int = 20) -> pd.DataFrame:
@@ -230,21 +251,33 @@ def verify(rows: pd.DataFrame, cache: Path, workers: int = 20) -> pd.DataFrame:
         print(f"Could not download {len(sections) - len(texts)} of {len(sections)} sections; their rows are left out. "
               "Run again to retry them.")
     titles = short_titles()
-    keep, said = [], {}
+    reasons, said = [], {}
     for r in rows.itertuples(index=False):
         text = texts.get((r.date, r.granule))
         if text is None:
-            keep.append(False)
+            reasons.append("no_text")
             continue
         k = (r.date, r.granule, r.bioguide_id)
         if k not in said:
-            said[k] = own_remarks(text, r.parsed, r.extension)
-        words = said[k]
-        ok = len(words.split()) >= MIN_WORDS
-        if ok and needs_name(r):
-            ok = names_bill(words, r.bill_number, titles.get((r.congress, r.bill_number)))
-        keep.append(ok)
-    return rows[keep]
+            mine = member_turns(text, r.parsed, r.extension)
+            said[k] = (mine, "\n".join(substantive(x) for x in mine).strip())
+        mine, words = said[k]
+        if not mine:
+            reasons.append("no_turn")  # listed as speaking, but no turn of theirs in the text (lists, notices)
+        elif len(words.split()) < MIN_WORDS:
+            reasons.append("missed_vote" if any(MISSED_VOTE.search(x) for x in mine) else "procedural_or_short")
+        elif not names_bill(words, r.bill_number, titles.get((r.congress, r.bill_number))) and (
+                needs_name(r) or any(names_bill(words, o, titles.get((r.congress, o))) for o in str(r.others).split())):
+            # Unnamed, where the section isn't plainly about this bill; or they named another bill in the section
+            # and never this one (a senator using debate time on one bill to talk about a different one).
+            reasons.append("not_about_bill")
+        else:
+            reasons.append("kept")
+    REASONS.update(pd.Series(reasons).value_counts().to_dict())
+    return rows[[x == "kept" for x in reasons]]
+
+
+REASONS: dict = {}  # why each candidate was kept or left out, for --report
 
 
 def build(years: list[int], cache: Path, workers: int = 8, recent: int | None = None) -> tuple[pd.DataFrame, list[str]]:
@@ -256,7 +289,7 @@ def build(years: list[int], cache: Path, workers: int = 8, recent: int | None = 
         paths = list(ex.map(lambda i: fetch(f"https://www.govinfo.gov/metadata/pkg/{i}/mods.xml", cache / f"{i}.xml"),
                             ids))
     rows = [r for p in paths if p for r in parse(p)]
-    df = pd.DataFrame(rows, columns=COLUMNS + ["parsed", "extension", "n_bills", "headline", "n_headline"])
+    df = pd.DataFrame(rows, columns=COLUMNS + ["parsed", "extension", "n_bills", "headline", "n_headline", "others"])
     # Keep remarks about bills of the same Congress, one row per member, bill and section.
     df = df[df["congress"].isin({(y - 1789) // 2 + 1 for y in years})]
     df = df.drop_duplicates(["bioguide_id", "bill_number", "date", "granule"])
@@ -270,6 +303,7 @@ def main() -> None:
     ap.add_argument("--years", nargs="+", type=int, default=[2025, 2026])
     ap.add_argument("--cache", type=Path, default=Path("/tmp/crec/mods"))
     ap.add_argument("--recent", type=int, help="only re-read the last N days of the Record (for the twice-weekly refresh)")
+    ap.add_argument("--report", type=Path, help="append why candidates were kept or left out, as a JSON line")
     a = ap.parse_args()
     df, read = build(a.years, a.cache, recent=a.recent)
     old = pd.read_csv(OUT)[COLUMNS] if OUT.exists() else pd.DataFrame(columns=COLUMNS)
@@ -280,6 +314,10 @@ def main() -> None:
     out = pd.concat([keep, df]).drop_duplicates(["bioguide_id", "bill_number", "date", "granule"])
     out.sort_values(["congress", "bill_number", "date", "bioguide_id"]).to_csv(
         OUT, index=False, compression={"method": "gzip", "mtime": 0})
+    if a.report:
+        with a.report.open("a") as fh:
+            fh.write(json.dumps({"years": a.years, "candidates": int(sum(REASONS.values())),
+                                 **{k: int(v) for k, v in REASONS.items()}}) + "\n")
     print(f"{len(df):,} member-bill remarks for Congress {sorted(df['congress'].unique())} -> {OUT.relative_to(ROOT)}")
 
 

@@ -268,3 +268,30 @@ def vote_card(v: pd.Series, broke: pd.DataFrame, link: str | None = None) -> Non
                 f'<div style="font-size:1.4rem;font-weight:600;margin:6px 0 4px 0">{escape(str(v["label"]))}</div>'
                 f'<div class="pc-body">{escape(result)}</div><div class="pc-bars">{bars}</div>'
                 f'<div class="pc-body" style="font-size:0.85rem">{legend}</div>{who}{source}</div>', unsafe_allow_html=True)
+
+
+EARLY_MIN_VOTES, EARLY_SHARE = 50, 0.8  # same rule as the member spotlights (scripts/member_spotlights.py)
+
+
+def early_congress(members: pd.DataFrame) -> int | None:
+    """The newest Congress if it has only just begun: fewer than 80% of its members have 50 party-line votes yet.
+    Rates built on a handful of votes swing a lot, so pages default to the Congress before and say why."""
+    newest = int(members["congress"].max())
+    cur = members[members["congress"] == newest].drop_duplicates(["chamber", "icpsr"])
+    if (members["congress"] == newest - 1).sum() == 0 or len(cur) == 0:
+        return None
+    ready = (cur["unity_votes_cast"] >= EARLY_MIN_VOTES).sum() >= EARLY_SHARE * len(cur)
+    return None if ready else newest
+
+
+def early_congress_note(members: pd.DataFrame) -> str | None:
+    from chart_utils import ordinal
+    newest = early_congress(members)
+    if newest is None:
+        return None
+    cur = members[members["congress"] == newest]
+    most = int(cur["unity_votes_cast"].max()) if len(cur) else 0
+    return (f"The {ordinal(newest)} Congress has only just begun: no member has more than {most} party-line votes in "
+            f"it yet, so its rates will swing a lot in the first weeks. Until most members pass 50, the headline numbers "
+            f"use the {ordinal(newest - 1)} Congress's full two-year record. You can still pick the {ordinal(newest)} "
+            "in the Congress menu.")
