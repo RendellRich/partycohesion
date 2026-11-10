@@ -111,7 +111,13 @@ def graph_get(path: str, params: dict, opener=urllib.request.urlopen) -> dict:
 
 def page_id(token: str, opener=urllib.request.urlopen) -> str:
     """META_PAGE_ID if set; otherwise the Page the token belongs to (a Page token's /me is the Page)."""
-    return os.environ.get("META_PAGE_ID") or graph_get("me", {"fields": "id", "access_token": token}, opener)["id"]
+    if os.environ.get("META_PAGE_ID"):
+        return os.environ["META_PAGE_ID"]
+    me = graph_get("me", {"fields": "id,name,category", "access_token": token}, opener)
+    if "category" not in me:  # only Pages have a category; a personal token would post as the person
+        raise MetaError(f"META_PAGE_TOKEN belongs to the person \"{me.get('name')}\", not a Page. Use the "
+                        "Page's access_token from me/accounts (see SOCIAL_POSTING.md).")
+    return me["id"]
 
 
 def post_facebook(card: str, caption: str, opener=urllib.request.urlopen) -> str:
@@ -237,7 +243,7 @@ def check_setup(opener=urllib.request.urlopen) -> int:
         print("META_PAGE_TOKEN is not set.")
         return 1
     try:
-        me = graph_get("me", {"fields": "id,name", "access_token": token}, opener)
+        me = graph_get("me", {"fields": "id,name,category", "access_token": token}, opener)
     except urllib.error.HTTPError as e:
         try:
             msg = json.loads(e.read().decode()).get("error", {}).get("message", "")
@@ -245,7 +251,11 @@ def check_setup(opener=urllib.request.urlopen) -> int:
             msg = ""
         print(f"Meta refused the token ({e.code}): {msg or e.reason}")
         return 1
-    print(f"Facebook: the token posts as \"{me.get('name')}\" (Page id {me.get('id')}).")
+    if "category" not in me:
+        print(f"Facebook: this is a personal token for \"{me.get('name')}\", not the Page token. Nothing would post. "
+              "Replace META_PAGE_TOKEN with the PartyCohesion access_token from me/accounts.")
+        return 1
+    print(f"Facebook: the token posts as the Page \"{me.get('name')}\" (Page id {me.get('id')}).")
     print("Instagram: " + ("set up." if configured("instagram") else "not set up (skipped)."))
     return 0
 
