@@ -57,9 +57,10 @@ def test_facebook_looks_up_page_id_from_token(meta_env, monkeypatch):
 
     class WithMe(FakeMeta):
         def __call__(self, req, timeout=None):
-            if req.full_url.split("?")[0].endswith("/me"):
+            if req.full_url.split("?")[0].endswith(("/me", "/debug_token")):
                 self.calls.append(("GET", req.full_url.split("?")[0], {}))
-                return io.BytesIO(json.dumps({"id": "999"}).encode())
+                return io.BytesIO(json.dumps({"id": "999", "name": "PartyCohesion",
+                                              "data": {"type": "PAGE", "expires_at": 0}}).encode())
             return super().__call__(req, timeout)
 
     fake = WithMe()
@@ -170,9 +171,21 @@ def test_check_setup_reports_page_without_posting(meta_env, capsys, monkeypatch)
 
     def fake(req, timeout=None):
         calls.append((req.get_method(), req.full_url.split("?")[0]))
-        return io.BytesIO(json.dumps({"id": "999", "name": "PartyCohesion"}).encode())
+        return io.BytesIO(json.dumps({"id": "999", "name": "PartyCohesion",
+                                      "data": {"type": "PAGE", "expires_at": 0}}).encode())
 
     assert ps.check_setup(opener=fake) == 0
-    assert calls == [("GET", f"https://graph.facebook.com/{ps.GRAPH_VERSION}/me")]
+    assert {c[0] for c in calls} == {"GET"}  # reads only, never a POST
+    assert [c[1].rsplit("/", 1)[-1] for c in calls] == ["me", "debug_token"]
     out = capsys.readouterr().out
-    assert "PartyCohesion" in out and "SECRETVALUE123" not in out
+    assert "never expires" in out and "PartyCohesion" in out and "SECRETVALUE123" not in out
+
+
+
+def test_personal_token_is_refused(meta_env, monkeypatch, capsys):
+    monkeypatch.delenv("META_PAGE_ID")
+    person = lambda req, timeout=None: io.BytesIO(json.dumps({"id": "1", "name": "Some Person", "data": {"type": "USER", "expires_at": 0}}).encode())
+    with pytest.raises(ps.MetaError):
+        ps.page_id("tok", opener=person)
+    assert ps.check_setup(opener=person) == 1
+    assert "not a Page token" in capsys.readouterr().out
