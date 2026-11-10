@@ -17,6 +17,7 @@ from platform_utils import platform_record
 from ui import (bill_label, explainer, display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row,
                 pattern_badge, share_bar)
 from vote_index import load_votes, member_record, search_votes, voteview_url
+import floor_remarks
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 PREFIX = {"House": "H", "Senate": "S"}
@@ -73,6 +74,11 @@ def member_facts(bioguide: str) -> None:
 def load_campaign():
     """Campaign website statements and the vote that followed (built by scripts/campaign_statements.py)."""
     return pd.read_csv(DATA_DIR / "campaign_statement_votes.csv")
+
+
+@st.cache_data
+def load_floor_remarks():
+    return floor_remarks.load_index()
 
 
 @st.cache_data
@@ -399,6 +405,8 @@ if pick:
         view = search_votes(record, rq, None if rc_pick == "All" else int(rc_pick))
         if only_against:
             view = view[view["against_party"]]
+        view = view.head(1000)
+        remarks = floor_remarks.attach(view, bioguide, load_floor_remarks()) if bioguide else None
         st.dataframe(pd.DataFrame({
             "Date": view["date"],
             "Chamber": view["chamber"],
@@ -408,12 +416,18 @@ if pick:
             f"{side} majority": view["party_position"].replace({"Tie": "Split evenly", "None": "None"}),
             "Against party": view["against_party"].map({True: "Yes", False: ""}),
             "Result": view["vote_result"],
+            "Their floor remarks": remarks if remarks is not None else None,
             "Voteview": [voteview_url(c, ch, r) for c, ch, r in zip(view["congress"], view["chamber"], view["rollnumber"])],
-        }).head(1000), width="stretch", hide_index=True, height=400,
+        }), width="stretch", hide_index=True, height=400,
             column_config={"Vote": st.column_config.TextColumn(width="large"),
+                           "Their floor remarks": st.column_config.LinkColumn(display_text="Read"),
                            "Voteview": st.column_config.LinkColumn(display_text="Open")})
-        if len(view) > 1000:
-            st.caption(f"Showing the 1,000 most recent of {len(view):,}. Search or pick a Congress to narrow it.")
+        st.caption("Their floor remarks: where they spoke in the Congressional Record during debate on that bill, within "
+                   "30 days before the vote or a week after. Available from 2023 on. It shows where they spoke, not "
+                   "what they said, so read it to see their reasons in their own words.")
+        total_view = len(search_votes(record, rq, None if rc_pick == "All" else int(rc_pick)))
+        if not only_against and total_view > 1000:
+            st.caption(f"Showing the 1,000 most recent of {total_view:,}. Search or pick a Congress to narrow it.")
         st.page_link("views/10_All_Votes.py", label="Search every vote and see who broke ranks")
 else:
     if "member" in st.query_params:

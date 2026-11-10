@@ -1,0 +1,13 @@
+Member spotlight: Jason Crow (D-CO), House.
+In the current Congress, Jason Crow voted with the Democratic majority on 466 of 472 party-line votes (98.7%). The House Democratic average is 96.4%.
+
+Votes apart from most House Democrats (6 in all) included:
+- Passing H.R. 5625, Cashless Bail Reporting Act (May 14, 2026): voted Yea; most Democrats voted Nay.
+- Passing H.R. 3638, Electric Supply Chain Act (Dec 11, 2025): voted Yea; most Democrats voted Nay.
+- Passing H.Con.Res. 58, Denouncing the horrors of socialism (Nov 21, 2025): voted Yea; most Democrats voted Nay.
+
+Missed 0.4% of roll calls this Congress. Roll call records don't give reasons for absences.
+
+Full voting record: https://partycohesion.streamlit.app/Member_Explorer?member=C001121
+Look up how your own members vote: https://partycohesion.streamlit.app
+Members are featured in a fixed random rotation, not chosen by hand. Data: Voteview, Congressional Record.

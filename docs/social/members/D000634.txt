@@ -1,0 +1,13 @@
+Member spotlight: Troy Downing (R-MT), House.
+In the current Congress, Troy Downing voted with the Republican majority on 468 of 471 party-line votes (99.4%). The House Republican average is 97.1%.
+
+Votes apart from most House Republicans (3 in all) included:
+- Passing H.R. 9238, To amend the FISA Amendments Act of 2008 to extend the authorities... (Jun 11, 2026): voted Nay; most Republicans voted Yea.
+- Passing H.R. 1346, Nationwide Consumer and Fuel Retailer Choice Act (May 13, 2026): voted Nay; most Republicans voted Yea.
+- Passing S. 1318, Fallen Servicemembers Religious Heritage Restoration Act (Apr 29, 2026): voted Nay; most Republicans voted Yea.
+
+Missed 0.6% of roll calls this Congress. Roll call records don't give reasons for absences.
+
+Full voting record: https://partycohesion.streamlit.app/Member_Explorer?member=D000634
+Look up how your own members vote: https://partycohesion.streamlit.app
+Members are featured in a fixed random rotation, not chosen by hand. Data: Voteview, Congressional Record.
