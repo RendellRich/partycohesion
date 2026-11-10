@@ -19,11 +19,12 @@ These links would have gone onto public posts that name members of Congress. A w
 
 ## What the check does
 
-First, sections that are only lists or notices are skipped by title: bill introductions, committee meeting notices, messages between the chambers, and so on. That leaves **592,933** candidate links. Each one is then checked against the text of the section:
+First, sections that are only lists or notices are skipped by title: bill introductions, committee meeting notices, messages between the chambers, the weekly schedule, and so on. That leaves **591,053** candidate links. Each one is then checked against the text of the section:
 
 1. **Find the member's turns.** The text marks each speaker ("Mr. FITZPATRICK. Mr. Speaker, ..."). If the member has no turn in the text, there is nothing to link to.
 2. **Keep only their own words.** Remove procedural lines ("I yield back", "I ask unanimous consent", "I demand a recorded vote"), statements explaining a missed vote, lists of how they would have voted, and documents read into the Record. At least 60 words must remain.
 3. **Make sure it's about this bill.** If the section is about this bill, that's enough. Otherwise the member has to name it, by number ("H.R. 2913") or short title ("Ukraine Support Act"). And if they name a different bill from the same section but never this one, they were talking about the other bill.
+4. **Make sure the words match the bill's topic.** Senators can speak on anything during a bill's debate time, and a member can stand in the right section without naming any bill. So the remarks are compared with what the bill is about: its titles, the Library of Congress subject terms, the start of its Congressional Research Service summary, and its amendments' descriptions, from GovInfo's BILLSTATUS data. The comparison is a TF-IDF similarity score. Remarks scoring under 0.06 share almost none of the bill's vocabulary, and are dropped. How I picked 0.06 is below.
 
 Then a vote links to the remark closest to it, from 30 days before the vote to a week after.
 
@@ -31,48 +32,60 @@ Then a vote links to the remark closest to it, from 30 days before the vote to a
 
 | What happened to the candidate link | Links | Share |
 |---|---:|---:|
-| Kept: the member's own words about the bill | 162,076 | 27.3% |
-| Spoke, but not about this bill | 307,511 | 51.9% |
-| No turn of theirs in the text (lists, notices) | 59,828 | 10.1% |
-| Only procedural lines, or too short | 45,717 | 7.7% |
+| Kept: the member's own words about the bill | 132,417 | 22.4% |
+| Spoke, but not about this bill | 306,953 | 51.9% |
+| No turn of theirs in the text (lists, notices) | 59,825 | 10.1% |
+| Only procedural lines, or too short | 45,601 | 7.7% |
+| Words don't match the bill's topic (step 4) | 28,456 | 4.8% |
 | Only explained a missed vote | 17,801 | 3.0% |
-| **Total candidates** | **592,933** | |
+| **Total candidates** | **591,053** | |
 
-About one link in four survives. The biggest group is the third rule: the member spoke in a section that mentions the bill, but not about it.
+About one link in five survives. The biggest group is the third rule: the member spoke in a section that mentions the bill, but not about it.
 
 By Congress:
 
-| Congress | Years | Candidates | Kept |
-|---|---|---:|---:|
-| 110th | 2007 to 2008 | 147,873 | 30,856 |
-| 111th | 2009 to 2010 | 75,761 | 25,734 |
-| 112th | 2011 to 2012 | 67,269 | 17,673 |
-| 113th | 2013 to 2014 | 51,150 | 14,873 |
-| 114th | 2015 to 2016 | 49,680 | 15,452 |
-| 115th | 2017 to 2018 | 42,741 | 14,236 |
-| 116th | 2019 to 2020 | 47,107 | 12,975 |
-| 117th | 2021 to 2022 | 52,865 | 11,830 |
-| 118th | 2023 to 2024 | 32,051 | 9,821 |
-| 119th | 2025 to 2026, in progress | 26,436 | 8,626 |
+| Congress | Years | Candidates | Pass steps 1 to 3 | Kept |
+|---|---|---:|---:|---:|
+| 110th | 2007 to 2008 | 147,474 | 30,574 | 26,382 |
+| 111th | 2009 to 2010 | 75,416 | 25,488 | 22,041 |
+| 112th | 2011 to 2012 | 66,956 | 17,447 | 14,072 |
+| 113th | 2013 to 2014 | 50,922 | 14,736 | 11,469 |
+| 114th | 2015 to 2016 | 49,573 | 15,390 | 12,353 |
+| 115th | 2017 to 2018 | 42,601 | 14,159 | 11,598 |
+| 116th | 2019 to 2020 | 46,940 | 12,894 | 10,479 |
+| 117th | 2021 to 2022 | 52,693 | 11,741 | 9,297 |
+| 118th | 2023 to 2024 | 32,043 | 9,818 | 7,995 |
+| 119th | 2025 to 2026, in progress | 26,435 | 8,626 | 6,731 |
 
 ## How good is it?
 
 I read random samples by hand, and I kept changing the rules until the samples stopped turning up new kinds of mistakes. Then I took fresh samples I hadn't seen and scored those.
 
-**Links that pass (precision).** Of 40 random kept links:
+**Before the topic step.** Steps 1 to 3 kept about 162,000 links. Of 40 random ones, 30 were clearly the member talking about that bill, 5 were unclear, and 5 were not. The misses included a weekly schedule announcement, a tribute to a colleague given during a bill's debate time, and speeches about a different bill in the same debate. None of them named a different bill, so the rules couldn't see them.
 
-- **30** were clearly the member talking about that bill.
-- **5** were unclear.
-- **5** were not about the bill: a weekly schedule announcement, a ruling on a budget point of order, a tribute to a colleague given during a bill's debate, and two speeches about a different bill in the same debate.
+**Picking the topic threshold.** I scored every one of those links for similarity to its bill, then hand-labeled 100 of them, oversampling the low scores where the decision is made:
 
-That's 75% clearly right and 12.5% clearly wrong, from a sample of 40, so treat both numbers as rough.
+| Similarity score | Share of links | About the bill | Unclear | Not about the bill |
+|---|---:|---:|---:|---:|
+| under 0.03 | 9% | 6 of 25 | 3 | 16 |
+| 0.03 to 0.06 | 9% | 9 of 25 | 4 | 12 |
+| 0.06 to 0.10 | 14% | 15 of 25 | 6 | 4 |
+| 0.10 to 0.15 | 18% | 12 of 15 | 1 | 2 |
+| 0.15 and up | 50% | 9 of 10 | 0 | 1 |
 
-**Links that were dropped (recall).** Of 30 random dropped links where the member did have a turn in the text:
+The labels are in `writeups/data/topic_labels.csv`. Below 0.06, most links were wrong; above it, most were right. So step 4 drops links under 0.06. The cost is real: weighting the sample by how common each score band is, it also drops about 7% of the links that were right, mostly short remarks that don't use the bill's vocabulary. For links shown next to a member's name, I'd rather miss some than show a wrong one.
 
-- **2** should have been kept: a committee chair speaking for a contempt resolution, and a member offering an amendment during an appropriations debate. Neither named the bill, and the section didn't mark which bill it was about.
-- **1** more was possibly about the bill.
+**After the topic step.** On a fresh sample of 40 kept links:
 
-The check finds turns reliably. Reading every turn by hand isn't possible at this scale, but in samples the speaker matching found the member's turn for about 98% of real speakers. The early versions taught me more than the final numbers:
+- **35** were clearly the member talking about that bill.
+- **2** were unclear.
+- **3** were not: two speeches on a different bill in the same section, and one about a nomination.
+
+That's 87.5% clearly right, up from 75%, and 7.5% clearly wrong, down from 12.5%. It's a sample of 40, so treat both as rough.
+
+**Links that were dropped (recall).** Before the topic step, of 30 random dropped links where the member did have a turn in the text, 2 should have been kept and 1 more possibly. The topic step adds the 7% loss above.
+
+Some early versions taught me more than the final numbers:
 
 - One rule I added to catch off-topic speeches started dropping good links, because the metadata often doesn't mark which bill a section is about. Reading the section's title for the bill fixed that.
 - A one-character typo in the Record (one leading space instead of two) was hiding a senator's 2,000-word speech.
@@ -86,8 +99,8 @@ The check finds turns reliably. Reading every turn by hand isn't possible at thi
 
 ## What I'd do next
 
-- **Topic matching.** The remaining errors are mostly speeches on a different subject during a bill's debate. Comparing the speech to the bill's summary (Congress.gov has one for most bills) with a text-similarity score would catch most of them.
-- **A labeled test set.** 200 hand-labeled links, split between kept and dropped, would turn the audit numbers above into a measured precision and recall, and would show when a rule change makes things worse.
+- **Better topic matching.** TF-IDF only sees shared words. A sentence-embedding model would also match a speech about "the farm bill" to the "Agriculture Improvement Act", which would win back some of the 7% of right links the topic step drops.
+- **A bigger labeled set.** The 100 labels above were enough to pick a threshold. Another 200, labeled blind to the score, would give a measured precision and recall, and would show when a rule change makes things worse.
 - **Use the amendment numbers.** Many floor turns are about an amendment ("I call up my amendment No. 5812"). Linking amendment numbers to the vote on that amendment would be more exact than linking to the bill.
 
 ## Reproduce it
@@ -96,6 +109,6 @@ The check finds turns reliably. Reading every turn by hand isn't possible at thi
 python scripts/floor_remarks_index.py --years 2007 2008 --report reasons.jsonl
 ```
 
-Run it for each pair of years: 2007 2008 through 2025 2026. It needs no API key, since GovInfo serves the metadata and text directly. The full run downloads about 7 GB, mostly metadata, and caches it in `--cache`. `--report` writes the counts in the tables above. The rules are in `scripts/floor_remarks_index.py`, and `tests/test_floor_remarks.py` pins the Fitzpatrick examples.
+Run it for each pair of years: 2007 2008 through 2025 2026. It needs no API key, since GovInfo serves the metadata, text and BILLSTATUS data directly. The full run downloads about 7 GB of the Record, mostly metadata, and caches it in `--cache`, plus about 60 MB of BILLSTATUS per Congress in `/tmp/billstatus`. `--report` writes the counts in the tables above, and `--topic-scores` writes each link's similarity score. The rules are in `scripts/floor_remarks_index.py`, and `tests/test_floor_remarks.py` pins the Fitzpatrick examples.
 
-Data: Congressional Record via GovInfo (U.S. Government Publishing Office, public domain); Voteview roll calls.
+Data: Congressional Record and BILLSTATUS via GovInfo (U.S. Government Publishing Office, public domain); Voteview roll calls.

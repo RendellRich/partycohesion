@@ -1,4 +1,6 @@
 """Links from votes to members' own floor remarks."""
+from pathlib import Path
+
 import pandas as pd
 
 import floor_remarks as fr
@@ -76,3 +78,24 @@ def test_which_sections_need_the_bill_named():
     assert f.needs_name(row(False, 1, 2))         # the bill only comes up in a section about another
     assert not f.needs_name(row(False, 0, 1))     # the only bill in the section
     assert f.needs_name(row(False, 0, 3))         # no main bill marked and several referenced
+
+
+def test_topic_check_scores_remarks_against_the_bill(monkeypatch):
+    import pytest
+    pytest.importorskip("sklearn")
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    f = _index_module()
+    import bill_topics
+    profiles = {"HR1": "Wildfire prevention act forest management grants for states fire crews forest thinning",
+                "HR2": "Veterans health care act medical centers clinics veterans affairs benefits",
+                "HR3": "Postal service naming post office building", "HR4": "Water resources harbors dams levees"}
+    monkeypatch.setattr(bill_topics, "profiles", lambda c: profiles)
+    rows = pd.DataFrame({"congress": [119, 119], "bill_number": ["HR1", "HR1"], "bioguide_id": ["A", "B"],
+                         "date": ["2026-01-01"] * 2, "granule": ["g"] * 2, "others": ["HR2", "HR2"]})
+    said = {("2026-01-01", "g", "A"): "This bill funds fire crews and forest thinning so states can stop wildfire.",
+            ("2026-01-01", "g", "B"): "I rise to honor the veterans of my district and their care at our clinics."}
+    (on, _), (off, other) = f.topic_scores(rows, said)
+    assert on > f.TOPIC_MIN and not f.off_topic(on, None)
+    assert off < f.TOPIC_MIN and f.off_topic(off, other) and other > off
+    assert not f.off_topic(None, None)  # no description of the bill: no verdict
