@@ -9,6 +9,7 @@ Run from the project root after a data refresh:  python scripts/make_social_card
 Needs Playwright with Chromium (pip install playwright && python -m playwright install chromium); not used by the app.
 """
 
+import hashlib
 from html import escape
 from pathlib import Path
 import sys
@@ -78,13 +79,16 @@ def facts() -> dict:
     fr = g.groupby("chamber")["match"].agg(["sum", "size"]).astype(int)
     exceptions = g[~g["match"]]
 
+    senate = (members[members["chamber"] == "Senate"].groupby(["congress", "caucus"])["party_unity_pct"].mean()
+              .unstack()[["Democrat", "Republican"]].round(1))
+
     chances = int(bills["voted_twice"].sum())
     return {
         "latest": latest, "through": through, "house": house,
         "changes": len(changes), "apart": len(apart), "apart_members": apart["icpsr"].nunique(),
         "chances": chances, "bills": len(bills), "by_congress": by_congress,
         "rfma": rfma, "rfma_bill": rfma_bill, "rfma_r_yea": r_yea, "rfma_skipped": rfma_skipped,
-        "floor": fr, "floor_exceptions": exceptions,
+        "floor": fr, "floor_exceptions": exceptions, "senate": senate,
     }
 
 
@@ -140,6 +144,72 @@ def dots_svg(total: int, filled: int, color: str, width: int, per_row: int) -> s
                        f'stroke-width="2"/>')
     return f'<svg width="{width}" height="{h:.0f}" viewBox="0 0 {width} {h:.0f}">{"".join(out)}</svg>'
 
+# Party of the president for most of each Congress (each Congress starts in January of an odd year).
+PRESIDENTS = [(110, 110, "Bush", "Republican"), (111, 114, "Obama", "Democrat"), (115, 116, "Trump", "Republican"),
+              (117, 118, "Biden", "Democrat"), (119, 119, "Trump", "Republican")]
+
+
+NUMBER_WORDS = {2: "two", 3: "three", 4: "four", 5: "five"}
+
+
+def president_party(congress: int) -> str:
+    return next(p for a, b, _, p in PRESIDENTS if a <= congress <= b)
+
+
+def handoffs(senate: pd.DataFrame, since: int = 114) -> list[tuple[int, str, float, float]]:
+    """Each change of president from the given Congress on: (new Congress, party, before, after) for both parties."""
+    out = []
+    congresses = list(senate.index)
+    for prev, cur in zip(congresses, congresses[1:]):
+        if prev >= since and president_party(prev) != president_party(cur):
+            for party in ("Democrat", "Republican"):
+                out.append((cur, party, senate.loc[prev, party], senate.loc[cur, party]))
+    return out
+
+
+def lines_svg(senate: pd.DataFrame, width: int, height: int, latest: int, fs: int) -> str:
+    left, right, top, band = int(fs * 3.2), int(fs * 10.5), 12, int(fs * 2.1)
+    lab = fs * 1.6
+    plot_w, plot_h = width - left - right, height - top - band - lab - fs * 0.6
+    lo, hi = 80, 100
+    xs = list(senate.index)
+    step = plot_w / (len(xs) - 1)
+
+    def x(c):
+        return left + (c - xs[0]) * step
+
+    def y(v):
+        return top + plot_h * (hi - v) / (hi - lo)
+
+    out = []
+    for g in (80, 85, 90, 95, 100):
+        out.append(f'<line x1="{left}" x2="{left + plot_w}" y1="{y(g):.1f}" y2="{y(g):.1f}" stroke="{C["border"]}"/>')
+        out.append(f'<text x="{left - 10}" y="{y(g) + fs * 0.35:.1f}" text-anchor="end" class="l">{g}%</text>')
+    for c in xs:
+        out.append(f'<text x="{x(c):.1f}" y="{top + plot_h + lab:.1f}" text-anchor="middle" class="l">{2 * c + 1787}</text>')
+    by = top + plot_h + lab + fs * 0.6
+    for a, b, name, party in PRESIDENTS:
+        x0, x1 = max(0, x(a) - step / 2 + 2), x(b) + step / 2 - 2
+        out.append(f'<rect x="{x0:.1f}" y="{by}" width="{x1 - x0:.1f}" height="{band - 8}" rx="4" '
+                   f'fill="{PARTY[party]}" fill-opacity="0.22"/>')
+        out.append(f'<text x="{(x0 + x1) / 2:.1f}" y="{by + (band - 8) / 2 + fs * 0.35:.1f}" text-anchor="middle" '
+                   f'class="b">{name}</text>')
+    for party in ("Republican", "Democrat"):
+        col = PARTY[party]
+        pts = " ".join(f"{x(c):.1f},{y(v):.1f}" for c, v in senate[party].items())
+        out.append(f'<polyline points="{pts}" fill="none" stroke="{col}" stroke-width="3" stroke-linejoin="round"/>')
+        for c, v in senate[party].items():
+            fill = C["bg"] if c == latest else col
+            out.append(f'<circle cx="{x(c):.1f}" cy="{y(v):.1f}" r="5.5" fill="{fill}" stroke="{col}" stroke-width="2.5"/>')
+        last = senate[party].iloc[-1]
+        dy = -10 if party == "Republican" else 16
+        out.append(f'<text x="{x(xs[-1]) + 16:.1f}" y="{y(last) + dy + fs * 0.35:.1f}" class="e">'
+                   f'{"Republicans" if party == "Republican" else "Democrats"} {last:.1f}%</text>')
+    return (f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}">'
+            f'<style>.l{{font:400 {fs - 2}px "Public Sans";fill:{C["muted"]}}}.b{{font:600 {fs - 2}px "Public Sans";'
+            f'fill:{C["body"]}}}.e{{font:600 {fs}px "Public Sans";fill:{C["body"]}}}</style>{"".join(out)}</svg>')
+
+
 
 # ---------------------------------------------------------------- cards
 
@@ -156,6 +226,7 @@ body {{ width: {w}px; height: {h}px; background: {C['bg']}; color: {C['text']};
   border-top: 6px solid {C['accent']}; }}
 h1 {{ font-family: 'Source Serif 4', serif; font-weight: 700; color: {C['text']}; letter-spacing: -0.01em; text-wrap: balance; }}
 .body {{ color: {C['body']}; }}
+p {{ text-wrap: pretty; }}
 .muted {{ color: {C['muted']}; }}
 .accent {{ color: {C['accent']}; }}
 .foot {{ margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end;
@@ -323,6 +394,36 @@ def card_floor(f: dict, size: str) -> str:
     return page(body, size)
 
 
+def card_senate(f: dict, size: str) -> str:
+    sen, latest = f["senate"], f["latest"]
+    src = f"Voteview roll calls through {f['through']}. Average party unity of each party's senators, per Congress."
+    head = "In the Senate, party unity moves with the White House"
+    moves = handoffs(sen)
+    years = ", ".join(str(2 * c + 1787) for c in sorted({c for c, *_ in moves}))
+    if moves and all((after > before) == (president_party(c) == party) for c, party, before, after in moves):
+        sub = (f"At each of the last {NUMBER_WORDS.get(len(moves) // 2, len(moves) // 2)} changes of president ({years}), senators from the new "
+               "president's party voted with their party more often than in the Congress before, and the other "
+               "party's senators less often.")
+    else:
+        sub = "How often each party's senators voted with their party, Congress by Congress, next to who was president."
+    note = (f"Hollow dots: the {2 * latest + 1787} to {2 * latest + 1788} Congress, still in session. Party unity: how "
+            "often a senator votes with their party's majority when most Democrats and most Republicans vote on "
+            "opposite sides.")
+    if size == "wide":
+        body = f"""
+<h1 style="font-size:40px;line-height:1.1">{head}</h1>
+<p class="body" style="font-size:19px;line-height:1.4;margin-top:10px;max-width:1040px">{sub}</p>
+<div style="margin-top:14px">{lines_svg(sen, 1072, 300, latest, 16)}</div>
+<p class="muted" style="font-size:14px;line-height:1.35;margin:2px 0 12px">{note}</p>{foot(src, size)}"""
+    else:
+        body = f"""
+<h1 style="font-size:58px;line-height:1.08;margin-top:24px">{head}</h1>
+<p class="body" style="font-size:28px;line-height:1.42;margin-top:20px">{sub}</p>
+<div style="margin-top:44px">{lines_svg(sen, 920, 560, latest, 22)}</div>
+<p class="muted" style="font-size:21px;line-height:1.4;margin-top:16px">{note}</p>{foot(src, size)}"""
+    return page(body, size)
+
+
 CARDS = {
     "partycohesion": (card_home, "PartyCohesion",
                       "Do members of Congress vote the same way no matter who is president? Every House and Senate "
@@ -335,6 +436,9 @@ CARDS = {
                                  "Nine House Republicans voted differently on the final version (December 2022) than on "
                                  "passage (July 2022). From the official roll-call record.",
                                  "Same_Bill_Different_Vote"),
+    "senate-unity": (card_senate, "Senate party unity and the White House · PartyCohesion",
+                     "How often each party's senators voted with their party in every Congress since 2007, next to "
+                     "who was president. From the official roll-call record.", "Overview"),
     "floor-remarks": (card_floor, "Said it on the floor, then voted that way · PartyCohesion",
                       "What members said in floor debate on Ukraine aid and the Respect for Marriage Act, next to "
                       "how they voted. From the Congressional Record.", "Campaign_Statements"),
@@ -389,6 +493,10 @@ def main() -> None:
 
     f = facts()
     OUT.mkdir(parents=True, exist_ok=True)
+    # A fingerprint of what the cards say. PNG bytes can differ between machines even when nothing changed, so the
+    # weekly workflow compares this file, not the images, to decide whether the cards need an update.
+    html = "".join(fn(f, size) + title + desc for fn, title, desc, _ in CARDS.values() for size in SIZES)
+    (OUT / "cards.sha256").write_text(hashlib.sha256(html.encode()).hexdigest() + "\n")
     with sync_playwright() as p:
         browser = p.chromium.launch()
         for slug, (fn, title, desc, path) in CARDS.items():

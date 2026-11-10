@@ -1,0 +1,65 @@
+name: Update social cards
+
+# Once a week, after the Monday data refresh, rebuilds the share images in docs/social/ from the current data.
+# If what the cards say changed (new numbers, a new "through" date), it opens a pull request with the new images,
+# or updates the one already open. If nothing changed, it does nothing. Can also be started by hand.
+# Needs Settings > Actions > General > "Allow GitHub Actions to create and approve pull requests" turned on.
+on:
+  schedule:
+    - cron: "37 14 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: social-cards
+  cancel-in-progress: false
+
+jobs:
+  cards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies and a headless browser
+        run: |
+          pip install -r requirements.txt playwright
+          python -m playwright install --with-deps chromium
+
+      # The Respect for Marriage Act card counts votes from the raw 117th House file, which isn't committed.
+      - name: Download the vote file the cards need
+        run: |
+          mkdir -p data/raw
+          curl -sSfL https://voteview.com/static/data/out/votes/H117_votes.csv -o data/raw/H117_votes.csv
+
+      - name: Build the cards
+        run: python scripts/make_social_cards.py
+
+      - name: Open or update a pull request if the cards changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- docs/social/cards.sha256 && [ -z "$(git ls-files --others --exclude-standard docs)" ]; then
+            echo "Cards say the same thing as last week. Nothing to do."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B auto/social-cards
+          git add docs
+          git commit -m "Update social cards ($(date -u +%Y-%m-%d))"
+          git push --force origin auto/social-cards
+          if [ -z "$(gh pr list --head auto/social-cards --state open --json number --jq '.[].number')" ]; then
+            gh pr create --base main --head auto/social-cards \
+              --title "Update social cards ($(date -u +%Y-%m-%d))" \
+              --body "Rebuilt the share images in \`docs/social/\` from the latest data. Look over the images, then merge to update the link previews."
+          else
+            echo "Updated the open social cards pull request."
+          fi
