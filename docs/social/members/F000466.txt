@@ -1,0 +1,15 @@
+Member spotlight: Brian Fitzpatrick (R-PA), House.
+In the current Congress (votes through Sep 30, 2026), Brian Fitzpatrick voted with the Republican majority on 359 of 466 party-line votes (77.0%). The House Republican average is 97.1%.
+
+Votes apart from most House Republicans (107 in all) included:
+- Passing H.R. 2913, Ukraine Support Act (Jun 4, 2026): voted Yea; most Republicans voted Nay.
+  In their own words: https://www.govinfo.gov/content/pkg/CREC-2026-06-04/html/CREC-2026-06-04-pt1-PgH3879.htm
+- Passing H.R. 2550, Protect America’s Workforce Act (Dec 11, 2025): voted Yea; most Republicans voted Nay.
+  In their own words: https://www.govinfo.gov/content/pkg/CREC-2025-12-11/html/CREC-2025-12-11-pt1-PgH5795.htm
+- Passing H.J.Res. 213, Providing for congressional disapproval under chapter 8 of title 5, United States Code, of the rule issued by the Environmental... (Sep 16, 2026): voted Nay; most Republicans voted Yea.
+
+Missed 0.9% of roll calls this Congress. Roll call records don't give reasons for absences.
+
+Full voting record: https://partycohesion.streamlit.app/Member_Explorer?member=F000466
+Look up how your own members vote: https://partycohesion.streamlit.app
+Members are featured in a fixed random rotation, not chosen by hand. Data: Voteview, Congressional Record.

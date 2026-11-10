@@ -58,9 +58,11 @@ PartyCohesion is a free, neutral site built on the official roll-call record. It
 - Long chart titles wrap on phone-width screens.
 - Shareable deep links, such as `?member=F000466`.
 
-**Social cards and posting.** `scripts/make_social_cards.py` renders share images from the data (rebuilt weekly by a GitHub Action) and the share pages at [rendellrich.github.io/partycohesion/cards](https://rendellrich.github.io/partycohesion/cards/), where anyone can post a card to LinkedIn, Facebook, X or Instagram. `scripts/post_social.py` posts queued cards from `social/posts.yml` to the project's Facebook Page and Instagram account through Meta's Graph API; setup is in [SOCIAL_POSTING.md](SOCIAL_POSTING.md).
+**Social cards and posting.** `scripts/make_social_cards.py` renders share images from the data (rebuilt weekly by a GitHub Action) and the share pages at [rendellrich.github.io/partycohesion/cards](https://rendellrich.github.io/partycohesion/cards/), where anyone can post a card to LinkedIn, Facebook, X or Instagram. `scripts/post_social.py` posts queued cards from `social/posts.yml` to the project's Facebook Page and Instagram account through Meta's Graph API; setup is in [SOCIAL_POSTING.md](SOCIAL_POSTING.md). `scripts/member_spotlights.py` makes one card per member, in a fixed random rotation, and `scripts/schedule_posts.py` queues a spotlight every one or two days plus a weekly finding card, in a pull request reviewed before anything posts.
 
-**Tests.** 109 pytest tests, run on every pull request. They render every page with Streamlit's AppTest, check the data files, and check the theme contrast math.
+**Their remarks links.** `scripts/floor_remarks_index.py` links each vote, from 2007 on, to where the member spoke about that bill in the Congressional Record. The Record's metadata lists everyone who spoke in a section, even someone who only said how they would have voted on a missed roll call, so each link is checked against the text before it's used.
+
+**Tests.** 183 pytest tests, run on every pull request. They render every page with Streamlit's AppTest, check the data files, and check the theme contrast math.
 
 ## Neutral by design
 

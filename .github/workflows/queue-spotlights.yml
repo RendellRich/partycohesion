@@ -1,0 +1,69 @@
+name: Queue member spotlights
+
+# Once a week, after the Thursday data refresh, tops up social/posts.yml so posts are planned two weeks ahead: a
+# member spotlight every one or two days at a different time of day, and one finding card a week
+# (scripts/schedule_posts.py). It renders the new spotlight cards into docs/social/members/ and opens a pull request,
+# or updates the one already open. Nothing is posted until that pull request is merged. Can also be started by hand.
+# Needs Settings > Actions > General > "Allow GitHub Actions to create and approve pull requests" turned on.
+on:
+  schedule:
+    - cron: "41 15 * * 4"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: queue-spotlights
+  cancel-in-progress: false
+
+jobs:
+  queue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies and a headless browser
+        run: |
+          pip install -r requirements.txt "pyyaml>=6.0" playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Plan the next posts and render the spotlight cards
+        run: python scripts/schedule_posts.py | tee /tmp/plan.txt
+
+      - name: Open or update a pull request if posts were added
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- social/posts.yml; then
+            echo "The queue already runs two weeks ahead. Nothing to do."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B auto/spotlights
+          git add social/posts.yml docs/social/members
+          git commit -m "Queue member spotlights ($(date -u +%Y-%m-%d))"
+          git push --force origin auto/spotlights
+          {
+            echo "Planned posts (Eastern time). Nothing goes out until this is merged."
+            echo
+            echo '```'
+            grep " ET " /tmp/plan.txt
+            echo '```'
+            echo
+            echo "Before merging, open each new card in \`docs/social/members/\` and its caption (the \`.txt\` file)."
+            echo "Check the votes listed read fairly and each \"In their own words\" link is the member talking about that bill."
+            echo "To hold a post back, delete its entry from \`social/posts.yml\` in this pull request."
+          } > /tmp/body.md
+          if [ -z "$(gh pr list --head auto/spotlights --state open --json number --jq '.[].number')" ]; then
+            gh pr create --base main --head auto/spotlights --title "Queue member spotlights ($(date -u +%Y-%m-%d))" --body-file /tmp/body.md
+          else
+            gh pr edit auto/spotlights --body-file /tmp/body.md
+          fi

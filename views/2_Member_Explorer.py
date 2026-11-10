@@ -416,14 +416,15 @@ if pick:
             f"{side} majority": view["party_position"].replace({"Tie": "Split evenly", "None": "None"}),
             "Against party": view["against_party"].map({True: "Yes", False: ""}),
             "Result": view["vote_result"],
-            "Their floor remarks": remarks if remarks is not None else None,
+            "Their remarks": remarks if remarks is not None else None,
             "Voteview": [voteview_url(c, ch, r) for c, ch, r in zip(view["congress"], view["chamber"], view["rollnumber"])],
         }), width="stretch", hide_index=True, height=400,
             column_config={"Vote": st.column_config.TextColumn(width="large"),
-                           "Their floor remarks": st.column_config.LinkColumn(display_text="Read"),
+                           "Their remarks": st.column_config.LinkColumn(display_text="Read"),
                            "Voteview": st.column_config.LinkColumn(display_text="Open")})
-        st.caption("Their floor remarks: where they spoke in the Congressional Record during debate on that bill, within "
-                   "30 days before the vote or a week after. Available from 2023 on. It shows where they spoke, not "
+        st.caption("Their remarks: where they spoke about that bill in the Congressional Record, within 30 days before "
+                   "the vote or a week after. Available from 2007 on. Each link was checked against the Record's text: "
+                   "a line explaining a missed vote or running the floor doesn't count. It shows where they spoke, not "
                    "what they said, so read it to see their reasons in their own words.")
         total_view = len(search_votes(record, rq, None if rc_pick == "All" else int(rc_pick)))
         if not only_against and total_view > 1000:

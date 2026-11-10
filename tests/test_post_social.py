@@ -135,8 +135,14 @@ def test_queue_file_is_valid_and_uses_real_cards():
     entries = ps.load_queue()
     caps = json.loads(ps.CAPTIONS.read_text())
     for e in entries:
-        assert e["card"] in caps
-        ps.check_caption(e.get("caption") or caps[e["card"]])
+        if e["card"].startswith("member/"):  # a spotlight: its card and caption must be committed
+            b = e["card"].split("/", 1)[1]
+            for name in (f"{b}-wide.png", f"{b}-tall.jpg", f"{b}.txt"):
+                assert (ps.MEMBERS / name).exists(), name
+        else:
+            assert e["card"] in caps
+        ps.check_caption(e.get("caption") or ps.default_caption(e["card"]))
+        ps.scheduled(e)  # date and time parse
 
 
 def test_queue_rejects_duplicates_and_unknown_networks(tmp_path):
@@ -189,3 +195,51 @@ def test_personal_token_is_refused(meta_env, monkeypatch, capsys):
         ps.page_id("tok", opener=person)
     assert ps.check_setup(opener=person) == 1
     assert "not a Page token" in capsys.readouterr().out
+
+
+def test_times_are_eastern_and_one_entry_goes_out_per_run(tmp_path, monkeypatch, meta_env):
+    from datetime import datetime
+    entries = [{"id": "a", "card": "partycohesion", "post_on": date(2026, 11, 12), "time": "19:35"},
+               {"id": "b", "card": "senate-unity", "post_on": date(2026, 11, 12)}]
+    at = lambda h, m: datetime(2026, 11, 12, h, m, tzinfo=ps.EASTERN)
+    got = {(e["id"], s) for e, n, s in ps.due(entries, set(), at(10, 7)) if n == "facebook"}
+    assert got == {("a", "later"), ("b", "post")}  # b has no time, so 09:00
+    assert ps.scheduled(entries[0]).utcoffset().total_seconds() == -5 * 3600  # EST in November
+    queue, posted = tmp_path / "posts.yml", tmp_path / "posted.csv"
+    queue.write_text('- {id: a, card: partycohesion, post_on: 2026-11-12, time: "08:00"}\n'
+                     "- {id: b, card: senate-unity, post_on: 2026-11-12}\n")
+    monkeypatch.setattr(ps, "QUEUE", queue)
+    monkeypatch.setattr(ps, "POSTED", posted)
+    monkeypatch.delenv("META_IG_USER_ID")
+    calls = []
+    monkeypatch.setitem(ps.POSTERS, "facebook", lambda card, cap: calls.append(card) or f"fb-{card}")
+    ps.run_due(dry_run=False, today=at(12, 7))
+    assert calls == ["partycohesion"]  # the earlier one; the other waits for the next hourly run
+    ps.run_due(dry_run=False, today=at(13, 7))
+    assert calls == ["partycohesion", "senate-unity"]
+
+
+def test_spotlight_expires_after_a_day():
+    from datetime import datetime
+    e = [{"id": "s", "card": "member/C001121", "post_on": date(2026, 11, 12), "time": "19:35", "expires_after_days": 1}]
+    assert ps.due(e, set(), datetime(2026, 11, 13, 19, 0, tzinfo=ps.EASTERN))[0][2] == "post"
+    assert ps.due(e, set(), datetime(2026, 11, 14, 8, 0, tzinfo=ps.EASTERN))[0][2] == "expired"
+
+
+def test_queue_rejects_unquoted_or_bad_times(tmp_path):
+    p = tmp_path / "q.yml"
+    p.write_text("- {id: a, card: partycohesion, post_on: 2026-11-12, time: 19:35}\n")  # YAML reads this as a number
+    with pytest.raises(ValueError):
+        ps.load_queue(p)
+    p.write_text('- {id: a, card: partycohesion, post_on: 2026-11-12, time: "25:00"}\n')
+    with pytest.raises(ValueError):
+        ps.load_queue(p)
+
+
+def test_member_cards_use_spotlight_files():
+    assert ps.image_url("member/C001121", "facebook").endswith("/social/members/C001121-wide.png")
+    assert ps.image_url("member/C001121", "instagram").endswith("/social/members/C001121-tall.jpg")
+    cap = ps.default_caption("member/C001121")
+    assert cap.startswith("Member spotlight:")
+    ig = ps.instagram_caption(cap)
+    assert "https://" not in ig and ig.endswith("Link in bio.")

@@ -2,7 +2,7 @@
 
 PartyCohesion can post its cards in two ways:
 
-- **For the project:** the "Post to Facebook and Instagram" GitHub Action posts queued cards from `social/posts.yml` to the PartyCohesion Facebook Page and Instagram account. It runs every morning at about 8 a.m. Eastern. You can also start it by hand to post one card now.
+- **For the project:** the "Post to Facebook and Instagram" GitHub Action posts queued cards from `social/posts.yml` to the PartyCohesion Facebook Page and Instagram account. It checks the queue every hour from 6 a.m. to 11 p.m. Eastern and posts whatever is due, one post per run. You can also start it by hand to post one card now.
 - **For anyone:** the share pages at https://rendellrich.github.io/partycohesion/cards/ let any visitor post a card from their own account.
   - Facebook, LinkedIn and X open each site's share window.
   - Instagram has no share link. On a phone, "Share image" opens the share sheet with the image, so Instagram is one tap away. On a computer, "Download for Instagram" saves the 4:5 image and "Copy caption" copies the text. The app's share bars link there under "Instagram".
@@ -44,7 +44,7 @@ The rest of this page covers one-time setup for posting as the project. It is fr
    - Go to Actions → "Post to Facebook and Instagram" → Run workflow. Pick a card and leave "Dry run" checked. The log shows exactly what would post.
    - Run it again with "Dry run" unchecked to post for real.
 
-Until the secrets are added, the daily run skips each network with a message, so it never fails because of missing setup.
+Until the secrets are added, each run skips each network with a message, so it never fails because of missing setup.
 
 ## Queuing posts
 
@@ -54,19 +54,32 @@ Add an entry to `social/posts.yml`:
 - id: same-bill-2026-12
   card: same-bill-different-vote
   post_on: 2026-12-01
+  time: "18:40"                     # optional; Eastern, in quotes; 09:00 by default
   networks: [facebook, instagram]   # optional; both by default
   caption: |                        # optional; the card's own caption by default
     Your own words here.
     https://rendellrich.github.io/partycohesion/same-bill-different-vote/
 ```
 
-- It posts on the first morning run on or after `post_on`, once per network.
+- It posts on the first hourly run after `post_on` at `time`, once per network. If two posts are due at once, the second waits an hour.
 - `social/posted.csv` records what went out, so an `id` never posts twice. Use a new `id` for each post.
 - An entry more than 7 days late is skipped rather than posted stale. Change its date to send it.
 - Anyone can propose a post with a pull request. It goes out only after it's merged, so you stay in control of what the project account says.
-- Facebook gets the caption as written. On Instagram, a line that is only a link becomes "Link in bio.", because Instagram captions can't link.
+- Facebook gets the caption as written. On Instagram, a line that is only a link, or a label and a link, is dropped and "Link in bio." goes at the end, because Instagram captions can't link.
 - Captions must be under 2,200 characters and use no em dashes. The tests check every queued caption.
 - Keep the wording neutral: describe the votes, don't judge them.
+
+## Member spotlights and the weekly schedule
+
+Every Thursday the "Queue member spotlights" workflow runs `scripts/schedule_posts.py`, which tops the queue up to two weeks ahead and opens a pull request:
+
+- A member spotlight every one or two days, each at a different time of day, in the fixed rotation from `scripts/member_spotlights.py` (shuffled with a published seed, parties alternating, every fourth a senator). Each member is featured once per Congress.
+- One finding card a week, the one posted least recently, on a day without a spotlight.
+- Days that already have a post are left alone, so entries you add by hand keep their place.
+
+Spotlight cards and captions are rendered into `docs/social/members/` (`<Bioguide ID>-wide.png`, `-tall.jpg` and `.txt`). Before merging, look at each one: the votes listed should read fairly, and each "In their own words" link should be the member talking about that bill. To hold one back, delete its entry from `social/posts.yml` in the pull request. A spotlight that can't go out within a day of its slot is skipped rather than posted late.
+
+To plan by hand: `python scripts/schedule_posts.py --dry-run` prints the plan; without `--dry-run` it renders the cards and adds the entries.
 
 ## Images
 

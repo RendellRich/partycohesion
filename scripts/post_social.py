@@ -3,9 +3,10 @@
 Two ways to use it, both run by .github/workflows/post-social.yml:
 
   python scripts/post_social.py --due
-      Posts every entry in social/posts.yml whose post_on date has come and that hasn't gone out yet, then records
-      it in social/posted.csv so it never posts twice. Anyone can propose a post by adding an entry in a pull
-      request; it goes out after the PR is merged.
+      Posts the next entry in social/posts.yml whose post_on date and time (Eastern) have come and that hasn't gone
+      out yet, then records it in social/posted.csv so it never posts twice. One entry per run, so a backlog goes
+      out an hour apart instead of all at once. Anyone can propose a post by adding an entry in a pull request; it
+      goes out after the PR is merged.
 
   python scripts/post_social.py --card senate-unity --networks facebook,instagram [--caption "..."]
       Posts one card now. Without --caption it uses the card's caption from docs/social/captions.json.
@@ -21,7 +22,8 @@ Settings come from environment variables (GitHub repository secrets in the workf
 A network whose settings are missing is skipped with a message, so the workflow can run before both are set up.
 
 Images come from the GitHub Pages site, because Meta fetches them by URL: the wide PNG for Facebook and the
-4:5 JPEG for Instagram (Instagram only accepts JPEG).
+4:5 JPEG for Instagram (Instagram only accepts JPEG). A card named member/<Bioguide ID> is a member spotlight from
+scripts/member_spotlights.py, with its image and caption in docs/social/members/.
 """
 
 from __future__ import annotations
@@ -36,8 +38,9 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import date, datetime, timezone
+from datetime import date, datetime, time as clock, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import yaml
 
@@ -45,10 +48,13 @@ ROOT = Path(__file__).resolve().parent.parent
 QUEUE = ROOT / "social" / "posts.yml"
 POSTED = ROOT / "social" / "posted.csv"
 CAPTIONS = ROOT / "docs" / "social" / "captions.json"
+MEMBERS = ROOT / "docs" / "social" / "members"
 PAGES_URL = "https://rendellrich.github.io/partycohesion"
 GRAPH_VERSION = "v26.0"
 NETWORKS = ("facebook", "instagram")
 EXPIRE_DAYS = 7  # a queued post more than this many days late is skipped instead of going out stale
+EASTERN = ZoneInfo("America/New_York")
+DEFAULT_TIME = "09:00"  # Eastern, for entries without a time
 POSTED_FIELDS = ["id", "network", "posted_at", "post_id"]
 
 
@@ -59,14 +65,22 @@ class MetaError(RuntimeError):
 # ---------------------------------------------------------------- captions and images
 
 def image_url(card: str, network: str) -> str:
-    return f"{PAGES_URL}/social/{card}-{'wide.png' if network == 'facebook' else 'tall.jpg'}"
+    ext = "wide.png" if network == "facebook" else "tall.jpg"
+    if card.startswith("member/"):
+        return f"{PAGES_URL}/social/members/{card.split('/', 1)[1]}-{ext}"
+    return f"{PAGES_URL}/social/{card}-{ext}"
+
+
+URL = re.compile(r"https?://\S+")
 
 
 def instagram_caption(caption: str) -> str:
-    """Instagram captions can't hold links, so lines that are only a URL become 'Link in bio.'"""
+    """Instagram captions can't hold links. A line that is only a link, or a label and a link ("Floor remarks:
+    https://..."), is dropped, and "Link in bio." goes at the end."""
     lines = caption.rstrip().split("\n")
-    kept = [ln for ln in lines if not re.fullmatch(r"\s*https?://\S+\s*", ln)]
-    if len(kept) < len(lines):
+    kept = [ln for ln in lines if not re.fullmatch(r"[^\n]{0,40}:?\s*https?://\S+\s*", ln)]
+    kept = [URL.sub("(link in bio)", ln) for ln in kept]
+    if kept != lines:
         kept.append("Link in bio.")
     return "\n".join(kept)
 
@@ -79,6 +93,11 @@ def check_caption(caption: str) -> None:
 
 
 def default_caption(card: str) -> str:
+    if card.startswith("member/"):
+        path = MEMBERS / f"{card.split('/', 1)[1]}.txt"
+        if not path.exists():
+            raise ValueError(f"No spotlight caption at {path.relative_to(ROOT)}; run scripts/member_spotlights.py.")
+        return path.read_text().strip()
     caps = json.loads(CAPTIONS.read_text())
     if card not in caps:
         raise ValueError(f"Unknown card '{card}'. Cards: {', '.join(caps)}")
@@ -167,6 +186,8 @@ def load_queue(path: Path = QUEUE) -> list[dict]:
         missing = [k for k in ("id", "card", "post_on") if not e.get(k)]
         if missing:
             raise ValueError(f"Queue entry {e} is missing {', '.join(missing)}.")
+        if e.get("time") is not None and not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", str(e["time"])):
+            raise ValueError(f"Queue entry {e['id']} has time {e['time']!r}; use 24-hour Eastern time like \"19:30\".")
         bad = set(e.get("networks", NETWORKS)) - set(NETWORKS)
         if bad:
             raise ValueError(f"Queue entry {e['id']} has unknown networks: {', '.join(sorted(bad))}.")
@@ -194,16 +215,34 @@ def record(entry_id: str, network: str, post_id: str, path: Path = POSTED) -> No
                     "posted_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")})
 
 
-def due(entries: list[dict], posted: set, today: date) -> list[tuple[dict, str, str]]:
-    """(entry, network, status) for each queued network: 'post', 'expired' or 'later'. Already posted ones are left out."""
+def scheduled(entry: dict) -> datetime:
+    """When an entry goes out: its post_on date at its time (Eastern), or DEFAULT_TIME when it has none."""
+    day = entry["post_on"] if isinstance(entry["post_on"], date) else date.fromisoformat(str(entry["post_on"]))
+    hh, mm = (int(x) for x in str(entry.get("time") or DEFAULT_TIME).split(":"))
+    return datetime.combine(day, clock(hh, mm), EASTERN)
+
+
+def as_now(when: date | datetime | None) -> datetime:
+    """A datetime in Eastern time. A bare date means the end of that day, so everything due that day counts."""
+    if when is None:
+        return datetime.now(EASTERN)
+    if isinstance(when, datetime):
+        return when.astimezone(EASTERN) if when.tzinfo else when.replace(tzinfo=EASTERN)
+    return datetime.combine(when, clock(23, 59), EASTERN)
+
+
+def due(entries: list[dict], posted: set, now: date | datetime) -> list[tuple[dict, str, str]]:
+    """(entry, network, status) for each queued network, soonest first: 'post', 'expired' or 'later'. Already posted
+    ones are left out. An entry expires after its expires_after_days (EXPIRE_DAYS by default)."""
+    now = as_now(now)
     out = []
-    for e in entries:
-        when = e["post_on"] if isinstance(e["post_on"], date) else date.fromisoformat(str(e["post_on"]))
+    for e in sorted(entries, key=scheduled):
+        when = scheduled(e)
+        limit = timedelta(days=float(e.get("expires_after_days", EXPIRE_DAYS)))
         for net in e.get("networks", NETWORKS):
             if (e["id"], net) in posted:
                 continue
-            late = (today - when).days
-            out.append((e, net, "later" if late < 0 else "expired" if late > EXPIRE_DAYS else "post"))
+            out.append((e, net, "later" if now < when else "expired" if now - when > limit else "post"))
     return out
 
 
@@ -223,17 +262,24 @@ def publish(card: str, network: str, caption: str, dry_run: bool) -> str | None:
     return post_id
 
 
-def run_due(dry_run: bool, today: date | None = None) -> int:
-    failures = 0
-    for entry, net, status in due(load_queue(QUEUE), load_posted(POSTED), today or date.today()):
-        if status == "later":
+def run_due(dry_run: bool, today: date | datetime | None = None) -> int:
+    """Posts the soonest due entry (to each of its networks) and stops, so two entries never go out in one run."""
+    failures, sent, skipped = 0, None, set()
+    for entry, net, status in due(load_queue(QUEUE), load_posted(POSTED), as_now(today)):
+        if status == "later" or (sent and entry["id"] != sent):
+            continue
+        if not dry_run and not configured(net):  # never let a network that isn't set up hold up the queue
+            if net not in skipped:
+                print(f"Skipping {net}: its settings aren't in the repository secrets yet (see SOCIAL_POSTING.md).")
+                skipped.add(net)
             continue
         if status == "expired":
-            print(f"Skipping {entry['id']} on {net}: it was due {entry['post_on']}, more than {EXPIRE_DAYS} days ago. "
-                  "Change its post_on date to send it.")
+            print(f"Skipping {entry['id']} on {net}: it was due {scheduled(entry):%Y-%m-%d %H:%M} Eastern and is "
+                  "too late now. Change its post_on date to send it.")
             continue
-        caption = entry.get("caption") or default_caption(entry["card"])
+        sent = entry["id"]
         try:
+            caption = entry.get("caption") or default_caption(entry["card"])
             post_id = publish(entry["card"], net, caption.strip(), dry_run)
         except (MetaError, ValueError) as e:
             print(f"Could not post {entry['id']} to {net}: {e}", file=sys.stderr)

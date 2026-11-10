@@ -1,6 +1,7 @@
-"""Links from a member's vote to their own floor remarks on that bill, from data/floor_remarks_index.csv (built by
-scripts/floor_remarks_index.py from the Congressional Record). Used by the Members page and the member spotlight
-cards. The link shows where a member spoke during debate on the bill; it says nothing about what they said."""
+"""Links from a member's vote to their own remarks on that bill in the Congressional Record, from
+data/floor_remarks_index.csv.gz (built by scripts/floor_remarks_index.py, which checks each one against the text).
+Used by the Members page and the member spotlight cards. The link shows where a member spoke about the bill; it says
+nothing about what they said."""
 
 from pathlib import Path
 
@@ -11,11 +12,17 @@ BEFORE_DAYS, AFTER_DAYS = 30, 7  # remarks this close to the vote count as being
 COLUMNS = ["bioguide_id", "congress", "bill_number", "date", "chamber", "url"]
 
 
+def granule_url(date: str, granule: str) -> str:
+    return f"https://www.govinfo.gov/content/pkg/CREC-{date}/html/CREC-{date}-{granule}.htm"
+
+
 def load_index() -> pd.DataFrame:
-    path = DATA_DIR / "floor_remarks_index.csv"
+    path = DATA_DIR / "floor_remarks_index.csv.gz"
     if not path.exists():
         return pd.DataFrame(columns=COLUMNS)
-    return pd.read_csv(path)
+    df = pd.read_csv(path)
+    df["url"] = [granule_url(d, g) for d, g in zip(df["date"], df["granule"])]
+    return df[COLUMNS]
 
 
 def remark_near(spoke: pd.DataFrame, bill, date) -> str | None:
