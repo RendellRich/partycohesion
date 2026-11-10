@@ -72,7 +72,7 @@ if not plot_df.empty:
         labels={"nominate_dim1": "Ideology score", "count": "Members"},
         title=None,
     )
-    fig.update_traces(marker_line=dict(color=BG, width=1), opacity=1)
+    fig.update_traces(marker_opacity=1)  # overlay mode defaults to half opacity; bargap leaves the gaps
     fig.update_layout(
         yaxis_title="Members",
         height=420,
