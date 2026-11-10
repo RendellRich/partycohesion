@@ -58,6 +58,11 @@ jobs:
         timeout-minutes: 10
         run: python scripts/member_details.py
 
+      # Who holds each seat now, for "Find your members" on the Home page (from the file downloaded above).
+      - name: Update current seats
+        continue-on-error: true
+        run: python scripts/member_lookup.py
+
       - name: Update cosponsor votes
         continue-on-error: true
         timeout-minutes: 25

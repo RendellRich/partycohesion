@@ -137,7 +137,7 @@ def test_queue_file_is_valid_and_uses_real_cards():
     for e in entries:
         if e["card"].startswith("member/"):  # a spotlight: its card and caption must be committed
             b = e["card"].split("/", 1)[1]
-            for name in (f"{b}-wide.png", f"{b}-tall.jpg", f"{b}.txt"):
+            for name in (f"{b}-wide.png", f"{b}-tall.jpg", f"{b}.txt", f"{b}.alt.txt"):
                 assert (ps.MEMBERS / name).exists(), name
         else:
             assert e["card"] in caps
@@ -243,3 +243,28 @@ def test_member_cards_use_spotlight_files():
     assert cap.startswith("Member spotlight:")
     ig = ps.instagram_caption(cap)
     assert "https://" not in ig and ig.endswith("Link in bio.")
+
+
+def test_alt_text_is_sent_with_each_photo(meta_env, monkeypatch):
+    sent = []
+
+    def fake(req, timeout=None):
+        import urllib.parse
+        sent.append(dict(urllib.parse.parse_qsl(req.data.decode())) if req.data else {})
+        return io.BytesIO(json.dumps({"id": "1", "post_id": "1_2", "status_code": "FINISHED"}).encode())
+
+    monkeypatch.setenv("META_PAGE_ID", "123")
+    ps.post_facebook("senate-unity", "cap", opener=fake)
+    assert sent[-1]["alt_text_custom"].startswith("Line chart")
+    ps.post_facebook("member/C001121", "cap", opener=fake)
+    assert sent[-1]["alt_text_custom"].startswith("Member spotlight card for Jason Crow")
+    ps.post_instagram("senate-unity", "cap", opener=fake, wait=lambda s: None)
+    assert any(p.get("alt_text", "").startswith("Line chart") for p in sent)
+
+
+def test_every_card_has_alt_text_under_the_limit():
+    alts = json.loads((ps.CAPTIONS.parent / "alt.json").read_text())
+    assert set(alts) == set(json.loads(ps.CAPTIONS.read_text()))
+    for e in ps.load_queue():
+        a = ps.alt_text(e["card"])
+        assert a and len(a) <= 1000 and "—" not in a, e["id"]

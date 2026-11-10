@@ -489,6 +489,43 @@ def captions(f: dict) -> dict[str, str]:
 
 
 
+def alt_texts(f: dict) -> dict[str, str]:
+    """A description of each card image for screen readers, sent as the post's alt text (scripts/post_social.py).
+    It says what the picture shows, built from the same numbers, so it doesn't just repeat the caption."""
+    by = f["by_congress"]
+    bars = ", ".join(f"{2 * c + 1787}: {n:,}" for c, n in by.items())
+    sen = f["senate"]
+    first, last = sen.index[0], sen.index[-1]
+    fr = f["floor"]
+    rf, bill = f["rfma"], f["rfma_bill"]
+    names = lambda d: ", ".join(f"{display_name(n)} ({s})" for n, s in rf[rf["direction"] == d][["name", "state_abbrev"]].itertuples(index=False))
+    return {
+        "partycohesion": ("PartyCohesion card. Headline: Do members of Congress vote the same way no matter who is "
+                          "president? Beside it, a half-circle chart of every House member as one dot, colored by "
+                          "party and ordered by voting record. Source: Voteview."),
+        "same-bill-different-vote": (f"Card titled Same bill, different vote. Large number: {f['apart']:,} times a "
+                                     "member voted for a bill at one stage and against it at another while most of "
+                                     f"their party voted the same way both times. Bar chart by Congress, labeled by "
+                                     f"starting year: {bars}. The last bar is a Congress still in session."),
+        "respect-for-marriage-act": (f"Card about the Respect for Marriage Act, H.R. 8404. Headline: {len(rf)} House "
+                                     "Republicans voted differently in December than in July 2022. Two boxes: "
+                                     f"{f['rfma_r_yea'].get(int(bill['first_roll']))} Republicans voted Yea on passage "
+                                     f"in July, and {f['rfma_r_yea'].get(int(bill['final_roll']))} on the final "
+                                     f"version in December. Yea, then Nay: {names('Yea to Nay')}. Nay, then Yea: "
+                                     f"{names('Nay to Yea')}."),
+        "senate-unity": (f"Line chart titled In the Senate, party unity moves with the White House. Two lines, "
+                         f"Senate Democrats and Senate Republicans, showing average party unity per Congress from "
+                         f"{2 * first + 1787} to {2 * last + 1787}. Democrats go from {sen.loc[first, 'Democrat']:.1f}% "
+                         f"to {sen.loc[last, 'Democrat']:.1f}%, Republicans from {sen.loc[first, 'Republican']:.1f}% "
+                         f"to {sen.loc[last, 'Republican']:.1f}%. {senate_summary(sen)}"),
+        "floor-remarks": ("Card titled Said it on the floor, then voted that way. Two grids of dots, one per member "
+                          "who took a clear position in floor debate on Ukraine aid or the Respect for Marriage Act. "
+                          f"Filled dots voted the way they spoke: {int(fr.loc['House', 'sum'])} of "
+                          f"{int(fr.loc['House', 'size'])} House members and {int(fr.loc['Senate', 'sum'])} of "
+                          f"{int(fr.loc['Senate', 'size'])} senators."),
+    }
+
+
 def share_links(url: str, text: str) -> list[tuple[str, str]]:
     from urllib.parse import quote
     u, t = quote(url, safe=""), quote(text, safe="")
@@ -629,7 +666,9 @@ def main() -> None:
     # weekly workflow compares this file, not the images, to decide whether the cards need an update.
     caps = captions(f)
     html = "".join(fn(f, size) + title + desc for fn, title, desc, _ in CARDS.values() for size in SIZES)
-    html += json.dumps(caps, sort_keys=True)
+    alts = alt_texts(f)
+    html += json.dumps(caps, sort_keys=True) + json.dumps(alts, sort_keys=True)
+    (OUT / "alt.json").write_text(json.dumps(alts, indent=2) + "\n")
     (OUT / "cards.sha256").write_text(hashlib.sha256(html.encode()).hexdigest() + "\n")
     with sync_playwright() as p:
         browser = p.chromium.launch()

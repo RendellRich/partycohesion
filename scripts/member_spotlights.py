@@ -27,6 +27,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT))
 import make_social_cards as mc  # noqa: E402
 from seat_map import seat_positions  # noqa: E402
+from chart_utils import ordinal  # noqa: E402
 from ui import STATES, bill_label, display_name  # noqa: E402
 import floor_remarks  # noqa: E402
 from vote_index import load_matrix  # noqa: E402
@@ -41,9 +42,23 @@ def member_url(bioguide: str) -> str:
     return f"{mc.SITE}/Member_Explorer?member={bioguide}"
 
 
-def load() -> dict:
+READY_SHARE = 0.8  # a new Congress is used once this share of its members have MIN_VOTES party-line votes
+
+
+def spotlight_congress(members: pd.DataFrame) -> tuple[int, bool]:
+    """(Congress, is it the newest one). A new Congress starts every member's count at zero, so for its first weeks
+    the spotlights keep using the one before, labeled as its final record, until most members have enough votes."""
+    newest = int(members["congress"].max())
+    cur = members[members["congress"] == newest].drop_duplicates(["chamber", "icpsr"])
+    ready = (cur["unity_votes_cast"] >= MIN_VOTES).sum() >= READY_SHARE * len(cur)
+    if ready or (members["congress"] == newest - 1).sum() == 0:
+        return newest, True
+    return newest - 1, False
+
+
+def load(congress: int | None = None) -> dict:
     members = pd.read_csv(DATA / "members_processed.csv")
-    latest = int(members["congress"].max())
+    latest, current = (congress, congress == int(members["congress"].max())) if congress else spotlight_congress(members)
     cur = (members[members["congress"] == latest].sort_values("unity_votes_cast")
            .drop_duplicates(["chamber", "icpsr"], keep="last"))
     missed = pd.read_csv(DATA / "missed_votes.csv")
@@ -63,7 +78,8 @@ def load() -> dict:
     votes = votes[votes["party_unity_vote"]]
     remarks = floor_remarks.load_index()
     remarks = remarks[remarks["congress"] == latest]
-    return {"members": cur, "latest": latest, "through": mc.fmt_date(summary["latest_vote_date"].max()),
+    through = summary.loc[summary["congress"] == latest, "latest_vote_date"].max()
+    return {"members": cur, "latest": latest, "current": current, "through": mc.fmt_date(through),
             "votes": votes, "titles": titles, "title_votes": title_votes(all_votes), "remarks": remarks}
 
 
@@ -228,7 +244,7 @@ def stats(d: dict, bioguide: str) -> dict:
         # same average as the Overview page and the Senate card
         "avg": float(same["party_unity_pct"].mean()), "peers": len(peers), "below": below,
         "missed_pct": float(row["missed"] / row["eligible"] * 100) if row.get("eligible", 0) else None,
-        "changed": int(row["changed_apart"]), "latest": d["latest"], "through": d["through"],
+        "changed": int(row["changed_apart"]), "latest": d["latest"], "through": d["through"], "current": d["current"],
         "apart": apart_votes(d, row),
     }
 
@@ -314,7 +330,7 @@ def apart_html(d: dict, s: dict, n: int, fs: int) -> str:
     total = len(s["apart"])
     group = f"{s['chamber']} {s['party']}s"
     if total == 0:
-        return f'<div class="body" style="font-size:{fs}px">Voted with most {group} on every party-line vote this Congress.</div>'
+        return f'<div class="body" style="font-size:{fs}px">Voted with most {group} on every party-line vote {when(s)}.</div>'
     head = (f'<div class="accent" style="font-size:{fs}px;font-weight:600">Voted apart from most {group} on {total} of '
             f'{s["cast"]} party-line votes, including:</div>')
     items = []
@@ -327,16 +343,28 @@ def apart_html(d: dict, s: dict, n: int, fs: int) -> str:
     return head + f'<ul class="facts" style="font-size:{fs}px;margin-top:6px">{"".join(items)}</ul>'
 
 
+def when(s: dict) -> str:
+    return "this Congress" if s["current"] else f"in the {ordinal(s['latest'])} Congress"
+
+
+def in_congress(s: dict) -> str:
+    """'In the current Congress (votes through Sep 30, 2026)' or, once it has ended,
+    'In the 119th Congress (2025 to 2026, final record)'."""
+    if s["current"]:
+        return f"In the current Congress (votes through {s['through']})"
+    return f"In the {ordinal(s['latest'])} Congress ({2 * s['latest'] + 1787} to {2 * s['latest'] + 1788}, final record)"
+
+
 def missed_line(s: dict) -> str:
     if s["missed_pct"] is None:
         return ""
-    return (f"Missed {s['missed_pct']:.1f}% of roll calls this Congress. Roll call records don't give reasons "
+    return (f"Missed {s['missed_pct']:.1f}% of roll calls {when(s)}. Roll call records don't give reasons "
             "for absences.")
 
 
 def card(d: dict, s: dict, size: str) -> str:
     years = f"{2 * s['latest'] + 1787} to {2 * s['latest'] + 1788}"
-    label = f"Member spotlight · {s['chamber']} · {years} Congress"
+    label = f"Member spotlight · {s['chamber']} · {years} Congress" + ("" if s["current"] else ", final record")
     who = f"{s['party']} · {s['state']}"
     big = f"{s['pct']:.1f}%"
     line = f"voted with their party on {s['with']} of {s['cast']} party-line votes"
@@ -380,7 +408,7 @@ def caption(d: dict, s: dict) -> str:
     group = f"{s['chamber']} {s['party']}s"
     lines = [
         f"Member spotlight: {s['name']} ({abbr}-{s['abbrev']}), {s['chamber']}.",
-        f"In the current Congress (votes through {s['through']}), {s['name']} voted with the {ADJ[s['party']]} majority on {s['with']} of {s['cast']} "
+        f"{in_congress(s)}, {s['name']} voted with the {ADJ[s['party']]} majority on {s['with']} of {s['cast']} "
         f"party-line votes ({s['pct']:.1f}%). The {s['chamber']} {ADJ[s['party']]} average is {s['avg']:.1f}%.",
         "",
     ]
@@ -393,12 +421,27 @@ def caption(d: dict, s: dict) -> str:
             if isinstance(a["remarks"], str):
                 lines.append(f"  In their own words: {a['remarks']}")
     else:
-        lines.append(f"Voted with most {group} on every party-line vote this Congress.")
+        lines.append(f"Voted with most {group} on every party-line vote {when(s)}.")
     lines += ["", missed_line(s), "",
               f"Full voting record: {member_url(s['row']['bioguide_id'])}",
               f"Look up how your own members vote: {mc.SITE}",
               "Members are featured in a fixed random rotation, not chosen by hand. Data: Voteview, Congressional Record."]
     return "\n".join(l for l in lines if l is not None)
+
+
+def alt_text(d: dict, s: dict) -> str:
+    """What the card image shows, for screen readers (sent as the post's alt text)."""
+    parts = [f"Member spotlight card for {s['name']}, {s['party']}, {s['state']}, {s['chamber']}. Large number: "
+             f"{s['pct']:.1f}%, voted with their party on {s['with']} of {s['cast']} party-line votes. A bar compares "
+             f"it with the {s['chamber']} {ADJ[s['party']]} average of {s['avg']:.1f}%."]
+    lines = apart_lines(d, s, 2)
+    if lines:
+        parts.append(f"Votes apart from most of their party, {len(s['apart'])} in all, including: " + "; ".join(
+            f"{a['what']}, {a['date']}, voted {a['vote']} while most {a['plural']} voted {a['party_vote']}" for a in lines) + ".")
+    if missed_line(s):
+        parts.append(missed_line(s))
+    parts.append(f"A half-circle chart of the {s['chamber']} with their seat circled.")
+    return " ".join(parts)
 
 
 def render(d: dict, bioguides: list[str]) -> list[Path]:
@@ -423,6 +466,7 @@ def render(d: dict, bioguides: list[str]) -> list[Path]:
                 paths.append(path)
                 pg.close()
             (OUT / f"{b}.txt").write_text(caption(d, s) + "\n")
+            (OUT / f"{b}.alt.txt").write_text(alt_text(d, s)[:1000] + "\n")
         browser.close()
     return paths
 

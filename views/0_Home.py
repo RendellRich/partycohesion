@@ -14,7 +14,8 @@ from chart_utils import BG, PARTY_COLORS, ordinal, show_chart
 from seat_map import seat_map
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import all_member_platform_votes, load_platform, party_totals
-from ui import card, display_name, fmt_date, inject_css
+import find_members
+from ui import STATES, card, display_name, early_congress, fmt_date, inject_css
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -33,6 +34,9 @@ def load():
 members, summary, key_votes, flip_votes = load()
 latest = int(members["congress"].max())
 current = members[members["congress"] == latest]
+# In the first weeks of a new Congress, the headline numbers use the one before (see ui.early_congress)
+stat_congress = latest - 1 if early_congress(members) else latest
+stat_members = members[members["congress"] == stat_congress]
 
 st.markdown('<div class="pc-hero">Do members of Congress vote the same way no matter who is president?</div>',
             unsafe_allow_html=True)
@@ -49,6 +53,60 @@ who = st.selectbox("Look up your representative or senator", list(labels), index
                    placeholder="Type a name, e.g. Ocasio-Cortez or Cruz", key="home_lookup")
 if who:
     st.switch_page("views/2_Member_Explorer.py", query_params={"member": labels[who]})
+
+# Or find them by ZIP code or state, for visitors who don't know who represents them
+with st.expander("Don't know who represents you? Find your members by ZIP code or state"):
+    seats, zips = find_members.load_cached()
+    have_data = set(current["bioguide_id"].dropna())
+    z_col, s_col = st.columns(2)
+    zip_text = z_col.text_input("ZIP code", max_chars=10, placeholder="e.g. 34219", key="home_zip")
+    state_pick = s_col.selectbox("Or pick a state", sorted(STATES, key=STATES.get), index=None,
+                                 format_func=lambda a: STATES[a], placeholder="Choose a state", key="home_state")
+
+    def member_button(r, note: str = "") -> None:
+        label = f"{r.name} ({str(r.party)[:1]}), {note or r.chamber}"
+        if r.bioguide_id in have_data:
+            if st.button(label, key=f"find_{r.bioguide_id}"):
+                st.switch_page("views/2_Member_Explorer.py", query_params={"member": r.bioguide_id})
+        else:
+            st.markdown(f"{label} · not in the voting data yet")
+
+    if zip_text:
+        z = find_members.clean_zip(zip_text)
+        res = find_members.lookup_zip(z, seats, zips) if z else {"found": False}
+        if not res["found"]:
+            st.caption("That ZIP code isn't in the Census Bureau's ZIP list. Try your state instead, or the House's "
+                       f"official lookup: {find_members.OFFICIAL_LOOKUP}")
+        else:
+            st.markdown(f"**Senators for {STATES.get(res['state'], res['state'])}**")
+            for r in res["senators"].itertuples():
+                member_button(r, "Senate")
+            several = len(res["districts"]) > 1
+            st.markdown("**House**" + (" (this ZIP code crosses district lines)" if several and res["lines_current"] else ""))
+            for d in res["districts"]:
+                where = find_members.district_label(res["state"], d["district"])
+                if several and d["share"] is not None:
+                    where += f", {d['share']:.0%} of the ZIP's land"
+                if d["member"].empty:
+                    st.markdown(f"{where}: seat currently vacant")
+                for r in d["member"].itertuples():
+                    member_button(r, where)
+            if several or not res["lines_current"]:
+                st.caption("To be sure which district your address is in, use the House's official lookup: "
+                           f"{find_members.OFFICIAL_LOOKUP}")
+            if not res["lines_current"]:
+                st.caption("Some states drew new district lines for the 120th Congress, and the Census Bureau hasn't "
+                           "published ZIP codes for them yet, so this lists every House member from the state.")
+    elif state_pick:
+        sens, house = find_members.state_members(state_pick, seats)
+        st.markdown(f"**Senators for {STATES[state_pick]}**")
+        for r in sens.itertuples():
+            member_button(r, "Senate")
+        st.markdown("**House**")
+        for r in house.itertuples():
+            member_button(r, find_members.district_label(state_pick, r.district))
+    st.caption("ZIP codes to districts: U.S. Census Bureau, 2020 ZIP Code Tabulation Areas and 119th Congress "
+               "districts. Current members: unitedstates/congress-legislators.")
 
 # The chamber at a glance: every current member as one seat, arranged left to right by ideology score
 chamber = st.segmented_control("Chamber", ["House", "Senate"], default="House", key="home_chamber",
@@ -75,12 +133,12 @@ scored = scores[scores["label"] != "Not enough votes"]
 pct_consistent = (scored["label"] == "Consistent").mean() * 100 if len(scored) else 0
 
 # Finding 2: party unity, current Congress
-dr = current[current["party"].isin(["Democrat", "Republican"])].dropna(subset=["party_unity_pct"])
+dr = stat_members[stat_members["party"].isin(["Democrat", "Republican"])].dropna(subset=["party_unity_pct"])
 means = dr.groupby("party")["party_unity_pct"].mean()
-n_unity = int(summary.loc[summary["congress"] == latest, "party_unity_votes"].sum())
+n_unity = int(summary.loc[summary["congress"] == stat_congress, "party_unity_votes"].sum())
 
 # Finding 3: the biggest party break among final votes in the current Congress
-breaks = key_votes[(key_votes["congress"] == latest) & (key_votes["series"] == "Biggest Party Breaks")].copy()
+breaks = key_votes[(key_votes["congress"] == stat_congress) & (key_votes["series"] == "Biggest Party Breaks")].copy()
 breaks["broke"] = breaks["dem_defectors"] + breaks["rep_defectors"]
 top = breaks.sort_values("broke", ascending=False).iloc[0] if len(breaks) else None
 
@@ -93,8 +151,8 @@ with c1:
     st.page_link("views/9_How_It_Works.py", label="How this is measured")
 with c2:
     card("Party unity", f"{means.min():.0f}–{means.max():.0f}%",
-         f"Average share of the {ordinal(latest)} Congress's {n_unity:,} party-line votes on which members sided with "
-         "their own party.")
+         f"Average share of the {ordinal(stat_congress)} Congress's {n_unity:,} party-line votes on which members sided "
+         "with their own party" + ("." if stat_congress == latest else ", its full two-year record."))
     st.page_link("views/2_Member_Explorer.py", label="Explore members")
 with c3:
     if top is not None:

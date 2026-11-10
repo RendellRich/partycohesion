@@ -41,3 +41,38 @@ def test_real_remarks_are_kept():
     rec = pd.DataFrame({"congress": [119, 119], "bill_number": ["HR2913", "HRES518"], "date": ["2026-06-04"] * 2})
     urls = fr.attach(rec, "F000466", IDX)
     assert "PgH3879" in urls.iloc[0] and urls.iloc[1] is None
+
+
+def _index_module():
+    import importlib.util
+    from pathlib import Path
+    spec = importlib.util.spec_from_file_location("fri", Path(__file__).resolve().parents[1] / "scripts" / "floor_remarks_index.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+def test_text_check_rules():
+    f = _index_module()
+    words = " ".join(["word"] * 70)
+    assert f.substantive(f"I yield back the balance of my time. {words}")  # a real speech survives
+    assert f.substantive("Mr. Speaker, had I been present, I would have voted yea on Roll Call No. 343.") == ""
+    roll_list = ("I was unable to be present. Had I been present I would have voted: " +
+                 " ".join(f"Roll No. {n} on H.R. {n}, a bill about things, yea." for n in range(1, 20)))
+    assert f.substantive(roll_list) == ""  # a long list of how they would have voted is still not remarks
+    text = "x\n  Mr. SMITH. hi there\n Mr. McCAIN. a speech\n     Mr. QUOTED. not a turn\n"
+    assert [label for label, _ in f.turns(text)] == ["Mr. SMITH", "Mr. McCAIN"]  # one leading space happens
+    assert f.names_bill("I rise in support of H.R. 2913 today", "HR2913", None)
+    assert f.names_bill("the Ukraine Support Act matters", "HR2913", "Ukraine Support Act")
+    assert f.names_bill("Senate Joint Resolution 31 is", "SJRES31", None)
+    assert not f.names_bill("S. 20 is different", "S2", None)
+
+
+def test_which_sections_need_the_bill_named():
+    f = _index_module()
+    row = lambda headline, n_headline, n_bills: type("R", (), {"headline": headline, "n_headline": n_headline, "n_bills": n_bills})
+    assert not f.needs_name(row(True, 1, 3))      # the section is about this bill
+    assert f.needs_name(row(True, 4, 4))          # a rule for debating four bills at once
+    assert f.needs_name(row(False, 1, 2))         # the bill only comes up in a section about another
+    assert not f.needs_name(row(False, 0, 1))     # the only bill in the section
+    assert f.needs_name(row(False, 0, 3))         # no main bill marked and several referenced

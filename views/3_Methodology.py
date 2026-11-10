@@ -13,6 +13,20 @@ st.markdown("""
   earlier is scored only on votes from 2007 on, and their profile says the data starts in 2007.
 - **Votes counted:** only Yea and Nay floor votes. Present, not voting, and paired or announced positions are left out.
 - **Chambers:** House and Senate. Non-voting delegates appear in member lists but are left out of Ideology Drift.
+- **A new Congress:** every member's count starts at zero on January 3 of odd years. Until 80% of the new Congress's
+  members have 50 party-line votes, the Home page's headline numbers and the Overview's default use the previous
+  Congress's full two-year record, and say so. The new Congress can still be picked from the Congress menu.
+""")
+
+st.header("Find your members")
+st.markdown("""
+The Home page finds a visitor's members by ZIP code or state. Current members and their districts come from
+unitedstates/congress-legislators (CC0), updated with every data refresh. ZIP codes are matched to 119th Congress
+districts with the U.S. Census Bureau's relationship file between 2020 ZIP Code Tabulation Areas (which approximate
+ZIP codes) and congressional districts. When a ZIP code crosses a district line, every district is listed with its
+share of the ZIP code's land area, and the page points to the House's official address lookup. Some states drew new
+lines for the 120th Congress, so from January 3, 2027 until the Census Bureau publishes the new file, a ZIP code
+lists every House member from its state.
 """)
 
 st.header("Primary data source")
@@ -126,6 +140,11 @@ was how they would have voted on a roll call they missed. So each link is checke
   "I ask unanimous consent"), statements explaining a missed vote, and documents read into the Record.
 - Unless the section is about that bill, the member has to name it, by number (H.R. 2913) or by its short title.
   That covers debate on a rule for several bills at once, and bills that only come up in passing.
+- If they name a different bill from the same section and never this one, they were talking about the other bill.
+
+Of about 593,000 candidate links from 2007 on, 162,000 pass. In a hand check of 40 random links that pass, 30 were
+clearly the member talking about that bill, 5 were unclear and 5 were not (for example a tribute given during a
+bill's debate time). The full write-up is in the repository: `writeups/checking-the-congressional-record.md`.
 
 A link appears when a checked remark falls within 30 days before the vote or a week after; if there are several,
 the one closest to the vote is used. The link shows *where* they spoke, not *what* they said. It is not coded or
@@ -151,6 +170,9 @@ their remarks on those bills in the Congressional Record when there are any, and
   reviewed before anything goes out.
 - **Missed votes** come with a reminder that roll call records don't give reasons for absences.
 - Cards never use photos and never say or suggest why a member voted as they did.
+- Every posted image carries alt text for screen readers, built from the same numbers as the card.
+- In the first weeks of a new Congress, spotlights keep featuring the previous Congress, labeled as its final
+  record, until 80% of the new Congress's members have 50 party-line votes.
 """)
 
 st.header("Same Bill, Different Vote")
