@@ -231,15 +231,20 @@ def test_floor_statements_on_ukraine_topic():
     assert "Welch" in text and "Netanyahu" in text and "Rubio" in text
     floor = at.dataframe[0].value
     assert len(floor) == 122 and set(floor["Chamber"]) == {"House", "Senate"}
+    at.selectbox(key="cmp_topic").set_value("Same-sex marriage").run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert "Gallagher" in html(at) and "religious liberty" in html(at)
+    assert len(at.dataframe[0].value) == 62
 
 
 def test_floor_statement_quotes_are_sourced():
     import pandas as pd
-    f = pd.read_csv(ROOT / "data" / "floor_statements_ukraine.csv", dtype=str).fillna("")
+    f = pd.read_csv(ROOT / "data" / "floor_statements.csv", dtype=str).fillna("")
     quoted = f[f["quote"] != ""]
     assert quoted["source_url"].str.startswith("https://www.govinfo.gov/content/pkg/CREC-").all()
-    assert set(f["stance"]) <= {"Supports more aid", "Opposes more aid", "Supports helping Ukraine, with conditions",
-                                "No clear stance"}
+    assert set(f["stance"]) <= {"Supports more aid", "Opposes more aid", "Supports the bill", "Opposes the bill",
+                                "With conditions", "No clear stance"}
+    assert not f.duplicated(["topic", "bioguide_id"]).any()
 
 
 def test_campaign_statements_on_member_page():
