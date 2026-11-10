@@ -1,6 +1,15 @@
 Member spotlight: Bill Cassidy (R-LA), Senate.
 In the current Congress, Bill Cassidy voted with the Republican majority on 781 of 798 party-line votes (97.9%). The Senate Republican average is 98.6%.
 
-Members are featured in a fixed random rotation, not chosen by hand.
-Data: Voteview
-https://partycohesion.streamlit.app/Member_Explorer?member=C001075
+Votes apart from most Senate Republicans (17 in all) included:
+- Passing H.Con.Res. 86, A concurrent resolution directing the President, pursuant to... (Jun 23, 2026): voted Yea; most Republicans voted Nay.
+- A motion on S. 2, To prohibit the Department of Justice from using taxpayer funds to... (Jun 5, 2026): voted Yea; most Republicans voted Nay.
+  Floor remarks: https://www.govinfo.gov/content/pkg/CREC-2026-06-04/html/CREC-2026-06-04-pt1-PgS2545-8.htm
+- An amendment to S. 2296, To amend title 32, United States Code, to clarify certain... (Oct 9, 2025): voted Yea; most Republicans voted Nay.
+  Floor remarks: https://www.govinfo.gov/content/pkg/CREC-2025-09-10/html/CREC-2025-09-10-pt1-PgS6512-3.htm
+
+Missed 5.5% of roll calls this Congress. Roll call records don't give reasons for absences.
+
+Full voting record: https://partycohesion.streamlit.app/Member_Explorer?member=C001075
+Look up how your own members vote: https://partycohesion.streamlit.app
+Members are featured in a fixed random rotation, not chosen by hand. Data: Voteview, Congressional Record.

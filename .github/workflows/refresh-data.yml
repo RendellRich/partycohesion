@@ -63,6 +63,13 @@ jobs:
         timeout-minutes: 25
         run: python scripts/cosponsor_votes.py --minutes 20
 
+      # Who spoke on the floor about which bill, from the Congressional Record's metadata (no key needed), for the
+      # "Their floor remarks" links. Re-reads the last 15 days of the Record. A failure here never stops the refresh.
+      - name: Update floor remarks links
+        continue-on-error: true
+        timeout-minutes: 15
+        run: python scripts/floor_remarks_index.py --years $(date -u -d "15 days ago" +%Y) $(date -u +%Y) --recent 15
+
       # Stops the run (nothing is committed, and GitHub emails a failure notice) if the
       # new data looks incomplete or wrong.
       - name: Check the data before publishing

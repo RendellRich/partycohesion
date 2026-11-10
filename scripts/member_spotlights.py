@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import random
+import re
 import sys
 from html import escape
 from pathlib import Path
@@ -26,7 +27,9 @@ sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT))
 import make_social_cards as mc  # noqa: E402
 from seat_map import seat_positions  # noqa: E402
-from ui import STATES, display_name  # noqa: E402
+from ui import STATES, bill_label, display_name  # noqa: E402
+import floor_remarks  # noqa: E402
+from vote_index import load_matrix  # noqa: E402
 
 DATA = ROOT / "data"
 OUT = ROOT / "docs" / "social" / "members"
@@ -50,7 +53,80 @@ def load() -> dict:
     cur = cur.merge(missed, on=["chamber", "icpsr"], how="left").merge(apart, on="icpsr", how="left")
     cur["changed_apart"] = cur["changed_apart"].fillna(0).astype(int)
     summary = pd.read_csv(DATA / "unity_summary.csv")
-    return {"members": cur, "latest": latest, "through": mc.fmt_date(summary["latest_vote_date"].max())}
+    votes = pd.read_csv(DATA / "all_votes.csv")
+    votes = votes[(votes["congress"] == latest) & votes["party_unity_vote"]]
+    titles = pd.read_csv(DATA / "bill_titles.csv")
+    titles = dict(zip(titles.loc[titles["congress"] == latest, "bill_number"], titles.loc[titles["congress"] == latest, "title"]))
+    remarks = floor_remarks.load_index()
+    remarks = remarks[remarks["congress"] == latest]
+    return {"members": cur, "latest": latest, "through": mc.fmt_date(summary["latest_vote_date"].max()),
+            "votes": votes, "titles": titles, "remarks": remarks}
+
+
+SUBSTANTIVE = re.compile(r"^on passage|suspend the rules and pass|^on (?:the )?joint resolution$|conference report|"
+                         r"concur in the|overriding the veto|objections of the president|^on the nomination|"
+                         r"^on (?:agreeing to )?the (?:concurrent )?resolution(?:, as amended)?$", re.I)
+NOT_SHOWN = re.compile(r"^election of the speaker", re.I)  # counted, but a vote for a person, not a measure
+
+
+def apart_votes(d: dict, row: pd.Series) -> pd.DataFrame:
+    """Every party-line vote this Congress where the member voted against most of their own party, with what it was
+    and whether they spoke on the floor about that bill. Yea and Nay only, as in the party unity rate."""
+    ids, rolls, matrix = load_matrix(d["latest"], row["chamber"])
+    mine = pd.DataFrame({"rollnumber": rolls, "v": matrix[list(ids).index(row["icpsr"])]})
+    mine = mine[mine["v"] != 0].copy()
+    mine["vote"] = mine["v"].map({1: "Yea", -1: "Nay"})
+    v = d["votes"][d["votes"]["chamber"] == row["chamber"]]
+    x = mine.merge(v, on="rollnumber")
+    x["party_vote"] = x["dem_position"] if row["caucus"] == "Democrat" else x["rep_position"]
+    if row["caucus"] not in ("Democrat", "Republican"):
+        x["party_vote"] = x["dem_position"]
+    x = x[x["vote"] != x["party_vote"]].copy()
+    x["remarks_url"] = floor_remarks.attach(x, row["bioguide_id"], d["remarks"])
+    q = x["vote_question"].fillna("")
+    x["substantive"] = q.str.contains(SUBSTANTIVE)
+    x["shown"] = ~q.str.contains(NOT_SHOWN)
+    return x
+
+
+KINDS = [(re.compile(r"cloture on the motion to proceed", re.I), "Cloture on taking up"),
+         (re.compile(r"motion to proceed", re.I), "Taking up"),
+         (re.compile(r"motion to discharge", re.I), "Discharging"),
+         (re.compile(r"motion to table", re.I), "Tabling"),
+         (re.compile(r"cloture", re.I), "Cloture on"),
+         (re.compile(r"amendment", re.I), "An amendment to"),
+         (re.compile(r"veto|objections of the president", re.I), "Overriding the veto of"),
+         (re.compile(r"conference report|concur in", re.I), "Final version of"),
+         (re.compile(r"nomination", re.I), "Nomination:"),
+         (re.compile(r"passage|suspend the rules and pass|joint resolution|resolution", re.I), "Passing"),
+         (re.compile(r"recommit", re.I), "Sending back to committee"),
+         (re.compile(r"previous question", re.I), "Ending debate on"),
+         (re.compile(r"^on the motion$", re.I), "A motion on")]
+
+
+def kind(question: str) -> str:
+    return next((k for pat, k in KINDS if pat.search(str(question))), str(question).removeprefix("On ").strip())
+
+
+def pick(x: pd.DataFrame, n: int) -> pd.DataFrame:
+    """Which apart votes to show, by a fixed rule: votes on a bill, resolution or nomination itself before
+    procedural ones, then ones the member spoke about on the floor, then the most recent. One vote per bill."""
+    x = x[x["shown"]].copy()
+    x["has_remarks"] = x["remarks_url"].notna()
+    x = x.sort_values(["substantive", "has_remarks", "date"], ascending=False)
+    x["key"] = x["bill_number"].fillna(x["vote_desc"].fillna("") + x["date"])
+    return x.drop_duplicates("key").head(n)
+
+
+def describe(d: dict, r: pd.Series) -> str:
+    bill = r["bill_number"] if isinstance(r["bill_number"], str) else ""
+    title = d["titles"].get(bill) or (r["vote_desc"] if isinstance(r["vote_desc"], str) else r["vote_question"])
+    title = re.sub(r"\s+", " ", str(title)).strip().rstrip(".")
+    if len(title) > 70:
+        title = title[:67].rsplit(" ", 1)[0] + "..."
+    label = bill_label(bill) if bill else ""
+    what = f"{label}, {title}" if label else title
+    return f"{kind(r['vote_question'])} {what}"
 
 
 def stats(d: dict, bioguide: str) -> dict:
@@ -67,6 +143,7 @@ def stats(d: dict, bioguide: str) -> dict:
         "avg": float(same["party_unity_pct"].mean()), "peers": len(peers), "below": below,
         "missed_pct": float(row["missed"] / row["eligible"] * 100) if row.get("eligible", 0) else None,
         "changed": int(row["changed_apart"]), "latest": d["latest"], "through": d["through"],
+        "apart": apart_votes(d, row),
     }
 
 
@@ -136,14 +213,37 @@ def compare_bar(s: dict, width: int, fs: int) -> str:
             f'font-size="{fs * 0.8:.0f}" fill="{mc.C["muted"]}">{escape(label)}</text></svg>')
 
 
-def facts_list(s: dict) -> list[str]:
-    plural = f"{s['chamber']} {s['party']}s"
-    out = [f"Voted with their party more often than {s['below']:.0f}% of {plural}"]
-    if s["missed_pct"] is not None:
-        out.append(f"Missed {s['missed_pct']:.1f}% of roll calls this Congress")
-    times = "time" if s["changed"] == 1 else "times"
-    out.append(f"Changed their vote on the same bill while their party didn't: {s['changed']} {times} since 2007")
+def apart_lines(d: dict, s: dict, n: int) -> list[dict]:
+    out = []
+    plural = f"{s['party']}s"
+    for _, r in pick(s["apart"], n).iterrows():
+        out.append({"what": describe(d, r), "date": mc.fmt_date(r["date"]), "vote": r["vote"],
+                    "party_vote": r["party_vote"], "plural": plural, "remarks": r["remarks_url"]})
     return out
+
+
+def apart_html(d: dict, s: dict, n: int, fs: int) -> str:
+    total = len(s["apart"])
+    group = f"{s['chamber']} {s['party']}s"
+    if total == 0:
+        return f'<div class="body" style="font-size:{fs}px">Voted with most {group} on every party-line vote this Congress.</div>'
+    head = (f'<div class="accent" style="font-size:{fs}px;font-weight:600">Voted apart from most {group} on {total} of '
+            f'{s["cast"]} party-line votes, including:</div>')
+    items = []
+    for a in apart_lines(d, s, n):
+        meta = f"{a['date']} · Voted {a['vote']}; most {a['plural']} voted {a['party_vote']}"
+        if isinstance(a["remarks"], str):
+            meta += " · Spoke on the floor about it"
+        items.append(f'<li><div class="body">{escape(a["what"])}</div>'
+                     f'<div class="muted" style="font-size:{fs * 0.82:.0f}px;margin-top:2px">{escape(meta)}</div></li>')
+    return head + f'<ul class="facts" style="font-size:{fs}px;margin-top:6px">{"".join(items)}</ul>'
+
+
+def missed_line(s: dict) -> str:
+    if s["missed_pct"] is None:
+        return ""
+    return (f"Missed {s['missed_pct']:.1f}% of roll calls this Congress. Roll call records don't give reasons "
+            "for absences.")
 
 
 def card(d: dict, s: dict, size: str) -> str:
@@ -152,55 +252,63 @@ def card(d: dict, s: dict, size: str) -> str:
     who = f"{s['party']} · {s['state']}"
     big = f"{s['pct']:.1f}%"
     line = f"voted with their party on {s['with']} of {s['cast']} party-line votes"
-    src = f"Voteview roll calls through {s['through']}. Members featured in a fixed random rotation."
-    items = "".join(f'<li>{escape(t)}</li>' for t in facts_list(s))
-    seat_note = f"Their seat, among {s['chamber']} members ordered by voting record"
-    css = (".facts{list-style:none;margin:0;padding:0}.facts li{padding:8px 0;border-top:1px solid "
-           f"{mc.C['border']};color:{mc.C['body']}}}")
+    src = f"Voteview roll calls through {s['through']}; Congressional Record. Fixed random rotation."
+    css = (".facts{list-style:none;margin:0;padding:0}.facts li{padding:7px 0;border-top:1px solid "
+           f"{mc.C['border']}}}")
     if size == "wide":
         body = f"""
-<div class="muted" style="font-size:18px">{escape(label)}</div>
-<div style="display:flex;gap:44px;margin-top:8px;flex:1">
-  <div style="flex:1.1">
-    <h1 style="font-size:46px;line-height:1.05">{escape(s['name'])}</h1>
-    <div class="body" style="font-size:21px;margin-top:6px">{escape(who)}</div>
-    <div style="display:flex;align-items:baseline;gap:14px;margin-top:16px">
-      <div class="accent" style="font-family:'Source Serif 4';font-weight:700;font-size:72px;line-height:1">{big}</div>
-      <div class="body" style="font-size:19px;line-height:1.35;max-width:300px">{escape(line)}</div></div>
-    <div style="margin-top:12px">{compare_bar(s, 560, 18)}</div>
+<div style="display:flex;gap:36px">
+  <div style="flex:1.15">
+    <div class="muted" style="font-size:17px">{escape(label)}</div>
+    <h1 style="font-size:42px;line-height:1.05;margin-top:6px">{escape(s['name'])}</h1>
+    <div class="body" style="font-size:19px;margin-top:4px">{escape(who)}</div>
+    <div style="display:flex;align-items:baseline;gap:14px;margin-top:12px">
+      <div class="accent" style="font-family:'Source Serif 4';font-weight:700;font-size:62px;line-height:1">{big}</div>
+      <div class="body" style="font-size:17px;line-height:1.35;max-width:300px">{escape(line)}</div></div>
+    <div style="margin-top:8px">{compare_bar(s, 560, 15)}</div>
   </div>
-  <div style="flex:0.9;display:flex;flex-direction:column;align-items:center;justify-content:center">
-    {seat_svg(d, s, 440)}
-    <div class="muted" style="font-size:15px;margin-top:8px">{escape(seat_note)}</div>
-  </div>
+  <div style="flex:0.85;display:flex;align-items:center;justify-content:center">{seat_svg(d, s, 380)}</div>
 </div>
-<ul class="facts" style="font-size:17px;margin-bottom:10px">{items}</ul>{mc.foot(src, size)}"""
+<div style="margin-top:6px">{apart_html(d, s, 2, 16)}</div>
+<div class="muted" style="font-size:14px;margin:6px 0 10px">{escape(missed_line(s))}</div>{mc.foot(src, size)}"""
     else:
         body = f"""
-<div class="muted" style="font-size:24px;margin-top:16px">{escape(label)}</div>
-<h1 style="font-size:66px;line-height:1.05;margin-top:12px">{escape(s['name'])}</h1>
-<div class="body" style="font-size:30px;margin-top:8px">{escape(who)}</div>
-<div class="accent" style="font-family:'Source Serif 4';font-weight:700;font-size:128px;line-height:1;margin-top:34px">{big}</div>
-<div class="body" style="font-size:30px;line-height:1.35;margin-top:8px">{escape(line)}</div>
-<div style="margin-top:22px">{compare_bar(s, 920, 26)}</div>
-<div style="display:flex;flex-direction:column;align-items:center;margin-top:20px">{seat_svg(d, s, 560)}
-<div class="muted" style="font-size:20px;margin-top:8px">{escape(seat_note)}</div></div>
-<ul class="facts" style="font-size:23px;margin-top:18px">{items}</ul>{mc.foot(src, size)}"""
+<div class="muted" style="font-size:22px;margin-top:8px">{escape(label)}</div>
+<h1 style="font-size:58px;line-height:1.05;margin-top:10px">{escape(s['name'])}</h1>
+<div class="body" style="font-size:26px;margin-top:6px">{escape(who)}</div>
+<div class="accent" style="font-family:'Source Serif 4';font-weight:700;font-size:104px;line-height:1;margin-top:24px">{big}</div>
+<div class="body" style="font-size:26px;line-height:1.35;margin-top:6px">{escape(line)}</div>
+<div style="margin-top:16px">{compare_bar(s, 920, 22)}</div>
+<div style="margin-top:18px">{apart_html(d, s, 3, 22)}</div>
+<div class="muted" style="font-size:19px;margin-top:12px;line-height:1.4">{escape(missed_line(s))}</div>
+<div style="margin-top:auto;padding-top:16px;display:flex;flex-direction:column;align-items:center">{seat_svg(d, s, 420)}
+<div class="muted" style="font-size:18px;margin-top:6px">Their seat, among {s['chamber']} members ordered by voting record</div></div>
+{mc.foot(src, size)}"""
     return mc.page(body, size, css)
 
 
-def caption(s: dict) -> str:
+def caption(d: dict, s: dict) -> str:
     abbr = s["party"][0]
+    group = f"{s['chamber']} {s['party']}s"
     lines = [
         f"Member spotlight: {s['name']} ({abbr}-{s['abbrev']}), {s['chamber']}.",
         f"In the current Congress, {s['name']} voted with the {ADJ[s['party']]} majority on {s['with']} of {s['cast']} "
         f"party-line votes ({s['pct']:.1f}%). The {s['chamber']} {ADJ[s['party']]} average is {s['avg']:.1f}%.",
         "",
-        "Members are featured in a fixed random rotation, not chosen by hand.",
-        "Data: Voteview",
-        member_url(s["row"]["bioguide_id"]),
     ]
-    return "\n".join(lines)
+    if len(s["apart"]):
+        lines.append(f"Votes apart from most {group} ({len(s['apart'])} in all) included:")
+        for a in apart_lines(d, s, 3):
+            lines.append(f"- {a['what']} ({a['date']}): voted {a['vote']}; most {a['plural']} voted {a['party_vote']}.")
+            if isinstance(a["remarks"], str):
+                lines.append(f"  Floor remarks: {a['remarks']}")
+    else:
+        lines.append(f"Voted with most {group} on every party-line vote this Congress.")
+    lines += ["", missed_line(s), "",
+              f"Full voting record: {member_url(s['row']['bioguide_id'])}",
+              f"Look up how your own members vote: {mc.SITE}",
+              "Members are featured in a fixed random rotation, not chosen by hand. Data: Voteview, Congressional Record."]
+    return "\n".join(l for l in lines if l is not None)
 
 
 def render(d: dict, bioguides: list[str]) -> list[Path]:
@@ -222,7 +330,7 @@ def render(d: dict, bioguides: list[str]) -> list[Path]:
                     pg.screenshot(path=str(OUT / f"{b}-tall.jpg"), type="jpeg", quality=92)
                 paths.append(path)
                 pg.close()
-            (OUT / f"{b}.txt").write_text(caption(s) + "\n")
+            (OUT / f"{b}.txt").write_text(caption(d, s) + "\n")
         browser.close()
     return paths
 

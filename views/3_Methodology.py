@@ -115,6 +115,34 @@ counts every roll call where the party took a side, including lopsided and proce
 count than the party unity rate, which uses only party-line votes.
 """)
 
+st.header("Floor remarks links")
+st.markdown("""
+In a member's voting record, **Their floor remarks** links to where they spoke in the Congressional Record during
+debate on that bill. Each day's Record on GovInfo lists every section with the members who spoke in it, by Bioguide
+ID, and the bills it references. A link appears when the member spoke in a section that references the bill, within
+30 days before the vote or a week after; if there are several, the one closest to the vote is used.
+
+The link shows *where* they spoke, not *what* they said. It is not coded or summarized. Read it to see their reasons
+in their own words. Coverage starts with the 118th Congress (2023) and updates twice a week. The hand-coded stances
+on the Campaign Statements page are a separate, smaller dataset.
+""")
+
+st.header("Member spotlights")
+st.markdown("""
+The project's Facebook Page posts a spotlight card for one member at a time: their party unity rate this Congress
+next to their party's average, up to three party-line votes where they voted apart from most of their party, a link to
+their floor remarks on those bills when there are any, and their missed-vote rate.
+
+- **Who is featured** is set by a fixed rule, never chosen by hand. Every current member with at least 50 party-line
+  votes is shuffled with a published seed (119), then the order alternates Democrats and Republicans, and every fourth
+  spotlight is a senator. The code is `scripts/member_spotlights.py`, so anyone can reproduce the order.
+- **Which votes are shown** is also a fixed rule: votes on a bill, resolution or nomination itself before procedural
+  ones, then votes the member spoke about on the floor, then the most recent, one per bill. The total number of
+  votes apart from their party is always given.
+- **Missed votes** come with a reminder that roll call records don't give reasons for absences.
+- Cards never use photos and never say or suggest why a member voted as they did.
+""")
+
 st.header("Same Bill, Different Vote")
 st.markdown("""
 A bill can get more than one up-or-down vote in the same chamber and Congress. The site counts the votes where Yea
