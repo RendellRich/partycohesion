@@ -224,6 +224,16 @@ if (DATA / "cosponsor_votes.csv").exists():
     check((known["_merge"] == "both").all(), "cosponsor_votes.csv has a roll call that isn't in all_votes.csv")
     check(cv["congress"].nunique() >= all_votes["congress"].nunique() - 1, "cosponsor_votes.csv is missing Congresses")
 
+# Same bill, different vote: counts agree between the two files
+if (DATA / "vote_changes.csv").exists():
+    vch = pd.read_csv(DATA / "vote_changes.csv")
+    vcb = pd.read_csv(DATA / "vote_change_bills.csv")
+    per_bill = vch.groupby(["congress", "chamber", "bill_number"]).size().rename("n")
+    joined = vcb.set_index(["congress", "chamber", "bill_number"]).join(per_bill).fillna({"n": 0})
+    check((joined["n"] == joined["changed"]).all(), "vote_changes.csv doesn't match the counts in vote_change_bills.csv")
+    check(not vch.duplicated(["congress", "chamber", "bill_number", "icpsr"]).any(), "vote_changes.csv has duplicates")
+    check(vcb["congress"].nunique() >= all_votes["congress"].nunique() - 1, "vote_change_bills.csv is missing Congresses")
+
 # No sudden shrinkage compared with the last committed data
 for name, df in (("data/members_processed.csv", members), ("data/key_votes.csv", key_votes),
                  ("data/all_votes.csv", all_votes)):

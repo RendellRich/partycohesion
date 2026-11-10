@@ -310,3 +310,27 @@ def test_member_page_seat_map_highlights_member():
     at.run()
     assert not at.exception, [e.value for e in at.exception]
     assert any("seat is ringed" in c.value for c in at.caption)
+
+
+def test_same_bill_different_vote_page():
+    at = open_page("views/14_Same_Bill_Different_Vote.py")
+    assert "Bills where the most members changed while their party didn't" in [s.value for s in at.subheader]
+    table = at.dataframe[0].value
+    assert len(table) > 100
+    assert set(table["Their party"].str.split(" then ").str[0]) <= {"Yea", "Nay"}
+    at.text_input(key="sb_q").set_value("H.R. 8404").run()
+    assert not at.exception, [e.value for e in at.exception]
+    table = at.dataframe[0].value
+    assert table["Member"].str.contains("Gallagher").any()
+    at.toggle(key="sb_title").set_value(True).run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert (at.dataframe[0].value["Title changed"] == "No").all()
+
+
+def test_member_page_lists_same_bill_changes():
+    at = open_page("views/2_Member_Explorer.py")
+    label = next(o for o in at.selectbox(key="me_member").options if "Gallagher" in o and "WI" in o)
+    at.selectbox(key="me_member").set_value(label).run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert "Same bill, different vote" in [s.value for s in at.subheader]
+    assert "H.R. 8404" in html(at)

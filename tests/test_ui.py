@@ -57,3 +57,12 @@ def test_share_bar_has_linkedin_and_member_link():
     assert "linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fpartycohesion.streamlit.app%2FMember_Explorer%3Fmember%3DG000579" in links
     assert links.index("LinkedIn") < links.index(">X<")
     assert at.code[0].value == "https://partycohesion.streamlit.app/Member_Explorer?member=G000579"
+
+
+def test_bill_label():
+    from ui import bill_label
+    assert bill_label("HR8404") == "H.R. 8404"
+    assert bill_label("SJRES11") == "S.J.Res. 11"
+    assert bill_label("HCONRES5") == "H.Con.Res. 5"
+    assert bill_label("S365") == "S. 365"
+    assert bill_label("SENATE") == "SENATE"

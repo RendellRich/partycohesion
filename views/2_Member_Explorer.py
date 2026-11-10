@@ -14,7 +14,7 @@ from chart_utils import ACCENT, MUTED, PARTY_COLORS, ordinal, show_chart
 from seat_map import seat_map
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import platform_record
-from ui import (explainer, display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row,
+from ui import (bill_label, explainer, display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row,
                 pattern_badge, share_bar)
 from vote_index import load_votes, member_record, search_votes, voteview_url
 
@@ -73,6 +73,13 @@ def member_facts(bioguide: str) -> None:
 def load_campaign():
     """Campaign website statements and the vote that followed (built by scripts/campaign_statements.py)."""
     return pd.read_csv(DATA_DIR / "campaign_statement_votes.csv")
+
+
+@st.cache_data
+def load_vote_changes():
+    """Same bill, different vote (built by scripts/vote_changes.py)."""
+    path = DATA_DIR / "vote_changes.csv"
+    return pd.read_csv(path) if path.exists() else pd.DataFrame(columns=["icpsr"])
 
 
 MISSED_NOTE = ("A missed vote is a roll call held while the member served on which they cast no vote. The record "
@@ -273,6 +280,23 @@ if pick:
         st.caption("Statements come from CampaignView's collection of House candidates' campaign websites. A roll call "
                    "can't show a member's reasons, and the bill voted on is rarely the campaign promise word for word.")
         st.page_link("views/13_Campaign_Statements.py", label="See every topic and how stances are coded")
+
+    # Same bill, different vote
+    vch = load_vote_changes()
+    mine_vch = vch[vch["icpsr"] == icpsr].sort_values("final_date", ascending=False)
+    if not mine_vch.empty:
+        st.subheader("Same bill, different vote")
+        n_apart = int(mine_vch["apart"].sum())
+        st.markdown(f"Bills where {short} voted Yea at one stage and Nay at another, in the same chamber and Congress: "
+                    f"**{len(mine_vch)}**." + (f" On **{n_apart}** of them, most of their party voted the same way both "
+                                               "times." if n_apart else ""))
+        html_table(["Bill", "Title now", "First vote", "Final vote", "Their party"],
+                   [[bill_label(x.bill_number), x.title if isinstance(x.title, str) and x.title else x.first_vote_desc,
+                     f"{x.first_vote} · {x.first_stage} · {fmt_date(x.first_date)}",
+                     f"{x.final_vote} · {x.final_stage} · {fmt_date(x.final_date)}",
+                     f"{x.party_first} then {x.party_final}"] for x in mine_vch.itertuples()], muted_cols=(0,))
+        st.caption("The bill's text often changes between votes, and a roll call can't show a member's reasons.")
+        st.page_link("views/14_Same_Bill_Different_Vote.py", label="See every bill and how changes are counted")
 
     # Missed votes
     missed_all = load_missed()
