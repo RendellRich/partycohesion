@@ -13,7 +13,7 @@ on:
         description: "Card to post now ('queue' posts whatever in social/posts.yml is due; 'check' only tests the setup)"
         type: choice
         default: queue
-        options: [queue, check, partycohesion, same-bill-different-vote, respect-for-marriage-act, senate-unity, floor-remarks]
+        options: [queue, check, partycohesion, same-bill-different-vote, respect-for-marriage-act, senate-unity, floor-remarks, congress-final]
       networks:
         description: "Where to post"
         type: choice

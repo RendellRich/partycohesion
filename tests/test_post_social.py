@@ -268,3 +268,22 @@ def test_every_card_has_alt_text_under_the_limit():
     for e in ps.load_queue():
         a = ps.alt_text(e["card"])
         assert a and len(a) <= 1000 and "—" not in a, e["id"]
+
+
+def test_require_text_holds_a_post_until_the_card_catches_up(tmp_path, monkeypatch, meta_env):
+    from datetime import datetime
+    queue, posted = tmp_path / "posts.yml", tmp_path / "posted.csv"
+    queue.write_text('- {id: f, card: congress-final, post_on: 2027-01-12, require_text: "final party unity record"}\n'
+                     '- {id: g, card: congress-final, post_on: 2027-01-12, require_text: "999th Congress"}\n'
+                     '- {id: s, card: senate-unity, post_on: 2027-01-12, time: "10:00"}\n')
+    monkeypatch.setattr(ps, "QUEUE", queue)
+    monkeypatch.setattr(ps, "POSTED", posted)
+    monkeypatch.delenv("META_IG_USER_ID")
+    calls = []
+    monkeypatch.setitem(ps.POSTERS, "facebook", lambda card, cap: calls.append(card) or f"fb-{card}")
+    at = lambda h: datetime(2027, 1, 12, h, 7, tzinfo=ps.EASTERN)
+    ps.run_due(dry_run=False, today=at(9))
+    ps.run_due(dry_run=False, today=at(10))
+    ps.run_due(dry_run=False, today=at(11))
+    assert calls == ["congress-final", "senate-unity"]  # g waits, and doesn't block the others
+    assert ("g", "facebook") not in ps.load_posted(posted)

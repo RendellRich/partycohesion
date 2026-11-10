@@ -11,6 +11,7 @@ Needs Playwright with Chromium (pip install playwright && python -m playwright i
 
 import hashlib
 import json
+from datetime import date
 from html import escape
 from pathlib import Path
 import sys
@@ -43,7 +44,7 @@ def fmt_date(value) -> str:
 
 # ---------------------------------------------------------------- data
 
-def facts() -> dict:
+def facts(today: date | None = None) -> dict:
     members = pd.read_csv(DATA / "members_processed.csv")
     summary = pd.read_csv(DATA / "unity_summary.csv")
     changes = pd.read_csv(DATA / "vote_changes.csv")
@@ -84,13 +85,30 @@ def facts() -> dict:
               .unstack()[["Democrat", "Republican"]].round(1))
 
     chances = int(bills["voted_twice"].sum())
-    return {
+    done = completed_congress(latest, today or date.today())
+    unity = (members[members["congress"].isin([done, done - 1])].groupby(["congress", "chamber", "caucus"])
+             ["party_unity_pct"].mean().round(1))
+    final = {"congress": done, "votes": summary[summary["congress"] == done].set_index("chamber")["party_unity_votes"],
+             "unity": unity}
+    return {"final": final,
         "latest": latest, "through": through, "house": house,
         "changes": len(changes), "apart": len(apart), "apart_members": apart["icpsr"].nunique(),
         "chances": chances, "bills": len(bills), "by_congress": by_congress,
         "rfma": rfma, "rfma_bill": rfma_bill, "rfma_r_yea": r_yea, "rfma_skipped": rfma_skipped,
         "floor": fr, "floor_exceptions": exceptions, "senate": senate,
     }
+
+
+def completed_congress(latest: int, today: date) -> int:
+    """The newest Congress that has ended. Each one ends on January 3 of the year after its second year."""
+    c = latest
+    while date(2 * c + 1789, 1, 3) > today:
+        c -= 1
+    return c
+
+
+def ordinal(n: int) -> str:
+    return f"{n}{'th' if 11 <= n % 100 <= 13 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
 
 
 # ---------------------------------------------------------------- drawing helpers
@@ -430,6 +448,66 @@ def card_senate(f: dict, size: str) -> str:
     return page(body, size)
 
 
+def final_cells(f: dict) -> list[dict]:
+    """Average party unity for each chamber and party in the completed Congress, with the change from the one before."""
+    fin = f["final"]
+    c, u = fin["congress"], fin["unity"]
+    out = []
+    for chamber in ("House", "Senate"):
+        for party in ("Democrat", "Republican"):
+            now = u.get((c, chamber, party))
+            before = u.get((c - 1, chamber, party))
+            out.append({"chamber": chamber, "party": party, "pct": now,
+                        "change": None if before is None or now is None else round(now - before, 1)})
+    return out
+
+
+def change_text(x: float | None, prev: int) -> str:
+    if x is None:
+        return ""
+    if x == 0:
+        return f"same as the {ordinal(prev)}"
+    return f"{'up' if x > 0 else 'down'} {abs(x):.1f} points from the {ordinal(prev)}"
+
+
+def card_final(f: dict, size: str) -> str:
+    fin = f["final"]
+    c = fin["congress"]
+    years = f"{2 * c + 1787} to {2 * c + 1788}"
+    votes = fin["votes"]
+    head = f"The {ordinal(c)} Congress, final record"
+    sub = (f"{int(votes.get('House', 0)):,} party-line votes in the House and {int(votes.get('Senate', 0)):,} in the "
+           f"Senate, {years}. Average party unity for each party:")
+    src = f"Voteview roll calls, {ordinal(c)} Congress ({years}). Party-line votes only."
+    note = ("Party unity: how often a member votes with their party's majority when most Democrats and most "
+            "Republicans vote on opposite sides. Independents are counted with the party they caucus with.")
+    fs = 22 if size == "wide" else 36
+    cells = []
+    for x in final_cells(f):
+        group = f"{x['chamber']} {x['party']}s"
+        cells.append(
+            f'<div style="background:{C["surface"]};border:1px solid {C["border"]};border-radius:12px;'
+            f'padding:{fs * 0.75:.0f}px {fs:.0f}px"><div class="muted" style="font-size:{fs * 0.75:.0f}px">{group}</div>'
+            f'<div style="font-family:Source Serif 4;font-weight:700;font-size:{fs * 2.4:.0f}px;line-height:1.1;'
+            f'color:{PARTY[x["party"]]}">{x["pct"]:.1f}%</div>'
+            f'<div class="body" style="font-size:{fs * 0.72:.0f}px">{escape(change_text(x["change"], c - 1))}</div></div>')
+    grid = (f'<div style="display:grid;grid-template-columns:1fr 1fr;gap:{fs * 0.7:.0f}px;margin-top:{fs:.0f}px">'
+            f'{"".join(cells)}</div>')
+    if size == "wide":
+        body = f"""
+<h1 style="font-size:44px;line-height:1.1">{head}</h1>
+<p class="body" style="font-size:20px;line-height:1.4;margin-top:10px">{sub}</p>
+{grid}
+<p class="muted" style="font-size:15px;line-height:1.4;margin:12px 0 12px">{note}</p>{foot(src, size)}"""
+    else:
+        body = f"""
+<h1 style="font-size:62px;line-height:1.08;margin-top:24px">{head}</h1>
+<p class="body" style="font-size:28px;line-height:1.42;margin-top:20px">{sub}</p>
+<div style="margin-top:40px">{grid}</div>
+<p class="muted" style="font-size:23px;line-height:1.45;margin-top:44px">{note}</p>{foot(src, size)}"""
+    return page(body, size)
+
+
 CARDS = {
     "partycohesion": (card_home, "PartyCohesion",
                       "Do members of Congress vote the same way no matter who is president? Every House and Senate "
@@ -448,6 +526,9 @@ CARDS = {
     "floor-remarks": (card_floor, "Said it on the floor, then voted that way · PartyCohesion",
                       "What members said in floor debate on Ukraine aid and the Respect for Marriage Act, next to "
                       "how they voted. From the Congressional Record.", "Campaign_Statements"),
+    "congress-final": (card_final, "A Congress's final record · PartyCohesion",
+                       "Average party unity for each party in the most recent completed Congress, House and Senate, "
+                       "from the official roll-call record.", "Overview"),
 }
 
 def share_url(slug: str) -> str:
@@ -484,8 +565,20 @@ def captions(f: dict) -> dict[str, str]:
             f"{int(fr.loc['House', 'size'])} House members and {int(fr.loc['Senate', 'sum'])} of "
             f"{int(fr.loc['Senate', 'size'])} senators voted the way they spoke.\n\nData: Congressional Record "
             "(GovInfo), Voteview"),
+        "congress-final": final_caption(f),
     }
     return {slug: f"{body}\n{share_url(slug)}" for slug, body in text.items()}
+
+
+def final_caption(f: dict) -> str:
+    fin = f["final"]
+    c = fin["congress"]
+    cells = {(x["chamber"], x["party"]): x for x in final_cells(f)}
+    parts = ", ".join(f"{ch} {p}s {cells[(ch, p)]['pct']:.1f}%" for ch in ("House", "Senate") for p in ("Democrat", "Republican"))
+    return (f"The {ordinal(c)} Congress ({2 * c + 1787} to {2 * c + 1788}) is complete. Its final party unity record, "
+            f"the average share of party-line votes on which members sided with their own party: {parts}. That's over "
+            f"{int(fin['votes'].get('House', 0)):,} House and {int(fin['votes'].get('Senate', 0)):,} Senate "
+            "party-line votes, where most Democrats and most Republicans voted on opposite sides.\n\nData: Voteview")
 
 
 
@@ -518,6 +611,10 @@ def alt_texts(f: dict) -> dict[str, str]:
                          f"{2 * first + 1787} to {2 * last + 1787}. Democrats go from {sen.loc[first, 'Democrat']:.1f}% "
                          f"to {sen.loc[last, 'Democrat']:.1f}%, Republicans from {sen.loc[first, 'Republican']:.1f}% "
                          f"to {sen.loc[last, 'Republican']:.1f}%. {senate_summary(sen)}"),
+        "congress-final": (f"Card titled The {ordinal(f['final']['congress'])} Congress, final record. Four boxes with "
+                           "average party unity: " + "; ".join(
+                               f"{x['chamber']} {x['party']}s {x['pct']:.1f}%, {change_text(x['change'], f['final']['congress'] - 1)}"
+                               for x in final_cells(f)) + "."),
         "floor-remarks": ("Card titled Said it on the floor, then voted that way. Two grids of dots, one per member "
                           "who took a clear position in floor debate on Ukraine aid or the Respect for Marriage Act. "
                           f"Filled dots voted the way they spoke: {int(fr.loc['House', 'sum'])} of "

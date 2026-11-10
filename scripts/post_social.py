@@ -293,9 +293,19 @@ def run_due(dry_run: bool, today: date | datetime | None = None) -> int:
             print(f"Skipping {entry['id']} on {net}: it was due {scheduled(entry):%Y-%m-%d %H:%M} Eastern and is "
                   "too late now. Change its post_on date to send it.")
             continue
-        sent = entry["id"]
         try:
             caption = entry.get("caption") or default_caption(entry["card"])
+        except ValueError as e:
+            print(f"Could not post {entry['id']} to {net}: {e}", file=sys.stderr)
+            failures += 1
+            continue
+        if entry.get("require_text") and entry["require_text"] not in caption:
+            # e.g. a card that updates itself when a Congress ends: wait until the weekly rebuild has caught up
+            print(f"Waiting on {entry['id']}: its caption doesn't say \"{entry['require_text']}\" yet. Merge the "
+                  "latest \"Update social cards\" pull request, and it goes out on the next run.")
+            continue
+        sent = entry["id"]
+        try:
             post_id = publish(entry["card"], net, caption.strip(), dry_run)
         except (MetaError, ValueError) as e:
             print(f"Could not post {entry['id']} to {net}: {e}", file=sys.stderr)

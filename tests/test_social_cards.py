@@ -48,3 +48,22 @@ def test_senate_card_claim_matches_data(f):
     holds = all((after > before) == (cards.president_party(c) == party) for c, party, before, after in moves)
     assert ("changes of president" in html) == (bool(moves) and holds)
     assert f"{f['senate'].iloc[-1]['Republican']:.1f}%" in html
+
+
+def test_final_card_uses_the_newest_completed_congress():
+    from datetime import date
+    assert cards.completed_congress(119, date(2026, 11, 10)) == 118
+    assert cards.completed_congress(119, date(2027, 1, 2)) == 118
+    assert cards.completed_congress(120, date(2027, 1, 5)) == 119
+
+
+def test_final_card_numbers_match_members_file(f):
+    import pandas as pd
+    m = pd.read_csv(ROOT / "data" / "members_processed.csv")
+    c = f["final"]["congress"]
+    for x in cards.final_cells(f):
+        want = m[(m["congress"] == c) & (m["chamber"] == x["chamber"]) & (m["caucus"] == x["party"])]["party_unity_pct"].mean()
+        assert x["pct"] == round(want, 1)
+    cap = cards.final_caption(f)  # captions() needs raw vote files that CI skips
+    assert f"The {cards.ordinal(c)} Congress" in cap and "—" not in cap
+    assert cards.change_text(1.24, 117) == "up 1.2 points from the 117th" and cards.change_text(0, 117) == "same as the 117th"
