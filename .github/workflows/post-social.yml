@@ -1,0 +1,80 @@
+name: Post to Facebook and Instagram
+
+# Every morning, posts the entries in social/posts.yml that are due to the PartyCohesion Facebook Page and Instagram
+# account, then records them in social/posted.csv so nothing posts twice. Can also be started by hand from the
+# Actions tab to post one card now. Setup (Meta app, Page, tokens, secrets) is in SOCIAL_POSTING.md; until the
+# secrets are added, each network is skipped with a message.
+on:
+  schedule:
+    - cron: "17 13 * * *"
+  workflow_dispatch:
+    inputs:
+      card:
+        description: "Card to post now (leave as 'queue' to post whatever in social/posts.yml is due)"
+        type: choice
+        default: queue
+        options: [queue, partycohesion, same-bill-different-vote, respect-for-marriage-act, senate-unity, floor-remarks]
+      networks:
+        description: "Where to post"
+        type: choice
+        default: facebook,instagram
+        options: ["facebook,instagram", facebook, instagram]
+      caption:
+        description: "Caption (optional; leave blank for the card's own caption)"
+        type: string
+        required: false
+      dry_run:
+        description: "Dry run: show what would be posted without posting"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: post-social
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - run: pip install "pyyaml>=6.0"
+
+      - name: Post
+        env:
+          META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+          META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+          META_IG_USER_ID: ${{ secrets.META_IG_USER_ID }}
+          META_IG_TOKEN: ${{ secrets.META_IG_TOKEN }}
+          META_GRAPH_VERSION: ${{ vars.META_GRAPH_VERSION }}
+          CARD: ${{ inputs.card || 'queue' }}
+          NETWORKS: ${{ inputs.networks || 'facebook,instagram' }}
+          CAPTION: ${{ inputs.caption }}
+          DRY: ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          if [ "$CARD" = "queue" ]; then
+            python scripts/post_social.py --due $DRY
+          else
+            python scripts/post_social.py --card "$CARD" --networks "$NETWORKS" --caption "$CAPTION" $DRY
+          fi
+
+      - name: Record what was posted
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add social/posted.csv 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "Nothing new posted."
+          else
+            git commit -m "Record social posts ($(date -u +%Y-%m-%d))"
+            git push
+          fi

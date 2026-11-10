@@ -18,17 +18,54 @@
 <meta name="twitter:description" content="Nine House Republicans voted differently on the final version (December 2022) than on passage (July 2022). From the official roll-call record.">
 <meta name="twitter:image" content="https://rendellrich.github.io/partycohesion/social/respect-for-marriage-act-wide.png">
 <style>
-body { margin: 0; background: #171614; color: #FAFAFA; font: 18px/1.5 'Public Sans', system-ui, sans-serif;
-  display: flex; min-height: 100vh; align-items: center; justify-content: center; }
-main { max-width: 760px; padding: 32px 20px; text-align: center; }
+body { margin: 0; background: #171614; color: #FAFAFA; font: 18px/1.5 'Public Sans', system-ui, sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 32px 20px 48px; text-align: center; }
 img { width: 100%; height: auto; border-radius: 10px; border: 1px solid #3A3733; }
-a.button { display: inline-block; margin-top: 24px; padding: 12px 22px; border-radius: 8px; background: #E9C46A;
-  color: #171614; font-weight: 700; text-decoration: none; }
-a.button:focus-visible { outline: 3px solid #FAFAFA; outline-offset: 3px; }
 p { color: #E7E5E4; }
+a.button, button { display: inline-block; margin: 6px 4px 0; padding: 10px 18px; border-radius: 8px; font: 600 16px/1.2
+  'Public Sans', system-ui, sans-serif; text-decoration: none; cursor: pointer; border: 1px solid #3A3733;
+  background: transparent; color: #FAFAFA; }
+a.primary { background: #E9C46A; border-color: #E9C46A; color: #171614; font-weight: 700; }
+a.button:focus-visible, button:focus-visible { outline: 3px solid #FAFAFA; outline-offset: 3px; }
+.share { margin-top: 28px; padding-top: 20px; border-top: 1px solid #3A3733; }
+.share h2 { font-size: 16px; font-weight: 600; color: #A8A29E; margin: 0 0 6px; }
+.hint { font-size: 14px; color: #A8A29E; margin-top: 10px; }
+[hidden] { display: none !important; }
 </style></head>
 <body><main>
 <img src="https://rendellrich.github.io/partycohesion/social/respect-for-marriage-act-wide.png" alt="Nine House Republicans voted differently on the final version (December 2022) than on passage (July 2022). From the official roll-call record." width="1200" height="627">
 <p>Nine House Republicans voted differently on the final version (December 2022) than on passage (July 2022). From the official roll-call record.</p>
-<a class="button" href="https://partycohesion.streamlit.app/Same_Bill_Different_Vote">Open PartyCohesion</a>
-</main></body></html>
+<a class="button primary" href="https://partycohesion.streamlit.app/Same_Bill_Different_Vote">Open PartyCohesion</a><a class="button" href="https://rendellrich.github.io/partycohesion/cards/">More cards</a>
+<div class="share"><h2>Share this card</h2><a class="button" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Frendellrich.github.io%2Fpartycohesion%2Frespect-for-marriage-act%2F" target="_blank" rel="noopener">LinkedIn</a><a class="button" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Frendellrich.github.io%2Fpartycohesion%2Frespect-for-marriage-act%2F" target="_blank" rel="noopener">Facebook</a><a class="button" href="https://twitter.com/intent/tweet?text=The%20Respect%20for%20Marriage%20Act%20had%20two%20House%20votes%20in%202022.%20In%20July%2C%2047%20House%20Republicans%20voted%20Yea.%20In%20December%2C%20after%20the%20Senate%20added%20religious-liberty%20language%2C%2039%20did.%20Of%20the%20Republicans%20who%20voted%20both%20times%2C%209%20voted%20differently%20the%20second%20time.&amp;url=https%3A%2F%2Frendellrich.github.io%2Fpartycohesion%2Frespect-for-marriage-act%2F" target="_blank" rel="noopener">X</a>
+<button type="button" data-share-image="https://rendellrich.github.io/partycohesion/social/respect-for-marriage-act-tall.jpg" data-text="The Respect for Marriage Act had two House votes in 2022. In July, 47 House Republicans voted Yea. In December, after the Senate added religious-liberty language, 39 did. Of the Republicans who voted both times, 9 voted differently the second time.
+
+Data: Voteview, House roll calls 373 and 513
+https://rendellrich.github.io/partycohesion/respect-for-marriage-act/" hidden>Share image (Instagram, Facebook)</button>
+<a class="button" href="https://rendellrich.github.io/partycohesion/social/respect-for-marriage-act-tall.jpg" download="respect-for-marriage-act-partycohesion.jpg">Download for Instagram</a>
+<button type="button" data-copy="The Respect for Marriage Act had two House votes in 2022. In July, 47 House Republicans voted Yea. In December, after the Senate added religious-liberty language, 39 did. Of the Republicans who voted both times, 9 voted differently the second time.
+
+Data: Voteview, House roll calls 373 and 513
+https://rendellrich.github.io/partycohesion/respect-for-marriage-act/">Copy caption</button>
+<p class="hint">For Instagram: on a phone, use Share image. On a computer, download the image and copy the caption.</p>
+</div>
+</main><script>
+document.querySelectorAll('[data-share-image]').forEach(function (btn) {
+  var img = btn.getAttribute('data-share-image'), text = btn.getAttribute('data-text');
+  if (!navigator.canShare) return;
+  try { if (!navigator.canShare({ files: [new File([''], 'card.jpg', { type: 'image/jpeg' })] })) return; }
+  catch (e) { return; }
+  btn.hidden = false;
+  btn.addEventListener('click', function () {
+    fetch(img).then(function (r) { return r.blob(); }).then(function (b) {
+      return navigator.share({ files: [new File([b], img.split('/').pop(), { type: 'image/jpeg' })], text: text });
+    }).catch(function () {});
+  });
+});
+document.querySelectorAll('[data-copy]').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    navigator.clipboard.writeText(btn.getAttribute('data-copy')).then(function () {
+      var old = btn.textContent; btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = old; }, 1500);
+    });
+  });
+});
+</script></body></html>

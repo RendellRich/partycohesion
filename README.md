@@ -58,6 +58,8 @@ PartyCohesion is a free, neutral site built on the official roll-call record. It
 - Long chart titles wrap on phone-width screens.
 - Shareable deep links, such as `?member=F000466`.
 
+**Social cards and posting.** `scripts/make_social_cards.py` renders share images from the data (rebuilt weekly by a GitHub Action) and the share pages at [rendellrich.github.io/partycohesion/cards](https://rendellrich.github.io/partycohesion/cards/), where anyone can post a card to LinkedIn, Facebook, X or Instagram. `scripts/post_social.py` posts queued cards from `social/posts.yml` to the project's Facebook Page and Instagram account through Meta's Graph API; setup is in [SOCIAL_POSTING.md](SOCIAL_POSTING.md).
+
 **Tests.** 109 pytest tests, run on every pull request. They render every page with Streamlit's AppTest, check the data files, and check the theme contrast math.
 
 ## Neutral by design

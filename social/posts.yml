@@ -1,0 +1,22 @@
+# Posts that go out automatically to the PartyCohesion Facebook Page and Instagram account.
+#
+# The "Post to Facebook and Instagram" workflow checks this file every morning and posts each entry on or after its
+# post_on date, once per network. Anyone can propose a post: add an entry in a pull request, and it goes out after
+# the pull request is merged. An entry more than 7 days late is skipped; change post_on to send it.
+#
+#   id:        unique name for the post (never reuse one; social/posted.csv tracks what already went out)
+#   card:      partycohesion, same-bill-different-vote, respect-for-marriage-act, senate-unity or floor-remarks
+#   post_on:   date to post (YYYY-MM-DD); goes out on the first morning run on or after it
+#   networks:  optional, [facebook, instagram] by default
+#   caption:   optional; without it the card's caption from docs/social/captions.json is used. Facebook gets the
+#              link; on Instagram, a line that is only a link becomes "Link in bio."
+#
+# Neutral wording only: describe the votes, don't judge them. No em dashes.
+
+- id: launch
+  card: partycohesion
+  post_on: 2026-11-12
+
+- id: senate-unity-2026-11
+  card: senate-unity
+  post_on: 2026-11-17

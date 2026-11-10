@@ -10,6 +10,7 @@ Needs Playwright with Chromium (pip install playwright && python -m playwright i
 """
 
 import hashlib
+import json
 from html import escape
 from pathlib import Path
 import sys
@@ -165,6 +166,18 @@ def handoffs(senate: pd.DataFrame, since: int = 114) -> list[tuple[int, str, flo
             for party in ("Democrat", "Republican"):
                 out.append((cur, party, senate.loc[prev, party], senate.loc[cur, party]))
     return out
+
+def senate_summary(sen: pd.DataFrame) -> str:
+    """The card's one-sentence finding, stated only when every change of president since 2015 fits it."""
+    moves = handoffs(sen)
+    years = ", ".join(str(2 * c + 1787) for c in sorted({c for c, *_ in moves}))
+    if moves and all((after > before) == (president_party(c) == party) for c, party, before, after in moves):
+        n = len(moves) // 2
+        return (f"At each of the last {NUMBER_WORDS.get(n, n)} changes of president ({years}), senators from the new "
+                "president's party voted with their party more often than in the Congress before, and the other "
+                "party's senators less often.")
+    return "How often each party's senators voted with their party, Congress by Congress, next to who was president."
+
 
 
 def lines_svg(senate: pd.DataFrame, width: int, height: int, latest: int, fs: int) -> str:
@@ -398,14 +411,7 @@ def card_senate(f: dict, size: str) -> str:
     sen, latest = f["senate"], f["latest"]
     src = f"Voteview roll calls through {f['through']}. Average party unity of each party's senators, per Congress."
     head = "In the Senate, party unity moves with the White House"
-    moves = handoffs(sen)
-    years = ", ".join(str(2 * c + 1787) for c in sorted({c for c, *_ in moves}))
-    if moves and all((after > before) == (president_party(c) == party) for c, party, before, after in moves):
-        sub = (f"At each of the last {NUMBER_WORDS.get(len(moves) // 2, len(moves) // 2)} changes of president ({years}), senators from the new "
-               "president's party voted with their party more often than in the Congress before, and the other "
-               "party's senators less often.")
-    else:
-        sub = "How often each party's senators voted with their party, Congress by Congress, next to who was president."
+    sub = senate_summary(sen)
     note = (f"Hollow dots: the {2 * latest + 1787} to {2 * latest + 1788} Congress, still in session. Party unity: how "
             "often a senator votes with their party's majority when most Democrats and most Republicans vote on "
             "opposite sides.")
@@ -444,13 +450,115 @@ CARDS = {
                       "how they voted. From the Congressional Record.", "Campaign_Statements"),
 }
 
+def share_url(slug: str) -> str:
+    return f"{PAGES_URL}/" if slug == "partycohesion" else f"{PAGES_URL}/{slug}/"
 
-def share_page(slug: str, title: str, description: str, app_path: str) -> str:
-    """A small page whose link preview shows the card, with a button into the matching page of the app."""
+
+def captions(f: dict) -> dict[str, str]:
+    """Post text for each card, built from the same numbers as the images. Facebook gets the link; the Instagram
+    version (see scripts/post_social.py) swaps the link for "Link in bio" because Instagram captions can't link."""
+    bill = f["rfma_bill"]
+    first, final = f["rfma_r_yea"][int(bill["first_roll"])], f["rfma_r_yea"][int(bill["final_roll"])]
+    fr, sen = f["floor"], f["senate"]
+    latest = sen.iloc[-1]
+    text = {
+        "partycohesion": (
+            "Do members of Congress vote the same way no matter who is president? PartyCohesion shows how often each "
+            "member votes with their own party, using every House and Senate roll call since 2007 from the official "
+            "record.\n\nData: Voteview"),
+        "same-bill-different-vote": (
+            f"Most bills get more than one floor vote. Since 2007, members of Congress voted for a bill at one stage "
+            f"and against it at another {f['apart']:,} times while most of their own party voted the same way both "
+            "times. Bills often change between votes, so a different vote is not a contradiction.\n\nData: Voteview"),
+        "respect-for-marriage-act": (
+            f"The Respect for Marriage Act had two House votes in 2022. In July, {first} House Republicans voted Yea. "
+            f"In December, after the Senate added religious-liberty language, {final} did. Of the Republicans who "
+            f"voted both times, {len(f['rfma'])} voted differently the second time.\n\nData: Voteview, House roll calls 373 and 513"),
+        "senate-unity": (
+            f"How often do senators vote with their own party? {senate_summary(sen)} In the current Congress, still "
+            f"in session: Senate Republicans {latest['Republican']:.1f}%, Senate Democrats "
+            f"{latest['Democrat']:.1f}%.\n\nData: Voteview"),
+        "floor-remarks": (
+            "Members who took a clear position in floor debate on Ukraine aid (2023 to 2024) or the Respect for "
+            f"Marriage Act (2022), and how they voted on the final bill: {int(fr.loc['House', 'sum'])} of "
+            f"{int(fr.loc['House', 'size'])} House members and {int(fr.loc['Senate', 'sum'])} of "
+            f"{int(fr.loc['Senate', 'size'])} senators voted the way they spoke.\n\nData: Congressional Record "
+            "(GovInfo), Voteview"),
+    }
+    return {slug: f"{body}\n{share_url(slug)}" for slug, body in text.items()}
+
+
+
+def share_links(url: str, text: str) -> list[tuple[str, str]]:
+    from urllib.parse import quote
+    u, t = quote(url, safe=""), quote(text, safe="")
+    return [("LinkedIn", f"https://www.linkedin.com/sharing/share-offsite/?url={u}"),
+            ("Facebook", f"https://www.facebook.com/sharer/sharer.php?u={u}"),
+            ("X", f"https://twitter.com/intent/tweet?text={t}&url={u}")]
+
+
+PAGE_CSS = f"""
+body {{ margin: 0; background: {C['bg']}; color: {C['text']}; font: 18px/1.5 'Public Sans', system-ui, sans-serif; }}
+main {{ max-width: 760px; margin: 0 auto; padding: 32px 20px 48px; text-align: center; }}
+img {{ width: 100%; height: auto; border-radius: 10px; border: 1px solid {C['border']}; }}
+p {{ color: {C['body']}; }}
+a.button, button {{ display: inline-block; margin: 6px 4px 0; padding: 10px 18px; border-radius: 8px; font: 600 16px/1.2
+  'Public Sans', system-ui, sans-serif; text-decoration: none; cursor: pointer; border: 1px solid {C['border']};
+  background: transparent; color: {C['text']}; }}
+a.primary {{ background: {C['accent']}; border-color: {C['accent']}; color: {C['bg']}; font-weight: 700; }}
+a.button:focus-visible, button:focus-visible {{ outline: 3px solid {C['text']}; outline-offset: 3px; }}
+.share {{ margin-top: 28px; padding-top: 20px; border-top: 1px solid {C['border']}; }}
+.share h2 {{ font-size: 16px; font-weight: 600; color: {C['muted']}; margin: 0 0 6px; }}
+.hint {{ font-size: 14px; color: {C['muted']}; margin-top: 10px; }}
+[hidden] {{ display: none !important; }}
+"""
+
+SHARE_JS = """<script>
+document.querySelectorAll('[data-share-image]').forEach(function (btn) {
+  var img = btn.getAttribute('data-share-image'), text = btn.getAttribute('data-text');
+  if (!navigator.canShare) return;
+  try { if (!navigator.canShare({ files: [new File([''], 'card.jpg', { type: 'image/jpeg' })] })) return; }
+  catch (e) { return; }
+  btn.hidden = false;
+  btn.addEventListener('click', function () {
+    fetch(img).then(function (r) { return r.blob(); }).then(function (b) {
+      return navigator.share({ files: [new File([b], img.split('/').pop(), { type: 'image/jpeg' })], text: text });
+    }).catch(function () {});
+  });
+});
+document.querySelectorAll('[data-copy]').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    navigator.clipboard.writeText(btn.getAttribute('data-copy')).then(function () {
+      var old = btn.textContent; btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = old; }, 1500);
+    });
+  });
+});
+</script>"""
+
+
+def share_block(slug: str, caption: str) -> str:
+    """Buttons anyone can use to post the card: link shares for LinkedIn, Facebook and X, and for Instagram (which
+    has no share link) the phone's share sheet with the image, or a download of the 4:5 image plus the caption."""
+    url, tall = share_url(slug), f"{PAGES_URL}/social/{slug}-tall.jpg"
+    links = "".join(f'<a class="button" href="{escape(h)}" target="_blank" rel="noopener">{n}</a>'
+                    for n, h in share_links(url, caption.split(chr(10))[0]))
+    c = escape(caption)
+    return f"""<div class="share"><h2>Share this card</h2>{links}
+<button type="button" data-share-image="{tall}" data-text="{c}" hidden>Share image (Instagram, Facebook)</button>
+<a class="button" href="{tall}" download="{slug}-partycohesion.jpg">Download for Instagram</a>
+<button type="button" data-copy="{c}">Copy caption</button>
+<p class="hint">For Instagram: on a phone, use Share image. On a computer, download the image and copy the caption.</p>
+</div>"""
+
+
+def share_page(slug: str, title: str, description: str, app_path: str, caption: str) -> str:
+    """A small page whose link preview shows the card, with a button into the matching page of the app and buttons
+    for sharing the card."""
     target = f"{SITE}/{app_path}".rstrip("/?") if app_path else SITE
     image = f"{PAGES_URL}/social/{slug}-wide.png"
-    url = f"{PAGES_URL}/" if slug == "partycohesion" else f"{PAGES_URL}/{slug}/"
+    url = share_url(slug)
     t, d = escape(title), escape(description)
+    gallery = "" if slug == "cards" else f'<a class="button" href="{PAGES_URL}/cards/">More cards</a>'
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -470,21 +578,45 @@ def share_page(slug: str, title: str, description: str, app_path: str) -> str:
 <meta name="twitter:title" content="{t}">
 <meta name="twitter:description" content="{d}">
 <meta name="twitter:image" content="{image}">
-<style>
-body {{ margin: 0; background: {C['bg']}; color: {C['text']}; font: 18px/1.5 'Public Sans', system-ui, sans-serif;
-  display: flex; min-height: 100vh; align-items: center; justify-content: center; }}
-main {{ max-width: 760px; padding: 32px 20px; text-align: center; }}
-img {{ width: 100%; height: auto; border-radius: 10px; border: 1px solid {C['border']}; }}
-a.button {{ display: inline-block; margin-top: 24px; padding: 12px 22px; border-radius: 8px; background: {C['accent']};
-  color: {C['bg']}; font-weight: 700; text-decoration: none; }}
-a.button:focus-visible {{ outline: 3px solid {C['text']}; outline-offset: 3px; }}
-p {{ color: {C['body']}; }}
-</style></head>
+<style>{PAGE_CSS}</style></head>
 <body><main>
 <img src="{image}" alt="{d}" width="1200" height="627">
 <p>{d}</p>
-<a class="button" href="{target}">Open PartyCohesion</a>
-</main></body></html>
+<a class="button primary" href="{target}">Open PartyCohesion</a>{gallery}
+{share_block(slug, caption)}
+</main>{SHARE_JS}</body></html>
+"""
+
+
+def gallery_page(caps: dict[str, str]) -> str:
+    """docs/cards/: every card with its share buttons, for anyone who wants to post about PartyCohesion."""
+    items = "".join(
+        f'<section style="margin-top:48px"><a href="{share_url(slug)}"><img src="{PAGES_URL}/social/{slug}-wide.png" '
+        f'alt="{escape(CARDS[slug][2])}" width="1200" height="627" loading="lazy"></a>'
+        f'<p>{escape(CARDS[slug][2])}</p>{share_block(slug, caps[slug])}</section>'
+        for slug in CARDS)
+    url = f"{PAGES_URL}/cards/"
+    image = f"{PAGES_URL}/social/partycohesion-wide.png"
+    return f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Share PartyCohesion</title>
+<meta name="description" content="Cards with findings from PartyCohesion, ready to post on LinkedIn, Facebook, X or Instagram.">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Share PartyCohesion">
+<meta property="og:description" content="Cards with findings from the congressional roll-call record, ready to post.">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{image}">
+<meta name="twitter:card" content="summary_large_image">
+<style>{PAGE_CSS}</style></head>
+<body><main>
+<h1 style="font-family:Georgia,serif;font-size:36px;margin:8px 0 4px">Share PartyCohesion</h1>
+<p>Each card is built from the official roll-call record and updates when the data does. Post any of them, with the
+caption or your own words.</p>
+<a class="button primary" href="{SITE}">Open PartyCohesion</a>
+{items}
+</main>{SHARE_JS}</body></html>
 """
 
 
@@ -495,7 +627,9 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     # A fingerprint of what the cards say. PNG bytes can differ between machines even when nothing changed, so the
     # weekly workflow compares this file, not the images, to decide whether the cards need an update.
+    caps = captions(f)
     html = "".join(fn(f, size) + title + desc for fn, title, desc, _ in CARDS.values() for size in SIZES)
+    html += json.dumps(caps, sort_keys=True)
     (OUT / "cards.sha256").write_text(hashlib.sha256(html.encode()).hexdigest() + "\n")
     with sync_playwright() as p:
         browser = p.chromium.launch()
@@ -506,12 +640,17 @@ def main() -> None:
                 pg.evaluate("document.fonts.ready")
                 pg.wait_for_timeout(300)
                 pg.screenshot(path=str(OUT / f"{slug}-{size}.png"))
+                if size == "tall":  # Instagram only takes JPEG; 1080 x 1350 is its 4:5 feed size
+                    pg.screenshot(path=str(OUT / f"{slug}-tall.jpg"), type="jpeg", quality=92)
                 pg.close()
             folder = PAGES if slug == "partycohesion" else PAGES / slug
             folder.mkdir(parents=True, exist_ok=True)
-            (folder / "index.html").write_text(share_page(slug, title, desc, path))
-            print(f"Wrote {slug}: 2 images and a share page")
+            (folder / "index.html").write_text(share_page(slug, title, desc, path, caps[slug]))
+            print(f"Wrote {slug}: 3 images and a share page")
         browser.close()
+    (PAGES / "cards").mkdir(parents=True, exist_ok=True)
+    (PAGES / "cards" / "index.html").write_text(gallery_page(caps))
+    (OUT / "captions.json").write_text(json.dumps(caps, indent=2) + "\n")
 
 
 if __name__ == "__main__":
