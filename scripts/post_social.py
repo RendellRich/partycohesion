@@ -262,6 +262,16 @@ def check_setup(opener=urllib.request.urlopen) -> int:
               "Replace META_PAGE_TOKEN with the PartyCohesion access_token from me/accounts.")
         return 1
     print(f"Facebook: the token posts as the Page \"{me.get('name')}\" (Page id {me.get('id')}).")
+    try:
+        info = graph_get("debug_token", {"input_token": token, "access_token": token}, opener).get("data", {})
+        exp = info.get("expires_at")
+        if exp == 0:
+            print("Facebook: the token never expires.")
+        elif exp:
+            when = datetime.fromtimestamp(exp, timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+            print(f"Facebook: the token expires {when}. Make it long-lived (see SOCIAL_POSTING.md) or posts will stop.")
+    except Exception:
+        print("Facebook: couldn't read the token's expiry.")
     print("Instagram: " + ("set up." if configured("instagram") else "not set up (skipped)."))
     return 0
 
