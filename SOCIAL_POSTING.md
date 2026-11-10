@@ -64,6 +64,7 @@ Add an entry to `social/posts.yml`:
 - It posts on the first hourly run after `post_on` at `time`, once per network. If two posts are due at once, the second waits an hour.
 - `social/posted.csv` records what went out, so an `id` never posts twice. Use a new `id` for each post.
 - An entry more than 7 days late is skipped rather than posted stale. Change its date to send it.
+- `require_text` holds a post until the card's caption contains that text. The `congress-final` card always shows the newest completed Congress, so the January post for the 119th waits for the weekly card rebuild after January 3 (`require_text: "119th Congress"`).
 - Anyone can propose a post with a pull request. It goes out only after it's merged, so you stay in control of what the project account says.
 - Facebook gets the caption as written. On Instagram, a line that is only a link, or a label and a link, is dropped and "Link in bio." goes at the end, because Instagram captions can't link.
 - Captions must be under 2,200 characters and use no em dashes. The tests check every queued caption.

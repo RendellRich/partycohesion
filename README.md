@@ -62,7 +62,7 @@ PartyCohesion is a free, neutral site built on the official roll-call record. It
 
 **Their remarks links.** `scripts/floor_remarks_index.py` links each vote, from 2007 on, to where the member spoke about that bill in the Congressional Record. The Record's metadata lists everyone who spoke in a section, even someone who only said how they would have voted on a missed roll call, so each link is checked against the text before it's used. How that check works, and how well, is in [writeups/checking-the-congressional-record.md](writeups/checking-the-congressional-record.md).
 
-**Tests.** 197 pytest tests, run on every pull request. They render every page with Streamlit's AppTest, check the data files, and check the theme contrast math.
+**Tests.** 200 pytest tests, run on every pull request. They render every page with Streamlit's AppTest, check the data files, and check the theme contrast math.
 
 ## Neutral by design
 

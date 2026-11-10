@@ -7,12 +7,15 @@
 # request from the "Queue member spotlights" workflow.
 #
 #   id:        unique name for the post (never reuse one; social/posted.csv tracks what already went out)
-#   card:      partycohesion, same-bill-different-vote, respect-for-marriage-act, senate-unity, floor-remarks, or
+#   card:      partycohesion, same-bill-different-vote, respect-for-marriage-act, senate-unity, floor-remarks,
+#              congress-final, or
 #              member/<Bioguide ID> for a member spotlight (its card and caption are in docs/social/members/)
 #   post_on:   date to post (YYYY-MM-DD)
 #   time:      optional, Eastern time in quotes ("19:35"); 09:00 if left out. Goes out on the first hourly run after it
 #   expires_after_days: optional, how late it can still go out (7 by default; 1 for spotlights)
 #   networks:  optional, [facebook, instagram] by default
+#   require_text: optional; the post waits (until it expires) until the card's caption contains this text. For
+#              cards that update themselves, like congress-final, which shows the newest completed Congress.
 #   caption:   optional; without it the card's caption from docs/social/captions.json is used. Facebook gets the
 #              link; on Instagram, a line that is only a link becomes "Link in bio."
 #
@@ -88,3 +91,10 @@
   post_on: 2026-11-24
   time: "19:35"
   expires_after_days: 1
+
+# The 119th Congress ends January 3, 2027; the weekly card rebuild after that switches congress-final to it.
+- id: congress-119-final
+  card: congress-final
+  post_on: 2027-01-12
+  time: "09:15"
+  require_text: "119th Congress"
