@@ -162,3 +162,17 @@ def test_dry_run_calls_nothing(capsys, monkeypatch):
     assert ps.main(["--card", "senate-unity", "--networks", "facebook,instagram", "--dry-run"]) == 0
     out = capsys.readouterr().out
     assert "senate-unity-wide.png" in out and "senate-unity-tall.jpg" in out and "Link in bio." in out
+
+
+def test_check_setup_reports_page_without_posting(meta_env, capsys, monkeypatch):
+    monkeypatch.setenv("META_PAGE_TOKEN", "SECRETVALUE123")
+    calls = []
+
+    def fake(req, timeout=None):
+        calls.append((req.get_method(), req.full_url.split("?")[0]))
+        return io.BytesIO(json.dumps({"id": "999", "name": "PartyCohesion"}).encode())
+
+    assert ps.check_setup(opener=fake) == 0
+    assert calls == [("GET", f"https://graph.facebook.com/{ps.GRAPH_VERSION}/me")]
+    out = capsys.readouterr().out
+    assert "PartyCohesion" in out and "SECRETVALUE123" not in out

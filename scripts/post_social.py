@@ -230,6 +230,26 @@ def run_due(dry_run: bool, today: date | None = None) -> int:
     return failures
 
 
+def check_setup(opener=urllib.request.urlopen) -> int:
+    """Confirm the token works and say which Page it posts to. Posts nothing and never prints the token."""
+    token = os.environ.get("META_PAGE_TOKEN")
+    if not token:
+        print("META_PAGE_TOKEN is not set.")
+        return 1
+    try:
+        me = graph_get("me", {"fields": "id,name", "access_token": token}, opener)
+    except urllib.error.HTTPError as e:
+        try:
+            msg = json.loads(e.read().decode()).get("error", {}).get("message", "")
+        except Exception:
+            msg = ""
+        print(f"Meta refused the token ({e.code}): {msg or e.reason}")
+        return 1
+    print(f"Facebook: the token posts as \"{me.get('name')}\" (Page id {me.get('id')}).")
+    print("Instagram: " + ("set up." if configured("instagram") else "not set up (skipped)."))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--due", action="store_true", help="post queued entries that are due")
@@ -237,7 +257,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--networks", default="facebook,instagram")
     ap.add_argument("--caption", default="")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--check", action="store_true", help="check the secrets reach the Page, without posting")
     a = ap.parse_args(argv)
+    if a.check:
+        return check_setup()
     if a.due:
         return 1 if run_due(a.dry_run) else 0
     if not a.card:
