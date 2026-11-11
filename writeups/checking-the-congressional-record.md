@@ -108,6 +108,16 @@ That's 87.5% clearly right, up from 75%, and 7.5% clearly wrong, down from 12.5%
 
 So the change brings back right links at about the same precision as the rest.
 
+**Blind check of 200 links.** The samples above are small, and some were drawn to test one change. For a precision number to quote, I drew 200 kept links at random from the final index, none of them in an earlier sample, and labeled each without seeing its similarity score or why it was kept. These labels were made with an AI assistant (Claude) reading each member's remarks against the bill's title. They are in `writeups/data/audit_blind200.csv`.
+
+| Label | Links | Share | 95% interval |
+|---|---:|---:|---:|
+| Clearly about the bill | 177 | 88.5% | 83% to 92% |
+| Unclear | 16 | 8.0% | 5% to 13% |
+| Not about the bill | 7 | 3.5% | 2% to 7% |
+
+Most of the unclear ones are on the line rather than wrong: a rule debate that only gets to the bill after a tribute, an earmark list filed under the bill, or a speech on a smaller bill that was folded into a bigger package. The 7 wrong ones are mostly the same kinds seen before: a speech on a nominee or a different bill given during this bill's debate time, and one reference to H.R. 1 in a Congress with no H.R. 1, which no rule checks for yet.
+
 **Links that were dropped (recall).** Before the topic step, of 30 random dropped links where the member did have a turn in the text, 2 should have been kept and 1 more possibly. The topic step adds the 5.5% loss above.
 
 Some early versions taught me more than the final numbers:
@@ -125,7 +135,7 @@ Some early versions taught me more than the final numbers:
 ## What I'd do next
 
 - **Better topic matching.** TF-IDF only sees shared words. A sentence-embedding model would also match a speech about "the farm bill" to the "Agriculture Improvement Act", which would win back some of the 5.5% of right links the topic step drops.
-- **A bigger labeled set.** The 100 labels above were enough to pick a threshold. Another 200, labeled blind to the score, would give a measured precision and recall, and would show when a rule change makes things worse.
+- **Measure recall the same way.** The blind 200 measures precision. A blind sample of dropped links where the member did speak would measure how many right links each rule loses, which so far rests on 30 links and the topic labels.
 - **Use the amendment numbers.** Many floor turns are about an amendment ("I call up my amendment No. 5812"). Linking amendment numbers to the vote on that amendment would be more exact than linking to the bill.
 
 ## Reproduce it

@@ -137,6 +137,14 @@ else:
               f"{MIN_VOTES_EACH_SIDE}+ votes under each party's president")
     m2.metric("Consistent", f"{(scored['label'] == 'Consistent').mean() * 100:.0f}%")
     m3.metric("Changed with the White House", f"{(scored['label'] == 'Changed with the White House').mean() * 100:.0f}%")
+    left_out = view[view["label"] == "Not enough votes"]
+    if not left_out.empty:
+        first = members.groupby("icpsr")["congress"].min()
+        new = int((left_out["icpsr"].map(first) == newest).sum())
+        st.caption(f"**Who's left out:** {len(left_out):,} members in this selection aren't scored, because they have "
+                   f"fewer than {MIN_VOTES_EACH_SIDE} matched votes under each party's president. They aren't counted "
+                   f"in the percentages above. {new:,} of them are in their first Congress and have voted under only "
+                   f"one president so far.")
 
     # Independents are grouped with the party they caucus with, as in the scoring
     dist = (scored.groupby(["caucus", "label"]).size().reset_index(name="Members").rename(columns={"caucus": "party"}))
