@@ -141,13 +141,14 @@ was how they would have voted on a roll call they missed. So each link is checke
 - Unless the section is about that bill, the member has to name it, by number (H.R. 2913) or by its short title.
   That covers debate on a rule for several bills at once, and bills that only come up in passing.
 - If they name a different bill from the same section and never this one, they were talking about the other bill.
-- Their words have to match the bill's topic: a TF-IDF similarity of at least 0.06 with the bill's titles, subject
-  terms, summary and amendments (GovInfo's BILLSTATUS data). That catches tributes, schedule announcements and
-  speeches on another subject given during a bill's debate time.
+- Their words have to match the bill's topic: a TF-IDF similarity of at least 0.07 with the bill's titles, subject
+  terms, summary and amendments (GovInfo's BILLSTATUS data), taking the best match against the whole description or
+  any one part of it, so a speech about one amendment to a big bill still counts. That catches tributes, schedule
+  announcements and speeches on another subject given during a bill's debate time.
 
-Of about 591,000 candidate links from 2007 on, 132,000 pass. In a hand check of 40 random links that pass, 35 were
-clearly the member talking about that bill, 2 were unclear and 3 were not. The topic check also drops some right
-links, about 7% of them by a hand-labeled sample. The full write-up is in the repository:
+Of about 591,000 candidate links from 2007 on, 134,000 pass. In a hand check of 40 random links that pass, 34 were
+clearly the member talking about that bill, 3 were unclear and 3 were not. The topic check also drops some right
+links, about 5.5% of them by a hand-labeled sample. The full write-up is in the repository:
 `writeups/checking-the-congressional-record.md`.
 
 A link appears when a checked remark falls within 30 days before the vote or a week after; if there are several,

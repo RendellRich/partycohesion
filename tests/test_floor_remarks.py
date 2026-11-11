@@ -90,12 +90,32 @@ def test_topic_check_scores_remarks_against_the_bill(monkeypatch):
     profiles = {"HR1": "Wildfire prevention act forest management grants for states fire crews forest thinning",
                 "HR2": "Veterans health care act medical centers clinics veterans affairs benefits",
                 "HR3": "Postal service naming post office building", "HR4": "Water resources harbors dams levees"}
+    # A big bill: many unrelated provisions, one amendment about a war commission.
+    defense = ["National defense authorization act", "Military pay shipbuilding aircraft procurement missile defense",
+               "Military construction housing bases cyber command space force readiness training",
+               "Amendment to end the Afghanistan war commission early and cut its final report on the twenty year war",
+               "In the nature of a substitute"]
+    profiles["HR5"] = " ".join(defense)
     monkeypatch.setattr(bill_topics, "profiles", lambda c: profiles)
-    rows = pd.DataFrame({"congress": [119, 119], "bill_number": ["HR1", "HR1"], "bioguide_id": ["A", "B"],
-                         "date": ["2026-01-01"] * 2, "granule": ["g"] * 2, "others": ["HR2", "HR2"]})
+    monkeypatch.setattr(bill_topics, "parts", lambda c: {k: [v] for k, v in profiles.items()} | {"HR5": defense})
+    rows = pd.DataFrame({"congress": [119] * 3, "bill_number": ["HR1", "HR1", "HR5"], "bioguide_id": ["A", "B", "C"],
+                         "date": ["2026-01-01"] * 3, "granule": ["g"] * 3, "others": ["HR2", "HR2", ""]})
     said = {("2026-01-01", "g", "A"): "This bill funds fire crews and forest thinning so states can stop wildfire.",
-            ("2026-01-01", "g", "B"): "I rise to honor the veterans of my district and their care at our clinics."}
-    (on, _), (off, other) = f.topic_scores(rows, said)
+            ("2026-01-01", "g", "B"): "I rise to honor the veterans of my district and their care at our clinics.",
+            ("2026-01-01", "g", "C"): "The Afghanistan war commission needs one more year to finish its report on "
+                                      "the war, so I oppose ending the commission early."}
+    (on, _), (off, other), (part, _) = f.topic_scores(rows, said)
     assert on > f.TOPIC_MIN and not f.off_topic(on, None)
     assert off < f.TOPIC_MIN and f.off_topic(off, other) and other > off
     assert not f.off_topic(None, None)  # no description of the bill: no verdict
+    # Scored against the whole bill the commission speech looks off topic; against its own amendment it doesn't.
+    monkeypatch.setattr(bill_topics, "parts", lambda c: {})
+    (_, _), (_, _), (whole, _) = f.topic_scores(rows, said)
+    assert part > whole and not f.off_topic(part, None)
+    # A short part can't carry a match on one shared word.
+    said[("2026-01-01", "g", "C")] = "My substitute keeps the substitute language and nothing else from the substitute."
+    monkeypatch.setattr(bill_topics, "parts", lambda c: {"HR5": ["In the nature of a substitute"]})
+    (_, _), (_, _), (short, _) = f.topic_scores(rows, said)
+    monkeypatch.setattr(bill_topics, "parts", lambda c: {})
+    (_, _), (_, _), (whole_only, _) = f.topic_scores(rows, said)
+    assert short == whole_only

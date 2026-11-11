@@ -24,7 +24,7 @@ First, sections that are only lists or notices are skipped by title: bill introd
 1. **Find the member's turns.** The text marks each speaker ("Mr. FITZPATRICK. Mr. Speaker, ..."). If the member has no turn in the text, there is nothing to link to.
 2. **Keep only their own words.** Remove procedural lines ("I yield back", "I ask unanimous consent", "I demand a recorded vote"), statements explaining a missed vote, lists of how they would have voted, and documents read into the Record. At least 60 words must remain.
 3. **Make sure it's about this bill.** If the section is about this bill, that's enough. Otherwise the member has to name it, by number ("H.R. 2913") or short title ("Ukraine Support Act"). And if they name a different bill from the same section but never this one, they were talking about the other bill.
-4. **Make sure the words match the bill's topic.** Senators can speak on anything during a bill's debate time, and a member can stand in the right section without naming any bill. So the remarks are compared with what the bill is about: its titles, the Library of Congress subject terms, the start of its Congressional Research Service summary, and its amendments' descriptions, from GovInfo's BILLSTATUS data. The comparison is a TF-IDF similarity score. Remarks scoring under 0.06 share almost none of the bill's vocabulary, and are dropped. How I picked 0.06 is below.
+4. **Make sure the words match the bill's topic.** Senators can speak on anything during a bill's debate time, and a member can stand in the right section without naming any bill. So the remarks are compared with what the bill is about: its titles, the Library of Congress subject terms, the start of its Congressional Research Service summary, and its amendments' descriptions, from GovInfo's BILLSTATUS data. The comparison is a TF-IDF similarity score, taken as the best match against either the whole description or any one part of it: the titles, the subject terms, the summary, or a single amendment. Remarks scoring under 0.07 share almost none of the bill's vocabulary, and are dropped. Why the best part, and how I picked 0.07, are below.
 
 Then a vote links to the remark closest to it, from 30 days before the vote to a week after.
 
@@ -32,11 +32,11 @@ Then a vote links to the remark closest to it, from 30 days before the vote to a
 
 | What happened to the candidate link | Links | Share |
 |---|---:|---:|
-| Kept: the member's own words about the bill | 132,417 | 22.4% |
+| Kept: the member's own words about the bill | 134,108 | 22.7% |
 | Spoke, but not about this bill | 306,953 | 51.9% |
 | No turn of theirs in the text (lists, notices) | 59,825 | 10.1% |
 | Only procedural lines, or too short | 45,601 | 7.7% |
-| Words don't match the bill's topic (step 4) | 28,456 | 4.8% |
+| Words don't match the bill's topic (step 4) | 26,765 | 4.5% |
 | Only explained a missed vote | 17,801 | 3.0% |
 | **Total candidates** | **591,053** | |
 
@@ -46,16 +46,16 @@ By Congress:
 
 | Congress | Years | Candidates | Pass steps 1 to 3 | Kept |
 |---|---|---:|---:|---:|
-| 110th | 2007 to 2008 | 147,474 | 30,574 | 26,382 |
-| 111th | 2009 to 2010 | 75,416 | 25,488 | 22,041 |
-| 112th | 2011 to 2012 | 66,956 | 17,447 | 14,072 |
-| 113th | 2013 to 2014 | 50,922 | 14,736 | 11,469 |
-| 114th | 2015 to 2016 | 49,573 | 15,390 | 12,353 |
-| 115th | 2017 to 2018 | 42,601 | 14,159 | 11,598 |
-| 116th | 2019 to 2020 | 46,940 | 12,894 | 10,479 |
-| 117th | 2021 to 2022 | 52,693 | 11,741 | 9,297 |
-| 118th | 2023 to 2024 | 32,043 | 9,818 | 7,995 |
-| 119th | 2025 to 2026, in progress | 26,435 | 8,626 | 6,731 |
+| 110th | 2007 to 2008 | 147,474 | 30,574 | 26,824 |
+| 111th | 2009 to 2010 | 75,416 | 25,488 | 22,320 |
+| 112th | 2011 to 2012 | 66,956 | 17,447 | 14,345 |
+| 113th | 2013 to 2014 | 50,922 | 14,736 | 11,608 |
+| 114th | 2015 to 2016 | 49,573 | 15,390 | 12,643 |
+| 115th | 2017 to 2018 | 42,601 | 14,159 | 11,697 |
+| 116th | 2019 to 2020 | 46,940 | 12,894 | 10,546 |
+| 117th | 2021 to 2022 | 52,693 | 11,741 | 9,355 |
+| 118th | 2023 to 2024 | 32,043 | 9,818 | 7,959 |
+| 119th | 2025 to 2026, in progress | 26,435 | 8,626 | 6,811 |
 
 ## How good is it?
 
@@ -73,9 +73,22 @@ I read random samples by hand, and I kept changing the rules until the samples s
 | 0.10 to 0.15 | 18% | 12 of 15 | 1 | 2 |
 | 0.15 and up | 50% | 9 of 10 | 0 | 1 |
 
-The labels are in `writeups/data/topic_labels.csv`. Below 0.06, most links were wrong; above it, most were right. So step 4 drops links under 0.06. The cost is real: weighting the sample by how common each score band is, it also drops about 7% of the links that were right, mostly short remarks that don't use the bill's vocabulary. For links shown next to a member's name, I'd rather miss some than show a wrong one.
+The labels are in `writeups/data/topic_labels.csv`. Below 0.06, most links were wrong; above it, most were right. So the first version of step 4 dropped links under 0.06. The cost was real: weighting the sample by how common each score band is, it also dropped about 7.6% of the links that were right, mostly short remarks that don't use the bill's vocabulary. For links shown next to a member's name, I'd rather miss some than show a wrong one.
 
-**After the topic step.** On a fresh sample of 40 kept links:
+**Big bills lost the most.** Checking the live site, one of the dropped links was Rep. Jason Crow's speech in the 2026 defense authorization debate, against an amendment to end the Afghanistan War Commission early. It was plainly about the bill. But a defense authorization covers hundreds of subjects, and a speech about one amendment shares few words with all of them together. Across the 53 bills with 200 or more candidate links, the topic step dropped 19.9% of links, against 18.3% overall.
+
+So step 4 now scores each speech against the whole description and against each part of it on its own, and keeps the best match. A part has to have at least 8 distinct weighted words to count by itself. Without that rule, an amendment described only as "In the nature of a substitute" matched any speech that used the word "substitute". I re-scored the same labels (the `best_part` column; 97 of the 100 could be matched to the current metadata) and picked 0.07 for the new score. Weighted the same way:
+
+| | Whole description, under 0.06 dropped | Best part, under 0.07 dropped |
+|---|---:|---:|
+| Links kept | 82% | 83% |
+| Kept links clearly about the bill | 83.9% | 84.8% |
+| Kept links not about the bill | 10.4% | 9.8% |
+| Right links dropped | 7.6% | 5.5% |
+
+The threshold was picked on these labels, so the table flatters it a little. The fresh samples below are the real test. On big bills, the drop went from 19.9% to 16.6%, and Crow's speech is linked again.
+
+**After the first topic step.** On a fresh sample of 40 kept links:
 
 - **35** were clearly the member talking about that bill.
 - **2** were unclear.
@@ -83,7 +96,14 @@ The labels are in `writeups/data/topic_labels.csv`. Below 0.06, most links were 
 
 That's 87.5% clearly right, up from 75%, and 7.5% clearly wrong, down from 12.5%. It's a sample of 40, so treat both as rough.
 
-**Links that were dropped (recall).** Before the topic step, of 30 random dropped links where the member did have a turn in the text, 2 should have been kept and 1 more possibly. The topic step adds the 7% loss above.
+**After best-part matching.** Two more samples I hadn't seen, labeled in `writeups/data/audit_best_part.csv`:
+
+- Of 40 random kept links, **34** were clearly right, **3** unclear and **3** wrong: about the same as before (35, 2 and 3). The wrong ones were a senator discussing a different bill passed in the same request, a speech on a related air marshal bill, and a speech on a different telework bill.
+- Of 20 links that best-part matching brought back, **18** were right, **1** unclear and **1** wrong. The wrong one is a bill number reused across Congresses: a 2013 speech about H.R. 3590 from 2009, the Affordable Care Act, linked to the 2013 bill with that number.
+
+So the change brings back right links at about the same precision as the rest.
+
+**Links that were dropped (recall).** Before the topic step, of 30 random dropped links where the member did have a turn in the text, 2 should have been kept and 1 more possibly. The topic step adds the 5.5% loss above.
 
 Some early versions taught me more than the final numbers:
 
@@ -99,7 +119,7 @@ Some early versions taught me more than the final numbers:
 
 ## What I'd do next
 
-- **Better topic matching.** TF-IDF only sees shared words. A sentence-embedding model would also match a speech about "the farm bill" to the "Agriculture Improvement Act", which would win back some of the 7% of right links the topic step drops.
+- **Better topic matching.** TF-IDF only sees shared words. A sentence-embedding model would also match a speech about "the farm bill" to the "Agriculture Improvement Act", which would win back some of the 5.5% of right links the topic step drops.
 - **A bigger labeled set.** The 100 labels above were enough to pick a threshold. Another 200, labeled blind to the score, would give a measured precision and recall, and would show when a rule change makes things worse.
 - **Use the amendment numbers.** Many floor turns are about an amendment ("I call up my amendment No. 5812"). Linking amendment numbers to the vote on that amendment would be more exact than linking to the bill.
 
