@@ -136,7 +136,8 @@ Each day's Record on GovInfo lists every section with the members who spoke in i
 references. That list is only the starting point, because it counts a member as speaking even when all they said
 was how they would have voted on a roll call they missed. It also tags every bill number with the current Congress,
 so a speech citing an older bill with the same number can look like it's about a new one. Links dated more than a
-week before the bill was introduced are dropped for that reason. Then each link is checked against the section's
+week before the bill was introduced, or to a bill number that doesn't exist in that Congress, are dropped for that
+reason. Then each link is checked against the section's
 text:
 
 - The member's own words in the section have to come to at least 60, leaving out procedural lines ("I yield back",
@@ -149,9 +150,9 @@ text:
   any one part of it, so a speech about one amendment to a big bill still counts. That catches tributes, schedule
   announcements and speeches on another subject given during a bill's debate time.
 
-Of about 591,000 candidate links from 2007 on, 134,000 pass. In a blind check of 200 random links that pass, 177
+Of about 591,000 candidate links from 2007 on, 134,000 pass. In a blind check of 200 random links that pass, labeled with an AI assistant, 177
 (88.5%) were clearly the member talking about that bill, 16 were unclear and 7 (3.5%) were not. The topic check also drops some right
-links, about 5.5% of them by a hand-labeled sample. The full write-up is in the repository:
+links, about 5.5% of them by a labeled sample. The full write-up is in the repository:
 `writeups/checking-the-congressional-record.md`.
 
 A link appears when a checked remark falls within 30 days before the vote or a week after; if there are several,

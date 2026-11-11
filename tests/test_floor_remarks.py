@@ -133,3 +133,27 @@ def test_speech_well_before_a_bill_existed_is_about_an_older_bill(monkeypatch):
                          "date": ["2013-03-21", "2013-11-20", "2013-12-11", "2013-01-01"]})
     # Too early; on the day; two days early (a Senate statement dated ahead of its bill); no date known.
     assert f.before_introduced(rows).tolist() == [True, False, False, False]
+
+
+def test_links_to_bills_that_do_not_exist_are_dropped(monkeypatch):
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    f = _index_module()
+    import bill_topics
+    monkeypatch.setattr(bill_topics, "introduced", lambda c: {"HR2": "2015-01-06", "HR9000": "2016-12-20"})
+    rows = pd.DataFrame({"congress": [114] * 3, "bill_number": ["HR2", "HR1", "HR9999"],
+                         "date": ["2015-03-20", "2016-09-28", "2016-12-19"]})
+    # A real bill; no H.R. 1 that Congress; a bill too new to judge (the bulk data ends the next day).
+    assert f.missing_bill(rows).tolist() == [False, True, False]
+
+
+def test_older_billstatus_files_use_billnumber(tmp_path, monkeypatch):
+    import sys, zipfile
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    import bill_topics
+    path = tmp_path / "BILLSTATUS-115-hr.zip"
+    with zipfile.ZipFile(path, "w") as z:
+        z.writestr("a.xml", "<billStatus><bill><billType>HR</billType><billNumber>3354</billNumber>"
+                            "<introducedDate>2017-07-21</introducedDate></bill></billStatus>")
+    monkeypatch.setattr(bill_topics, "download", lambda c, cache=None: [path])
+    assert [k for k, _ in bill_topics._bills(115, tmp_path)] == ["HR3354"]
