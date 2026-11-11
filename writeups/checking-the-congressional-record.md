@@ -19,7 +19,11 @@ These links would have gone onto public posts that name members of Congress. A w
 
 ## What the check does
 
-First, sections that are only lists or notices are skipped by title: bill introductions, committee meeting notices, messages between the chambers, the weekly schedule, and so on. That leaves **591,053** candidate links. Each one is then checked against the text of the section:
+First, sections that are only lists or notices are skipped by title: bill introductions, committee meeting notices, messages between the chambers, the weekly schedule, and so on. That leaves **591,053** candidate links.
+
+Next, links dated more than a week before the bill was introduced are dropped. The metadata tags every bill number with the current Congress, so a 2013 speech about "H.R. 3590", the 2009 health care law, shows up as a link to the 2013 bill that reused that number. A week of slack keeps Senate statements whose Record date runs a day or two ahead of the introduction date, and remarks on a bill about to be introduced.
+
+Each remaining link is then checked against the text of the section:
 
 1. **Find the member's turns.** The text marks each speaker ("Mr. FITZPATRICK. Mr. Speaker, ..."). If the member has no turn in the text, there is nothing to link to.
 2. **Keep only their own words.** Remove procedural lines ("I yield back", "I ask unanimous consent", "I demand a recorded vote"), statements explaining a missed vote, lists of how they would have voted, and documents read into the Record. At least 60 words must remain.
@@ -32,12 +36,13 @@ Then a vote links to the remark closest to it, from 30 days before the vote to a
 
 | What happened to the candidate link | Links | Share |
 |---|---:|---:|
-| Kept: the member's own words about the bill | 134,108 | 22.7% |
-| Spoke, but not about this bill | 306,953 | 51.9% |
-| No turn of theirs in the text (lists, notices) | 59,825 | 10.1% |
-| Only procedural lines, or too short | 45,601 | 7.7% |
-| Words don't match the bill's topic (step 4) | 26,765 | 4.5% |
-| Only explained a missed vote | 17,801 | 3.0% |
+| Kept: the member's own words about the bill | 133,998 | 22.7% |
+| Spoke, but not about this bill | 289,235 | 48.9% |
+| No turn of theirs in the text (lists, notices) | 59,581 | 10.1% |
+| Only procedural lines, or too short | 43,731 | 7.4% |
+| Words don't match the bill's topic (step 4) | 25,731 | 4.4% |
+| Dated more than a week before the bill existed | 21,344 | 3.6% |
+| Only explained a missed vote | 17,433 | 2.9% |
 | **Total candidates** | **591,053** | |
 
 About one link in five survives. The biggest group is the third rule: the member spoke in a section that mentions the bill, but not about it.
@@ -46,16 +51,16 @@ By Congress:
 
 | Congress | Years | Candidates | Pass steps 1 to 3 | Kept |
 |---|---|---:|---:|---:|
-| 110th | 2007 to 2008 | 147,474 | 30,574 | 26,824 |
-| 111th | 2009 to 2010 | 75,416 | 25,488 | 22,320 |
-| 112th | 2011 to 2012 | 66,956 | 17,447 | 14,345 |
-| 113th | 2013 to 2014 | 50,922 | 14,736 | 11,608 |
-| 114th | 2015 to 2016 | 49,573 | 15,390 | 12,643 |
-| 115th | 2017 to 2018 | 42,601 | 14,159 | 11,697 |
-| 116th | 2019 to 2020 | 46,940 | 12,894 | 10,546 |
-| 117th | 2021 to 2022 | 52,693 | 11,741 | 9,355 |
-| 118th | 2023 to 2024 | 32,043 | 9,818 | 7,959 |
-| 119th | 2025 to 2026, in progress | 26,435 | 8,626 | 6,811 |
+| 110th | 2007 to 2008 | 147,474 | 30,328 | 26,810 |
+| 111th | 2009 to 2010 | 75,416 | 25,278 | 22,305 |
+| 112th | 2011 to 2012 | 66,956 | 17,322 | 14,327 |
+| 113th | 2013 to 2014 | 50,922 | 14,607 | 11,595 |
+| 114th | 2015 to 2016 | 49,573 | 15,276 | 12,636 |
+| 115th | 2017 to 2018 | 42,601 | 14,038 | 11,689 |
+| 116th | 2019 to 2020 | 46,940 | 12,818 | 10,540 |
+| 117th | 2021 to 2022 | 52,693 | 11,673 | 9,334 |
+| 118th | 2023 to 2024 | 32,043 | 9,791 | 7,957 |
+| 119th | 2025 to 2026, in progress | 26,435 | 8,598 | 6,805 |
 
 ## How good is it?
 
@@ -99,7 +104,7 @@ That's 87.5% clearly right, up from 75%, and 7.5% clearly wrong, down from 12.5%
 **After best-part matching.** Two more samples I hadn't seen, labeled in `writeups/data/audit_best_part.csv`:
 
 - Of 40 random kept links, **34** were clearly right, **3** unclear and **3** wrong: about the same as before (35, 2 and 3). The wrong ones were a senator discussing a different bill passed in the same request, a speech on a related air marshal bill, and a speech on a different telework bill.
-- Of 20 links that best-part matching brought back, **18** were right, **1** unclear and **1** wrong. The wrong one is a bill number reused across Congresses: a 2013 speech about H.R. 3590 from 2009, the Affordable Care Act, linked to the 2013 bill with that number.
+- Of 20 links that best-part matching brought back, **18** were right, **1** unclear and **1** wrong. The wrong one was a bill number reused across Congresses: a 2013 speech about H.R. 3590 from 2009, the Affordable Care Act, linked to the 2013 bill with that number. That led to the introduction-date rule above, which removed 110 kept links like it. In a sample of those more than a week early, every one was about an older bill with the same number.
 
 So the change brings back right links at about the same precision as the rest.
 

@@ -360,6 +360,24 @@ def off_topic(sim: float | None, other: float | None = None) -> bool:
     return sim is not None and sim < TOPIC_MIN
 
 
+# The metadata tags every bill reference with the current Congress, even "H.R. 3590" in a 2013 speech about the 2009
+# health care law, so a speech well before a bill was introduced is about an older bill with the same number. A few
+# days of slack keeps Senate statements whose Record date runs ahead of the introduction date, and remarks on a bill
+# about to be introduced.
+INTRODUCED_SLACK_DAYS = 7
+
+
+def before_introduced(rows: pd.DataFrame) -> pd.Series:
+    """True for rows dated more than INTRODUCED_SLACK_DAYS before their bill was introduced."""
+    if rows.empty:
+        return pd.Series(False, index=rows.index)
+    import bill_topics
+    when = {c: bill_topics.introduced(int(c)) for c in rows["congress"].unique()}
+    intro = pd.to_datetime([when[c].get(b) for c, b in zip(rows["congress"], rows["bill_number"])], errors="coerce")
+    gap = (pd.to_datetime(rows["date"]).to_numpy() - intro).days
+    return pd.Series(gap < -INTRODUCED_SLACK_DAYS, index=rows.index).fillna(False).astype(bool)
+
+
 def build(years: list[int], cache: Path, workers: int = 8, recent: int | None = None) -> tuple[pd.DataFrame, list[str]]:
     cache.mkdir(parents=True, exist_ok=True)
     ids = days(years, cache)
@@ -373,7 +391,9 @@ def build(years: list[int], cache: Path, workers: int = 8, recent: int | None = 
     # Keep remarks about bills of the same Congress, one row per member, bill and section.
     df = df[df["congress"].isin({(y - 1789) // 2 + 1 for y in years})]
     df = df.drop_duplicates(["bioguide_id", "bill_number", "date", "granule"])
-    df = verify(df, cache / "html")
+    early = before_introduced(df)
+    REASONS["before_introduced"] = REASONS.get("before_introduced", 0) + int(early.sum())
+    df = verify(df[~early], cache / "html")
     read = [i.removeprefix("CREC-") for i, p in zip(ids, paths) if p]
     return df[COLUMNS].sort_values(["congress", "bill_number", "date", "bioguide_id"]), read
 

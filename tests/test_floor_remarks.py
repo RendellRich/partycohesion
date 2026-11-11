@@ -119,3 +119,17 @@ def test_topic_check_scores_remarks_against_the_bill(monkeypatch):
     monkeypatch.setattr(bill_topics, "parts", lambda c: {})
     (_, _), (_, _), (whole_only, _) = f.topic_scores(rows, said)
     assert short == whole_only
+
+
+def test_speech_well_before_a_bill_existed_is_about_an_older_bill(monkeypatch):
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    f = _index_module()
+    import bill_topics
+    # H.R. 3590 of the 113th Congress was introduced in November 2013; a March 2013 speech citing "H.R. 3590" means
+    # the 2009 health care law, which the metadata still tags as the current Congress's bill.
+    monkeypatch.setattr(bill_topics, "introduced", lambda c: {"HR3590": "2013-11-20", "S100": "2013-12-13"})
+    rows = pd.DataFrame({"congress": [113] * 4, "bill_number": ["HR3590", "HR3590", "S100", "S999"],
+                         "date": ["2013-03-21", "2013-11-20", "2013-12-11", "2013-01-01"]})
+    # Too early; on the day; two days early (a Senate statement dated ahead of its bill); no date known.
+    assert f.before_introduced(rows).tolist() == [True, False, False, False]
