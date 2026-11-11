@@ -149,8 +149,8 @@ text:
   any one part of it, so a speech about one amendment to a big bill still counts. That catches tributes, schedule
   announcements and speeches on another subject given during a bill's debate time.
 
-Of about 591,000 candidate links from 2007 on, 134,000 pass. In a hand check of 40 random links that pass, 34 were
-clearly the member talking about that bill, 3 were unclear and 3 were not. The topic check also drops some right
+Of about 591,000 candidate links from 2007 on, 134,000 pass. In a blind check of 200 random links that pass, 177
+(88.5%) were clearly the member talking about that bill, 16 were unclear and 7 (3.5%) were not. The topic check also drops some right
 links, about 5.5% of them by a hand-labeled sample. The full write-up is in the repository:
 `writeups/checking-the-congressional-record.md`.
 

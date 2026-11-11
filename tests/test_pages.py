@@ -347,3 +347,10 @@ def test_home_find_members_by_zip_and_state():
     assert any("WY at-large" in b.label for b in at.button)
     at.text_input(key="home_zip").set_value("00000").run()
     assert "isn't in the Census Bureau's ZIP list" in " ".join(c.value for c in at.caption)
+
+
+def test_position_flips_says_who_is_left_out():
+    at = open_page("views/7_Position_Flips.py")
+    assert not at.exception
+    note = [c.value for c in at.caption if "Who's left out" in c.value]
+    assert note and "aren't counted in the percentages" in note[0] and "first Congress" in note[0]
