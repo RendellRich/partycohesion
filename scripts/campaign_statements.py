@@ -8,8 +8,8 @@ released as CC0), which collected the issue pages of House primary candidates' c
 2022. Each statement carries the candidate's Bioguide ID. Text CampaignView took from official House.gov pages is left
 out, so every statement here is campaign material.
 
-CampaignView tags each statement's topic but not its stance, so stances are hand-coded in data/campaign_stances.csv
-(Supports or Opposes, with the CampaignView statement IDs read). data/campaign_topics.csv lists, for each topic and
+CampaignView tags each statement's topic but not its stance, so stances are labeled with an AI assistant (Claude)
+in data/campaign_stances.csv (Supports or Opposes, with the CampaignView statement IDs read). data/campaign_topics.csv lists, for each topic and
 campaign year, the roll call that tests it and which vote matches a "Supports" stance.
 
 Writes data/campaign_statement_votes.csv: one row per member, topic and roll call, with the stance, the campaign

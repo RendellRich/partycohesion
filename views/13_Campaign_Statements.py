@@ -22,7 +22,7 @@ def load() -> pd.DataFrame:
 
 @st.cache_data
 def load_floor() -> pd.DataFrame:
-    """Hand-coded floor remarks from the Congressional Record, built by scripts/floor_statements.py."""
+    """Labeled floor remarks from the Congressional Record, built by scripts/floor_statements.py."""
     return pd.read_csv(DATA_DIR / "floor_statements.csv", dtype=str).fillna("")
 
 
@@ -82,8 +82,8 @@ def floor_section(topic: str) -> None:
 
     st.subheader("Said on the floor of Congress")
     st.markdown(f"Members also argue about {cfg['subject']} in floor debates, which the Congressional Record prints "
-                f"word for word. This covers both chambers, {cfg['window']}. Each member's remarks were read and "
-                "coded by PartyCohesion; the quotes are their own words.")
+                f"word for word. This covers both chambers, {cfg['window']}. Each member's remarks were labeled "
+                "with an AI assistant (Claude); the quotes are their own words.")
     metric_row([
         ("Members who spoke on the floor", f"{len(f):,}", f"{(f['stance'] != 'No clear stance').sum()} took a side"),
         ("Final vote in the same direction", f"{len(clear) - len(differ)} of {len(clear)}",
@@ -218,5 +218,5 @@ st.dataframe(pd.DataFrame({
                    "Voteview": st.column_config.LinkColumn(display_text="Open")})
 
 st.caption(f"Statements: CampaignView, campaign website issue pages of 2018, 2020 and 2022 House primary candidates "
-           f"(text taken from official House.gov pages is left out). Cite as: {CITATION}. Stances are coded by "
-           f"PartyCohesion. Votes: Voteview roll-call records.")
+           f"(text taken from official House.gov pages is left out). Cite as: {CITATION}. Stances are labeled with "
+           f"an AI assistant (Claude). Votes: Voteview roll-call records.")

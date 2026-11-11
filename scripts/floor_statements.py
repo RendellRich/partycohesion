@@ -3,8 +3,9 @@ Marriage Act (June to Dec 2022). Change the day range and title pattern below fo
 
 Step 1 lists each day's Record from the GovInfo sitemap and reads its MODS metadata, which names every speaker
 with a Bioguide ID. Step 2 downloads debates whose titles touch Ukraine or the supplemental and splits them into
-speaker turns. Stances were then hand-coded into data/floor_statements.csv (one row per member per topic); keyword rules alone
-labeled only about a third of members correctly, so every stance was read by a person.
+speaker turns. Stances were then labeled with an AI assistant (Claude) reading each member's remarks, into
+data/floor_statements.csv (one row per member per topic); keyword rules alone labeled only about a third of members
+correctly, so no stance comes from keyword rules.
 
 No API key is needed: www.govinfo.gov serves the sitemaps, MODS files and HTML directly. Downloads are cached
 under /tmp/crec (about 450 MB of MODS for this window). Shown on the Campaign Statements page.

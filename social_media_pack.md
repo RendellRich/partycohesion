@@ -227,7 +227,7 @@ What's under the hood:
 - Every House and Senate roll call since 2007 from Voteview, refreshed automatically by a GitHub Actions pipeline
 - Party unity rates per member per Congress, with data validation checks before each update
 - A new view that matches a member's votes on the same bill at different stages, with bill titles from GovInfo
-- Floor remarks from the Congressional Record, read and coded by hand, next to the votes
+- Floor remarks from the Congressional Record, labeled with AI assistance, next to the votes
 
 Python, pandas, Streamlit, GitHub Actions. Code and method are public.
 

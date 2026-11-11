@@ -131,7 +131,7 @@ Some early versions taught me more than the final numbers:
 
 - The **Members** page links each vote to "Their remarks" when there is a checked remark near the vote. The caption says it shows where they spoke, not what they said.
 - **Member spotlights** on the PartyCohesion Facebook Page only say "Spoke about it in the Congressional Record" when a checked link exists. Every week's spotlights also go through a pull request that a person reviews before anything posts.
-- Nothing is coded or summarized automatically. Stances on the Campaign Statements page are coded by hand, separately.
+- Nothing is coded or summarized automatically. Stances on the Campaign Statements page are labeled separately, with an AI assistant (Claude).
 
 ## What I'd do next
 

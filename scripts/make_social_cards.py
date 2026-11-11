@@ -393,7 +393,7 @@ def card_floor(f: dict, size: str) -> str:
     s_ok, s_n = int(fr.loc["Senate", "sum"]), int(fr.loc["Senate", "size"])
     exc = f["floor_exceptions"]
     exc_names = ", ".join(display_name(n).split()[-1] for n in exc["name"])
-    src = "Congressional Record (GovInfo), floor debate 2022 to 2024, each member's remarks read and coded by hand"
+    src = "Congressional Record (GovInfo), floor debate 2022 to 2024, each member's remarks labeled with AI (Claude)"
     head = "Said it on the floor, then voted that way"
     sub = ("Members who took a clear position in floor debate on Ukraine aid (2023 to 2024) or the Respect for "
            "Marriage Act (2022), and how they voted on the final bill.")

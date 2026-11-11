@@ -17,8 +17,8 @@ have voted yea on Roll Call No. 343". So each candidate is checked against the s
     data). That catches tributes, schedule announcements and speeches on another subject given during a bill's
     debate time.
 
-It records only that they spoke about the bill and where; it does not code what they said. Stances are coded by
-hand separately, in data/floor_statements.csv.
+It records only that they spoke about the bill and where; it does not code what they said. Stances are labeled
+separately, with an AI assistant (Claude), in data/floor_statements.csv.
 
 No API key: www.govinfo.gov serves the sitemaps, MODS and text files directly. Downloads are cached in --cache.
 
