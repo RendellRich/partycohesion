@@ -75,7 +75,7 @@ def wrap_title(title: str, width: int = TITLE_CHARS) -> tuple[str, int]:
     return "<br>".join(lines), len(lines)
 
 
-def show_chart(fig, title: str, filename: str, key: str | None = None, on_select=None):
+def show_chart(fig, title: str, filename: str, key: str | None = None, on_select=None, source: str = SOURCE):
     """Style a Plotly figure for the site and social sharing, in the visitor's light or dark theme, then render it.
     Figures are written with the dark tokens; in light mode each token is swapped for its light partner.
     Pass on_select="rerun" (with a key) to get click selections back, as st.plotly_chart does."""
@@ -118,7 +118,7 @@ def show_chart(fig, title: str, filename: str, key: str | None = None, on_select
     fig.update_yaxes(automargin=True, gridcolor=t["grid"], gridwidth=1, zerolinecolor=t["grid"], linecolor=t["grid"],
                      tickfont=dict(color=t["muted"]), title_font=dict(color=t["muted"]))
     fig.add_annotation(
-        text=SOURCE, xref="paper", yref="paper", x=1, y=1, xanchor="right", yanchor="bottom",
+        text=source, xref="paper", yref="paper", x=1, y=1, xanchor="right", yanchor="bottom",
         yshift=top - (14 + 21 * lines + 10), showarrow=False, font=dict(size=11, color=t["muted"]),
         # line up with the figure's right edge, not the plot's, so a wide right margin can't push it off the left
         xshift=max((fig.layout.margin.r if fig.layout.margin.r is not None else 80) - 8, 0),
