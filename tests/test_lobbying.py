@@ -64,3 +64,25 @@ def test_slim_keeps_quarterly_reports_only():
     assert [(r["issue_code"], r["description"]) for r in rows] == [("HCR", "S. 12"), ("TAX", "")]
     assert P.slim({**filing, "filing_type": "RR"}) == []
     assert P.slim({**filing, "filing_type": "Q2Y"}) == []  # "no activity" report
+
+
+def test_titles_for_named_bills_only():
+    links = pd.DataFrame({"congress": [118, 118, 117], "bill_number": ["HR8070", "HR8070", "HR1"]})
+    names = {118: {"HR8070": "NDAA 2025", "HR2": "Secure the Border Act"}, 117: {}}
+    out = L.bill_titles(links, titles=lambda c: names[c])
+    assert out.to_dict("records") == [{"congress": 118, "bill_number": "HR8070", "title": "NDAA 2025"}]
+
+
+def test_page_titles_prefer_official_then_votes(tmp_path):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from lobbying import bill_titles
+    official = tmp_path / "t.csv.gz"
+    pd.DataFrame({"congress": [118], "bill_number": ["HR8997"], "title": ["Energy and Water Act, 2025"]}).to_csv(
+        official, index=False, compression="gzip")
+    votes = pd.DataFrame({"congress": [118, 118, 118], "bill_number": ["HR8997", "HR7024", "HR4820"],
+                          "label": ["Ogles of Tennessee Part A Amendment No. 36 to H.R. 8997", "Tax Relief Act",
+                                    "Escobar of Texas Part B Amendment No. 5 to H.R. 4820"]})
+    t = bill_titles(votes, official=official, checked=None)
+    assert t[(118, "HR8997")] == "Energy and Water Act, 2025"
+    assert t[(118, "HR7024")] == "Tax Relief Act"
+    assert (118, "HR4820") not in t.index  # only an amendment vote: no title rather than the amendment's text

@@ -2,18 +2,17 @@ name: Pull lobbying reports
 
 # Downloads Lobbying Disclosure Act quarterly reports from lda.gov (scripts/lobbying_pull.py), matches the bills they
 # name to PartyCohesion's bills (scripts/lobbying_index.py), and opens a pull request with
-# data/lobbying_bill_mentions.csv.gz and data/lobbying_coverage.csv. Nothing on the site changes until it is merged.
+# data/lobbying_bill_mentions.csv.gz, data/lobbying_coverage.csv and data/lobbying_bill_titles.csv.gz. Nothing on the
+# site changes until it is merged.
 #
-# - First run: merging this file starts the full 2008-to-now pull. It takes about 12 hours, one job per year, two at a
-#   time, because lda.gov allows 120 requests a minute per API key and returns 25 reports a request.
+# - The full 2008-to-now pull ran once, started by a push of this file (since removed so edits don't restart it). It
+#   takes about 12 hours, one job per year, two at a time, because lda.gov allows 120 requests a minute per API key
+#   and returns 25 reports a request.
 # - Every quarter, on the 25th of January, April, July and October (after the reports are due on the 20th), it pulls
 #   the current year again, and the previous year in January.
 # - By hand: Actions > Pull lobbying reports > Run workflow, with a first and last year.
 # Needs the LDA_API_KEY repository secret (free, from https://lda.gov/api/register/).
 on:
-  push:
-    branches: [main]
-    paths: [".github/workflows/lobbying-pull.yml"]
   schedule:
     - cron: "17 13 25 1,4,7,10 *"
   workflow_dispatch:
@@ -115,20 +114,20 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          git add -N data/lobbying_bill_mentions.csv.gz data/lobbying_coverage.csv
-          if git diff --quiet -- data/lobbying_bill_mentions.csv.gz data/lobbying_coverage.csv; then
+          git add -N data/lobbying_bill_mentions.csv.gz data/lobbying_coverage.csv data/lobbying_bill_titles.csv.gz
+          if git diff --quiet -- data/lobbying_bill_mentions.csv.gz data/lobbying_coverage.csv data/lobbying_bill_titles.csv.gz; then
             echo "No change in the lobbying data."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B auto/lobbying
-          git add data/lobbying_bill_mentions.csv.gz data/lobbying_coverage.csv
+          git add data/lobbying_bill_mentions.csv.gz data/lobbying_coverage.csv data/lobbying_bill_titles.csv.gz
           git commit -m "Lobbying reports matched to bills ($(date -u +%Y-%m-%d))"
           git push --force origin auto/lobbying
           {
             echo "Bills named in Lobbying Disclosure Act reports, matched by \`scripts/lobbying_index.py\`."
-            echo "Nothing on the site uses this data yet."
+            echo "The Lobbying Reports page reads this data once merged."
             echo
             echo '```'
             cat /tmp/index.txt
