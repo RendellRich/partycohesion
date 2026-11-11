@@ -95,9 +95,11 @@ def _rule_targets(text: str) -> set[str]:
 
 
 @functools.lru_cache(maxsize=12)
-def _read(congress: int, cache: Path = CACHE) -> dict[str, tuple[str, list[str], str | None]]:
-    """{"HR2913": (profile text, parts, introduced date)} for every bill and resolution, from one pass over the zips."""
-    return {key: (profile(bill), profile_parts(bill), bill.findtext("introducedDate") or None)
+def _read(congress: int, cache: Path = CACHE) -> dict[str, tuple[str, list[str], str | None, str]]:
+    """{"HR2913": (profile text, parts, introduced date, display title)} for every bill and resolution, from one pass
+    over the zips."""
+    return {key: (profile(bill), profile_parts(bill), bill.findtext("introducedDate") or None,
+                  strip(bill.findtext("title")))
             for key, bill in _bills(congress, cache)}
 
 
@@ -115,6 +117,12 @@ def parts(congress: int, cache: Path = CACHE) -> dict[str, list[str]]:
 def introduced(congress: int, cache: Path = CACHE) -> dict[str, str]:
     """{"HR2913": "2025-04-14"}: when each bill or resolution of a Congress was introduced."""
     return {key: v[2] for key, v in _read(congress, cache).items() if v[2]}
+
+
+def titles(congress: int, cache: Path = CACHE) -> dict[str, str]:
+    """{"HR8070": "Servicemember Quality of Life Improvement and ..."}: each bill's display title, the one
+    Congress.gov shows (the short title once it has one, else the official title)."""
+    return {key: v[3] for key, v in _read(congress, cache).items() if v[3]}
 
 
 def profiles(congress: int, cache: Path = CACHE) -> dict[str, str]:

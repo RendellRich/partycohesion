@@ -38,6 +38,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 OUT = ROOT / "data" / "lobbying_bill_mentions.csv.gz"
 COVERAGE = ROOT / "data" / "lobbying_coverage.csv"
+TITLES = ROOT / "data" / "lobbying_bill_titles.csv.gz"
 QUARTER_END = {"first_quarter": "03-31", "second_quarter": "06-30", "third_quarter": "09-30", "fourth_quarter": "12-31"}
 QUARTER = {"first_quarter": 1, "second_quarter": 2, "third_quarter": 3, "fourth_quarter": 4}
 SLACK_DAYS = 7
@@ -139,6 +140,18 @@ def build(acts: pd.DataFrame, introduced=None) -> tuple[pd.DataFrame, pd.DataFra
     return out.sort_values(["congress", "bill_number", "filing_year", "quarter", "client"]), coverage, dict(reasons)
 
 
+def bill_titles(links: pd.DataFrame, titles=None) -> pd.DataFrame:
+    """congress, bill_number, title for each bill the reports name: the display title from GovInfo BILLSTATUS, so the
+    site can name bills that never had a vote on their passage."""
+    import bill_topics
+    titles = titles or bill_topics.titles
+    rows = []
+    for c, bills in links.groupby("congress")["bill_number"]:
+        names = titles(int(c))
+        rows += [{"congress": int(c), "bill_number": b, "title": names[b]} for b in sorted(set(bills)) if names.get(b)]
+    return pd.DataFrame(rows, columns=["congress", "bill_number", "title"])
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description="Match bills named in lobbying reports to PartyCohesion's bills.")
     p.add_argument("paths", nargs="+", type=Path)
@@ -150,8 +163,14 @@ def main() -> None:
     if COVERAGE.exists():
         oldc = pd.read_csv(COVERAGE)
         coverage = pd.concat([oldc[~oldc["filing_year"].isin(coverage["filing_year"])], coverage]).sort_values("filing_year")
+    titles = bill_titles(out)
+    if TITLES.exists():  # keep titles GovInfo no longer serves for bills still in the data
+        titles = pd.concat([titles, pd.read_csv(TITLES)]).drop_duplicates(["congress", "bill_number"])
+    keep = set(zip(out["congress"], out["bill_number"]))
+    titles = titles[[k in keep for k in zip(titles["congress"], titles["bill_number"])]]
     out.to_csv(OUT, index=False, compression="gzip")
     coverage.to_csv(COVERAGE, index=False)
+    titles.sort_values(["congress", "bill_number"]).to_csv(TITLES, index=False, compression="gzip")
     print(json.dumps(reasons), f"{len(out):,} report-bill links -> {OUT}", sep="\n")
 
 

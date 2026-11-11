@@ -70,16 +70,24 @@ def bill_counts(links: pd.DataFrame) -> pd.DataFrame:
 AMENDMENT = r"amendment no\.|^providing for (?:the )?consideration|^on (?:motion|cloture)"
 
 
-def bill_titles(votes: pd.DataFrame, checked: Path | None = DATA_DIR / "bill_titles.csv") -> pd.Series:
-    """(congress, bill) -> a readable name: the checked title in data/bill_titles.csv, else the most common roll call
-    description that isn't an amendment, a rule or a motion. Bills with only amendment votes get no title rather than
-    an amendment's description."""
+@st.cache_data(show_spinner=False)
+def _official(path: str, mtime: float) -> pd.Series:
+    return pd.read_csv(path).dropna(subset=["title"]).set_index(["congress", "bill_number"])["title"]
+
+
+def bill_titles(votes: pd.DataFrame, official: Path | None = DATA_DIR / "lobbying_bill_titles.csv.gz",
+                checked: Path | None = DATA_DIR / "bill_titles.csv") -> pd.Series:
+    """(congress, bill) -> a readable name: the display title from GovInfo (written by scripts/lobbying_index.py), else
+    the checked title in data/bill_titles.csv, else the most common roll call description that isn't an amendment, a
+    rule or a motion. A bill with none of these gets no title rather than an amendment's description."""
     v = votes.dropna(subset=["bill_number"])[["congress", "bill_number", "label"]]
     good = v[~v["label"].str.contains(AMENDMENT, case=False, regex=True, na=False)]
     best = good.groupby(["congress", "bill_number"])["label"].agg(lambda s: s.mode().iat[0])
     if checked is not None and checked.exists():
         known = pd.read_csv(checked).dropna(subset=["title"]).set_index(["congress", "bill_number"])["title"]
         best = known.combine_first(best)
+    if official is not None and official.exists():
+        best = _official(str(official), official.stat().st_mtime).combine_first(best)
     return best.rename("title")
 
 
