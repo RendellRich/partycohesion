@@ -206,7 +206,7 @@ Data: Voteview, House roll calls 373 and 513
 
 Do members vote the way they talk in floor debate?
 
-I read the Congressional Record remarks of every member who took a clear position on Ukraine aid (2023 to 2024) or the Respect for Marriage Act (2022), then checked their vote on the final bill.
+Using an AI assistant (Claude), I labeled the Congressional Record remarks of every member who spoke on Ukraine aid (2023 to 2024) or the Respect for Marriage Act (2022). Then I compared each clear position with that member's vote on the final bill.
 
 House: 101 of 101 voted the way they spoke.
 Senate: 44 of 47.
