@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -q && sudo apt-get install -y -q poppler-utils
-          pip install "pandas>=2.0.0" "numpy>=1.24.0" "pyyaml>=6.0"
+          pip install "pandas>=2.0.0" "numpy>=1.24.0" "pyyaml>=6.0" "scikit-learn>=1.4"
 
       # New White House statements on bills (only the current administration changes)
       - name: Update the president's stated positions

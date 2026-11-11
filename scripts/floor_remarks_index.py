@@ -12,6 +12,10 @@ have voted yea on Roll Call No. 343". So each candidate is checked against the s
     remarks must name the bill, by number (H.R. 2913) or by its short title (Ukraine Support Act). That covers a
     rule for debating several bills at once, and a bill that only comes up in passing.
   - and if they name a different bill from the same section but never this one, they were talking about the other.
+  - finally, their remarks have to share some of the bill's vocabulary: a TF-IDF similarity of at least TOPIC_MIN
+    with the bill's titles, subjects, summary and amendments (scripts/bill_topics.py, from GovInfo's BILLSTATUS
+    data). That catches tributes, schedule announcements and speeches on another subject given during a bill's
+    debate time.
 
 It records only that they spoke about the bill and where; it does not code what they said. Stances are coded by
 hand separately, in data/floor_statements.csv.
@@ -50,7 +54,8 @@ SKIP_TITLES = re.compile(r"^(PRAYER|PLEDGE OF ALLEGIANCE|THE JOURNAL|ADJOURNMENT
                          r"AUTHORITY FOR COMMITTEES TO MEET|PRIVILEGES? OF THE FLOOR|ORDERS? FOR |"
                          r"UNANIMOUS[- ]CONSENT (?:AGREEMENT|REQUEST)|MEASURES? (?:PLACED|READ)|ENROLLED BILLS?|"
                          r"MESSAGES? FROM THE (?:HOUSE|SENATE|PRESIDENT)|EXECUTIVE AND OTHER COMMUNICATIONS|"
-                         r"INTRODUCTION OF BILLS|LEAVE OF ABSENCE|BILLS? PRESENTED|SUBMISSION OF CONCURRENT)", re.I)
+                         r"INTRODUCTION OF BILLS|LEAVE OF ABSENCE|BILLS? PRESENTED|SUBMISSION OF CONCURRENT|LEGISLATIVE PROGRAM|"
+                         r"SCHEDULE|ORDER OF BUSINESS|PROGRAM FOR)", re.I)
 COLUMNS = ["bioguide_id", "congress", "bill_number", "date", "chamber", "granule"]
 MIN_WORDS = 60
 
@@ -273,11 +278,67 @@ def verify(rows: pd.DataFrame, cache: Path, workers: int = 20) -> pd.DataFrame:
             reasons.append("not_about_bill")
         else:
             reasons.append("kept")
+    kept = [i for i, x in enumerate(reasons) if x == "kept"]
+    for i, (sim, other) in zip(kept, topic_scores(rows.iloc[kept], {k: v[1] for k, v in said.items()})):
+        if off_topic(sim, other):
+            reasons[i] = "off_topic"
     REASONS.update(pd.Series(reasons).value_counts().to_dict())
     return rows[[x == "kept" for x in reasons]]
 
 
 REASONS: dict = {}  # why each candidate was kept or left out, for --report
+TOPIC_SCORES: list = []  # for --topic-scores: how close each kept link's remarks are to the bill's own description
+
+
+# Remarks less similar than this to the bill's own description (TF-IDF cosine) are about something else. Set from a
+# hand-labeled sample of 100 links (writeups/checking-the-congressional-record.md): below 0.06, most links were wrong.
+TOPIC_MIN = 0.06
+STOP = {"speaker", "president", "chair", "chairman", "madam", "gentleman", "gentlewoman", "gentleman's", "colleague",
+        "colleagues", "time", "yield", "minutes", "balance", "today", "rise", "support", "oppose", "opposition",
+        "urge", "vote", "votes", "voted", "bill", "bills", "legislation", "act", "resolution", "amendment", "amendments",
+        "house", "senate", "congress", "member", "members", "floor", "committee", "chairman", "ranking", "thank",
+        "just", "want", "know", "think", "going", "said", "say", "people", "american", "americans", "country",
+        "united", "states", "state", "federal", "government", "year", "years", "make", "need", "important", "way"}
+
+
+def topic_scores(rows: pd.DataFrame, said: dict) -> list[tuple[float | None, float | None]]:
+    """(similarity to this bill, best similarity to another bill in the same section) for each row, in order, by
+    TF-IDF cosine between the member's remarks and each bill's profile (scripts/bill_topics.py). None where there's
+    no profile."""
+    out: list = [(None, None)] * len(rows)
+    if rows.empty:
+        return out
+    import bill_topics
+    from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS, TfidfVectorizer
+    recs = list(rows.itertuples(index=False))
+    for congress in dict.fromkeys(r.congress for r in recs):
+        prof = bill_topics.profiles(int(congress))
+        if not prof:
+            continue
+        keys = list(prof)
+        big = len(keys) > 100  # a real Congress; tiny sets are tests
+        vec = TfidfVectorizer(stop_words=list(ENGLISH_STOP_WORDS | STOP), sublinear_tf=True, min_df=2 if big else 1,
+                              max_df=0.3 if big else 1.0, token_pattern=r"(?u)\b[a-zA-Z][a-zA-Z]{2,}\b")
+        bills = vec.fit_transform([prof[k] for k in keys])
+        where = {k: i for i, k in enumerate(keys)}
+        idx = [i for i, r in enumerate(recs) if r.congress == congress]
+        speech_keys = list(dict.fromkeys((recs[i].date, recs[i].granule, recs[i].bioguide_id) for i in idx))
+        speech = vec.transform([said.get(k, "") for k in speech_keys])
+        sk = {k: j for j, k in enumerate(speech_keys)}
+        for i in idx:
+            r = recs[i]
+            v = speech[sk[(r.date, r.granule, r.bioguide_id)]]
+            sim = lambda b: float(v.multiply(bills[where[b]]).sum()) if b in where else None
+            others = [x for x in (sim(o) for o in str(r.others).split()) if x is not None]
+            out[i] = (sim(r.bill_number), max(others) if others else None)
+            TOPIC_SCORES.append({"congress": r.congress, "bill_number": r.bill_number, "bioguide_id": r.bioguide_id,
+                                 "date": r.date, "granule": r.granule, "sim": out[i][0], "other": out[i][1]})
+    return out
+
+
+def off_topic(sim: float | None, other: float | None = None) -> bool:
+    """Remarks that barely share a word with what the bill is about. No verdict when the bill has no description."""
+    return sim is not None and sim < TOPIC_MIN
 
 
 def build(years: list[int], cache: Path, workers: int = 8, recent: int | None = None) -> tuple[pd.DataFrame, list[str]]:
@@ -304,6 +365,7 @@ def main() -> None:
     ap.add_argument("--cache", type=Path, default=Path("/tmp/crec/mods"))
     ap.add_argument("--recent", type=int, help="only re-read the last N days of the Record (for the twice-weekly refresh)")
     ap.add_argument("--report", type=Path, help="append why candidates were kept or left out, as a JSON line")
+    ap.add_argument("--topic-scores", type=Path, help="append each kept link's topic similarity scores (CSV)")
     a = ap.parse_args()
     df, read = build(a.years, a.cache, recent=a.recent)
     old = pd.read_csv(OUT)[COLUMNS] if OUT.exists() else pd.DataFrame(columns=COLUMNS)
@@ -314,6 +376,8 @@ def main() -> None:
     out = pd.concat([keep, df]).drop_duplicates(["bioguide_id", "bill_number", "date", "granule"])
     out.sort_values(["congress", "bill_number", "date", "bioguide_id"]).to_csv(
         OUT, index=False, compression={"method": "gzip", "mtime": 0})
+    if a.topic_scores and TOPIC_SCORES:
+        pd.DataFrame(TOPIC_SCORES).to_csv(a.topic_scores, mode="a", index=False, header=not a.topic_scores.exists())
     if a.report:
         with a.report.open("a") as fh:
             fh.write(json.dumps({"years": a.years, "candidates": int(sum(REASONS.values())),
