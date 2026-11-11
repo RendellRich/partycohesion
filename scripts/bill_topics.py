@@ -94,10 +94,16 @@ def _rule_targets(text: str) -> set[str]:
 
 
 @functools.lru_cache(maxsize=12)
+def _read(congress: int, cache: Path = CACHE) -> dict[str, tuple[str, list[str], str | None]]:
+    """{"HR2913": (profile text, parts, introduced date)} for every bill and resolution, from one pass over the zips."""
+    return {key: (profile(bill), profile_parts(bill), bill.findtext("introducedDate") or None)
+            for key, bill in _bills(congress, cache)}
+
+
 def parts(congress: int, cache: Path = CACHE) -> dict[str, list[str]]:
     """{"HR2913": [titles, subjects, summary, amendment, ...]} for every bill and resolution of a Congress. A rule also
     gets the parts of the bills it sets up."""
-    out = {key: profile_parts(bill) for key, bill in _bills(congress, cache)}
+    out = {key: v[1] for key, v in _read(congress, cache).items()}
     for key, ps in list(out.items()):
         if key.startswith("HRES") and ps:
             for b in sorted(_rule_targets(ps[0])):
@@ -105,27 +111,18 @@ def parts(congress: int, cache: Path = CACHE) -> dict[str, list[str]]:
     return out
 
 
-@functools.lru_cache(maxsize=12)
+def introduced(congress: int, cache: Path = CACHE) -> dict[str, str]:
+    """{"HR2913": "2025-04-14"}: when each bill or resolution of a Congress was introduced."""
+    return {key: v[2] for key, v in _read(congress, cache).items() if v[2]}
+
+
 def profiles(congress: int, cache: Path = CACHE) -> dict[str, str]:
     """{"HR2913": profile text} for every bill and resolution of a Congress."""
-    out = {}
-    for path in download(congress, cache):
-        try:
-            z = zipfile.ZipFile(path)
-        except zipfile.BadZipFile:
-            continue
-        for name in z.namelist():
-            try:
-                bill = ET.fromstring(z.read(name)).find("bill")
-            except ET.ParseError:
-                continue
-            if bill is None:
-                continue
-            key = f"{(bill.findtext('type') or bill.findtext('billType') or '').upper()}{bill.findtext('number')}"
-            out[key] = profile(bill)
+    out = {key: v[0] for key, v in _read(congress, cache).items()}
     # A rule ("Providing for consideration of the bill (H.R. 3074) ...") is about the bills it sets up for debate.
     for key, text in list(out.items()):
-        if key.startswith("HRES") and re.match(r"providing for (?:the )?consideration", text, re.I):
-            named = {re.sub(r"[^A-Z0-9]", "", b.upper()) for b in re.findall(r"\(((?:H|S)\.[^)]{1,20}?\d+)\)", text[:3000])}
-            out[key] = text + " " + " ".join(out.get(b, "")[:3000] for b in sorted(named))
+        if key.startswith("HRES"):
+            named = _rule_targets(text)
+            if named:
+                out[key] = text + " " + " ".join(out.get(b, "")[:3000] for b in sorted(named))
     return out

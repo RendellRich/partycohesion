@@ -134,7 +134,10 @@ st.markdown("""
 In a member's voting record, **Their remarks** links to where they spoke about that bill in the Congressional Record.
 Each day's Record on GovInfo lists every section with the members who spoke in it, by Bioguide ID, and the bills it
 references. That list is only the starting point, because it counts a member as speaking even when all they said
-was how they would have voted on a roll call they missed. So each link is checked against the section's text:
+was how they would have voted on a roll call they missed. It also tags every bill number with the current Congress,
+so a speech citing an older bill with the same number can look like it's about a new one. Links dated more than a
+week before the bill was introduced are dropped for that reason. Then each link is checked against the section's
+text:
 
 - The member's own words in the section have to come to at least 60, leaving out procedural lines ("I yield back",
   "I ask unanimous consent"), statements explaining a missed vote, and documents read into the Record.
