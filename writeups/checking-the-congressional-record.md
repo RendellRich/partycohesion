@@ -21,7 +21,7 @@ These links would have gone onto public posts that name members of Congress. A w
 
 First, sections that are only lists or notices are skipped by title: bill introductions, committee meeting notices, messages between the chambers, the weekly schedule, and so on. That leaves **591,053** candidate links.
 
-Next, links dated more than a week before the bill was introduced are dropped. The metadata tags every bill number with the current Congress, so a 2013 speech about "H.R. 3590", the 2009 health care law, shows up as a link to the 2013 bill that reused that number. A week of slack keeps Senate statements whose Record date runs a day or two ahead of the introduction date, and remarks on a bill about to be introduced.
+Next, links dated more than a week before the bill was introduced are dropped. The metadata tags every bill number with the current Congress, so a 2013 speech about "H.R. 3590", the 2009 health care law, shows up as a link to the 2013 bill that reused that number. A week of slack keeps Senate statements whose Record date runs a day or two ahead of the introduction date, and remarks on a bill about to be introduced. Links to a bill number that doesn't exist in that Congress at all ("H.R. 1" in a Congress with no H.R. 1, or a misread number) are dropped too.
 
 Each remaining link is then checked against the text of the section:
 
@@ -36,13 +36,14 @@ Then a vote links to the remark closest to it, from 30 days before the vote to a
 
 | What happened to the candidate link | Links | Share |
 |---|---:|---:|
-| Kept: the member's own words about the bill | 133,998 | 22.7% |
-| Spoke, but not about this bill | 289,235 | 48.9% |
-| No turn of theirs in the text (lists, notices) | 59,581 | 10.1% |
-| Only procedural lines, or too short | 43,731 | 7.4% |
-| Words don't match the bill's topic (step 4) | 25,731 | 4.4% |
+| Kept: the member's own words about the bill | 133,619 | 22.6% |
+| Spoke, but not about this bill | 285,206 | 48.3% |
+| No turn of theirs in the text (lists, notices) | 59,494 | 10.1% |
+| Only procedural lines, or too short | 43,539 | 7.4% |
+| Words don't match the bill's topic (step 4) | 25,766 | 4.4% |
 | Dated more than a week before the bill existed | 21,344 | 3.6% |
-| Only explained a missed vote | 17,433 | 2.9% |
+| Only explained a missed vote | 17,345 | 2.9% |
+| No such bill in that Congress | 4,740 | 0.8% |
 | **Total candidates** | **591,053** | |
 
 About one link in five survives. The biggest group is the third rule: the member spoke in a section that mentions the bill, but not about it.
@@ -51,24 +52,24 @@ By Congress:
 
 | Congress | Years | Candidates | Pass steps 1 to 3 | Kept |
 |---|---|---:|---:|---:|
-| 110th | 2007 to 2008 | 147,474 | 30,328 | 26,810 |
-| 111th | 2009 to 2010 | 75,416 | 25,278 | 22,305 |
-| 112th | 2011 to 2012 | 66,956 | 17,322 | 14,327 |
-| 113th | 2013 to 2014 | 50,922 | 14,607 | 11,595 |
-| 114th | 2015 to 2016 | 49,573 | 15,276 | 12,636 |
-| 115th | 2017 to 2018 | 42,601 | 14,038 | 11,689 |
-| 116th | 2019 to 2020 | 46,940 | 12,818 | 10,540 |
-| 117th | 2021 to 2022 | 52,693 | 11,673 | 9,334 |
-| 118th | 2023 to 2024 | 32,043 | 9,791 | 7,957 |
-| 119th | 2025 to 2026, in progress | 26,435 | 8,598 | 6,805 |
+| 110th | 2007 to 2008 | 147,474 | 30,264 | 26,746 |
+| 111th | 2009 to 2010 | 75,416 | 25,226 | 22,253 |
+| 112th | 2011 to 2012 | 66,956 | 17,285 | 14,290 |
+| 113th | 2013 to 2014 | 50,922 | 14,515 | 11,503 |
+| 114th | 2015 to 2016 | 49,573 | 15,249 | 12,609 |
+| 115th | 2017 to 2018 | 42,601 | 14,028 | 11,660 |
+| 116th | 2019 to 2020 | 46,940 | 12,798 | 10,520 |
+| 117th | 2021 to 2022 | 52,693 | 11,647 | 9,292 |
+| 118th | 2023 to 2024 | 32,043 | 9,783 | 7,949 |
+| 119th | 2025 to 2026, in progress | 26,435 | 8,590 | 6,797 |
 
 ## How good is it?
 
-I read random samples by hand, and I kept changing the rules until the samples stopped turning up new kinds of mistakes. Then I took fresh samples I hadn't seen and scored those.
+Every label in this section was made with an AI assistant (Claude) reading each member's remarks against the bill. The labels for the threshold sample, the best-part samples and the blind 200 are in `writeups/data/`; the two earliest samples of 40 and the 30 dropped links weren't saved. I kept changing the rules until the samples stopped turning up new kinds of mistakes. Then I took fresh samples that hadn't been seen and scored those.
 
 **Before the topic step.** Steps 1 to 3 kept about 162,000 links. Of 40 random ones, 30 were clearly the member talking about that bill, 5 were unclear, and 5 were not. The misses included a weekly schedule announcement, a tribute to a colleague given during a bill's debate time, and speeches about a different bill in the same debate. None of them named a different bill, so the rules couldn't see them.
 
-**Picking the topic threshold.** I scored every one of those links for similarity to its bill, then hand-labeled 100 of them, oversampling the low scores where the decision is made:
+**Picking the topic threshold.** I scored every one of those links for similarity to its bill, then labeled 100 of them, oversampling the low scores where the decision is made:
 
 | Similarity score | Share of links | About the bill | Unclear | Not about the bill |
 |---|---:|---:|---:|---:|
@@ -108,7 +109,7 @@ That's 87.5% clearly right, up from 75%, and 7.5% clearly wrong, down from 12.5%
 
 So the change brings back right links at about the same precision as the rest.
 
-**Blind check of 200 links.** The samples above are small, and some were drawn to test one change. For a precision number to quote, I drew 200 kept links at random from the final index, none of them in an earlier sample, and labeled each without seeing its similarity score or why it was kept. These labels were made with an AI assistant (Claude) reading each member's remarks against the bill's title. They are in `writeups/data/audit_blind200.csv`.
+**Blind check of 200 links.** The samples above are small, and some were drawn to test one change. For a precision number to quote, I drew 200 kept links at random from the final index, none of them in an earlier sample, and labeled each without seeing its similarity score or why it was kept. They are in `writeups/data/audit_blind200.csv`.
 
 | Label | Links | Share | 95% interval |
 |---|---:|---:|---:|
@@ -116,7 +117,7 @@ So the change brings back right links at about the same precision as the rest.
 | Unclear | 16 | 8.0% | 5% to 13% |
 | Not about the bill | 7 | 3.5% | 2% to 7% |
 
-Most of the unclear ones are on the line rather than wrong: a rule debate that only gets to the bill after a tribute, an earmark list filed under the bill, or a speech on a smaller bill that was folded into a bigger package. The 7 wrong ones are mostly the same kinds seen before: a speech on a nominee or a different bill given during this bill's debate time, and one reference to H.R. 1 in a Congress with no H.R. 1, which no rule checks for yet.
+Most of the unclear ones are on the line rather than wrong: a rule debate that only gets to the bill after a tribute, an earmark list filed under the bill, or a speech on a smaller bill that was folded into a bigger package. The 7 wrong ones are mostly the same kinds seen before: a speech on a nominee or a different bill given during this bill's debate time, and one reference to H.R. 1 in a Congress with no H.R. 1. That last kind is now dropped by the rule for bills that don't exist in that Congress.
 
 **Links that were dropped (recall).** Before the topic step, of 30 random dropped links where the member did have a turn in the text, 2 should have been kept and 1 more possibly. The topic step adds the 5.5% loss above.
 

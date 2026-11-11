@@ -82,8 +82,9 @@ def _bills(congress: int, cache: Path):
                 bill = ET.fromstring(z.read(name)).find("bill")
             except ET.ParseError:
                 continue
-            if bill is not None:
-                yield f"{(bill.findtext('type') or bill.findtext('billType') or '').upper()}{bill.findtext('number')}", bill
+            if bill is not None:  # older files say billType and billNumber
+                kind = bill.findtext("type") or bill.findtext("billType") or ""
+                yield f"{kind.upper()}{bill.findtext('number') or bill.findtext('billNumber')}", bill
 
 
 def _rule_targets(text: str) -> set[str]:

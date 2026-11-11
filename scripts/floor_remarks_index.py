@@ -378,6 +378,21 @@ def before_introduced(rows: pd.DataFrame) -> pd.Series:
     return pd.Series(gap < -INTRODUCED_SLACK_DAYS, index=rows.index).fillna(False).astype(bool)
 
 
+def missing_bill(rows: pd.DataFrame) -> pd.Series:
+    """True for rows whose bill isn't in BILLSTATUS for that Congress ("H.R. 1" in a Congress that had none, or a
+    misread number such as S. Res. 1756), once GovInfo's bulk data runs well past the speech. A bill introduced in the
+    last few weeks may not be in the bulk data yet, so it isn't dropped."""
+    if rows.empty:
+        return pd.Series(False, index=rows.index)
+    import bill_topics
+    when = {c: bill_topics.introduced(int(c)) for c in rows["congress"].unique()}
+    newest = {c: max(d.values()) if d else None for c, d in when.items()}
+    out = [bool(newest[c]) and b not in when[c] and
+           (pd.Timestamp(newest[c]) - pd.Timestamp(d)).days > INTRODUCED_SLACK_DAYS * 2
+           for c, b, d in zip(rows["congress"], rows["bill_number"], rows["date"])]
+    return pd.Series(out, index=rows.index)
+
+
 def build(years: list[int], cache: Path, workers: int = 8, recent: int | None = None) -> tuple[pd.DataFrame, list[str]]:
     cache.mkdir(parents=True, exist_ok=True)
     ids = days(years, cache)
@@ -393,7 +408,9 @@ def build(years: list[int], cache: Path, workers: int = 8, recent: int | None = 
     df = df.drop_duplicates(["bioguide_id", "bill_number", "date", "granule"])
     early = before_introduced(df)
     REASONS["before_introduced"] = REASONS.get("before_introduced", 0) + int(early.sum())
-    df = verify(df[~early], cache / "html")
+    missing = missing_bill(df) & ~early
+    REASONS["no_such_bill"] = REASONS.get("no_such_bill", 0) + int(missing.sum())
+    df = verify(df[~early & ~missing], cache / "html")
     read = [i.removeprefix("CREC-") for i, p in zip(ids, paths) if p]
     return df[COLUMNS].sort_values(["congress", "bill_number", "date", "bioguide_id"]), read
 
