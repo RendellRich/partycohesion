@@ -1,0 +1,143 @@
+name: Pull lobbying reports
+
+# Downloads Lobbying Disclosure Act quarterly reports from lda.gov (scripts/lobbying_pull.py), matches the bills they
+# name to PartyCohesion's bills (scripts/lobbying_index.py), and opens a pull request with
+# data/lobbying_bill_mentions.csv.gz and data/lobbying_coverage.csv. Nothing on the site changes until it is merged.
+#
+# - First run: merging this file starts the full 2008-to-now pull. It takes about 12 hours, one job per year, two at a
+#   time, because lda.gov allows 120 requests a minute per API key and returns 25 reports a request.
+# - Every quarter, on the 25th of January, April, July and October (after the reports are due on the 20th), it pulls
+#   the current year again, and the previous year in January.
+# - By hand: Actions > Pull lobbying reports > Run workflow, with a first and last year.
+# Needs the LDA_API_KEY repository secret (free, from https://lda.gov/api/register/).
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/lobbying-pull.yml"]
+  schedule:
+    - cron: "17 13 25 1,4,7,10 *"
+  workflow_dispatch:
+    inputs:
+      first_year:
+        description: First filing year to pull
+        default: "2008"
+      last_year:
+        description: Last filing year to pull (blank for this year)
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: lobbying-pull
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      years: ${{ steps.years.outputs.years }}
+    steps:
+      - id: years
+        env:
+          EVENT: ${{ github.event_name }}
+          FIRST: ${{ inputs.first_year }}
+          LAST: ${{ inputs.last_year }}
+        run: |
+          now=$(date -u +%Y)
+          case "$EVENT" in
+            schedule)
+              if [ "$(date -u +%m)" = "01" ]; then first=$((now - 1)); else first=$now; fi; last=$now ;;
+            workflow_dispatch)
+              first=${FIRST:-2008}; last=${LAST:-$now} ;;
+            *)
+              first=2008; last=$now ;;
+          esac
+          years=$(python3 -c "import json; print(json.dumps(list(range($first, $last + 1))))")
+          echo "Pulling $years"
+          echo "years=$years" >> "$GITHUB_OUTPUT"
+
+  pull:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        year: ${{ fromJSON(needs.plan.outputs.years) }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Download ${{ matrix.year }} reports
+        env:
+          LDA_API_KEY: ${{ secrets.LDA_API_KEY }}
+          LDA_RATE: "55"
+        run: python scripts/lobbying_pull.py --year ${{ matrix.year }} --out data/raw/lda
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lda-${{ matrix.year }}
+          path: data/raw/lda/lda_${{ matrix.year }}.jsonl.gz
+          retention-days: 14
+
+  index:
+    needs: pull
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: lda-*
+          path: data/raw/lda
+          merge-multiple: true
+
+      - name: Match bills
+        run: |
+          ls -la data/raw/lda
+          python scripts/lobbying_index.py data/raw/lda/lda_*.jsonl.gz | tee /tmp/index.txt
+
+      - name: Open or update a pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git add -N data/lobbying_bill_mentions.csv.gz data/lobbying_coverage.csv
+          if git diff --quiet -- data/lobbying_bill_mentions.csv.gz data/lobbying_coverage.csv; then
+            echo "No change in the lobbying data."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B auto/lobbying
+          git add data/lobbying_bill_mentions.csv.gz data/lobbying_coverage.csv
+          git commit -m "Lobbying reports matched to bills ($(date -u +%Y-%m-%d))"
+          git push --force origin auto/lobbying
+          {
+            echo "Bills named in Lobbying Disclosure Act reports, matched by \`scripts/lobbying_index.py\`."
+            echo "Nothing on the site uses this data yet."
+            echo
+            echo '```'
+            cat /tmp/index.txt
+            echo '```'
+            echo
+            echo "Reports per year and how many name a bill: \`data/lobbying_coverage.csv\`."
+          } > /tmp/body.md
+          if [ -z "$(gh pr list --head auto/lobbying --state open --json number --jq '.[].number')" ]; then
+            gh pr create --base main --head auto/lobbying --title "Lobbying reports matched to bills ($(date -u +%Y-%m-%d))" --body-file /tmp/body.md
+          else
+            gh pr edit auto/lobbying --body-file /tmp/body.md
+          fi
