@@ -50,7 +50,7 @@ PartyCohesion is a free, neutral site built on the official roll-call record. It
 - A GitHub Action runs it twice a week. Before anything is committed, `scripts/validate_data.py` checks member counts, value ranges, and key vote totals against the official Yea and Nay counts, so a bad download never reaches the live site.
 - The scripts for the other sources (`cosponsor_votes.py`, `campaign_statements.py`, `floor_statements.py`, `build_president_positions.py`, `member_details.py`) each write one tidy CSV in `data/`.
 
-**Hand-coded stances.** Campaign statements and floor remarks are read and coded by a person: supports, opposes, conditions, or no clear stance. Keyword rules alone got only about a third of floor remarks right, so none are coded automatically. Every floor quote was checked word for word against the Congressional Record before publishing, and links to the full remarks.
+**AI-assisted stance labels.** Campaign statements and floor remarks were labeled with an AI assistant (Claude) reading each one: supports, opposes, conditions, or no clear stance. Keyword rules alone got only about a third of floor remarks right, so no stance comes from keyword rules. Every floor quote links to the full remarks, and `scripts/check_floor_quotes.py` checks each one word for word against the Congressional Record.
 
 **App.** Streamlit with Plotly.
 - Light and dark themes, which follow the visitor's device and switch from Settings. Every chart color is a theme token, so pages carry no theme logic.

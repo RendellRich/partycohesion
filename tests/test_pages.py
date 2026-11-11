@@ -371,3 +371,15 @@ def test_lobbying_page_with_data(monkeypatch):
     assert not at.exception, [e.value for e in at.exception]
     assert at.selectbox(key="lb_bill").value == "HR8070"
     assert any("named this bill" in m.value for m in at.markdown)
+
+
+def test_check_floor_quotes_catches_a_cut_sentence():
+    import sys
+    import pandas as pd
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from check_floor_quotes import missing
+    page = "<pre>It is unacceptable to throw money ``away,'' especially at a time when we cut our budget.</pre>"
+    rows = pd.DataFrame({"bioguide_id": ["A", "B"], "topic": ["t", "t"], "source_url": ["u", "u"],
+                         "quote": ['It is unacceptable to throw money "away," especially',
+                                   "It is unacceptable to throw money away, especially."]})
+    assert [b[0] for b in missing(rows, fetch=lambda url: page)] == ["B"]

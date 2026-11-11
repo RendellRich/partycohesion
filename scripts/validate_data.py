@@ -188,7 +188,7 @@ n_rolls = all_votes.groupby(["congress", "chamber"]).size().rename("rolls")
 both = pd.concat([held, n_rolls], axis=1).dropna()
 check((both["most"] <= both["rolls"]).all(), "a member is listed on more roll calls than the chamber held")
 
-# Campaign statements and votes: every hand-coded stance has a row, with a clear side and a real roll call
+# Campaign statements and votes: every labeled stance has a row, with a clear side and a real roll call
 if (DATA / "campaign_statement_votes.csv").exists():
     cs = pd.read_csv(DATA / "campaign_statement_votes.csv")
     st_codes = pd.read_csv(DATA / "campaign_stances.csv", comment="#")
