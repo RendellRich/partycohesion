@@ -161,6 +161,36 @@ summarized. Read it to see their reasons in their own words. Coverage starts wit
 updates twice a week. The hand-coded stances on the Campaign Statements page are a separate, smaller dataset.
 """)
 
+st.header("Lobbying reports")
+st.markdown("""
+Lobbyists file a public report with Congress every quarter under the Lobbying Disclosure Act: one report per client,
+listing the issues they worked on and, often, the bill numbers. The Lobbying Reports page counts the reports that
+name each bill, from 2008 on, using the official records on lda.gov (U.S. Senate Office of Public Records and the
+Clerk of the House).
+
+What the reports can't tell you, so the site never says it:
+
+- **Which members were lobbied.** A report names only the House, the Senate or an agency.
+- **Which side the client was on.** Reports don't say whether a client was for or against a bill.
+- **How much was spent on one bill.** One income or expense figure covers everything on a report.
+- **Whether lobbying changed a vote.** A report filed before a vote is timing, not cause.
+
+How a report is matched to a bill:
+
+1. An amended report replaces the one it amends, so each client's report for a quarter counts once.
+2. Bill numbers are found in the text the filer wrote (H.R. 2913, S. 12, H.J.Res. 7, and so on). A bill named only
+   by its title, such as "the farm bill," isn't matched.
+3. A number belongs to the Congress in session that quarter, unless the report says otherwise: a Congress named next
+   to it, or a Public Law number. A law cited with an earlier year ("Inflation Reduction Act of 2022" in a 2024 report)
+   is treated as an old law, not a current bill.
+4. The bill has to exist in that Congress and have been introduced by the end of the quarter, give or take a week.
+
+On a random sample of 6,000 reports from 2024, about 31% named at least one bill by number. Reports that discuss
+appropriations or other topics without a bill number aren't counted, so the counts are a floor, not a total. The
+download and matching code is `scripts/lobbying_pull.py` and `scripts/lobbying_index.py`. It refreshes every quarter,
+after reports are due.
+""")
+
 st.header("Member spotlights")
 st.markdown("""
 The project's Facebook Page posts a spotlight card for one member at a time: their party unity rate this Congress

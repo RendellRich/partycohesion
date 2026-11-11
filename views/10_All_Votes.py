@@ -7,6 +7,7 @@ import pandas as pd
 import streamlit as st
 
 from chart_utils import chamber_label, ordinal
+from lobbying import load as load_lobbying, summary_line
 from platform_utils import platform_roll_calls
 from ui import explainer, inject_css, intro, metric_row, vote_card
 from vote_index import load_votes, members_who_broke_ranks, search_votes, voteview_url
@@ -107,6 +108,13 @@ if pd.notna(v["topic"]):
     st.info(f"**On Platform Votes: {v['topic']}** ({v['status'].lower()}). A {v['dem_platform_vote']} vote matched the "
             f"Democratic platform and a {v['rep_platform_vote']} vote matched the Republican platform.")
     st.page_link("views/11_Platform_Votes.py", label="See who voted against their party's platform")
+if isinstance(v["bill_number"], str) and v["bill_number"]:
+    lobbied = summary_line(load_lobbying(), int(v["congress"]), v["bill_number"])
+    if lobbied:
+        st.markdown(f"**Lobbying:** {lobbied}")
+        if st.button("See who filed them", key="av_lobby"):
+            st.switch_page("views/15_Lobbying.py",
+                           query_params={"congress": str(int(v["congress"])), "bill": v["bill_number"]})
 
 st.markdown("---")
 st.caption("Source: Voteview roll-call records, refreshed twice a week. Only actual Yea and Nay floor votes are "

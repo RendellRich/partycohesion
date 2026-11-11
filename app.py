@@ -46,6 +46,7 @@ pages = {
     ],
     "Explore": [
         st.Page("views/10_All_Votes.py", title="All Votes", icon="🔎"),
+        st.Page("views/15_Lobbying.py", title="Lobbying Reports", icon="💼"),
         st.Page("views/2_Member_Explorer.py", title="Members", icon="👤"),
         st.Page("views/6_Compare.py", title="Compare Members", icon="⚖️"),
         st.Page("views/1_Overview.py", title="Overview", icon="📊"),

@@ -354,3 +354,20 @@ def test_position_flips_says_who_is_left_out():
     assert not at.exception
     note = [c.value for c in at.caption if "Who's left out" in c.value]
     assert note and "aren't counted in the percentages" in note[0] and "first Congress" in note[0]
+
+
+def test_lobbying_page_waits_for_data(monkeypatch, tmp_path):
+    monkeypatch.setenv("LOBBYING_DATA", str(tmp_path / "missing.csv.gz"))
+    at = open_page("views/15_Lobbying.py")
+    assert any("still being downloaded" in i.value for i in at.info)
+
+
+def test_lobbying_page_with_data(monkeypatch):
+    monkeypatch.setenv("LOBBYING_DATA", str(ROOT / "tests" / "fixtures" / "lobbying_sample.csv.gz"))
+    at = open_page("views/15_Lobbying.py")
+    text = html(at)
+    assert "which members were contacted" in text and "for or against" in text  # what the reports can't say, up front
+    at.text_input(key="lb_q").set_value("H.R. 8070").run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert at.selectbox(key="lb_bill").value == "HR8070"
+    assert any("named this bill" in m.value for m in at.markdown)
