@@ -290,9 +290,10 @@ REASONS: dict = {}  # why each candidate was kept or left out, for --report
 TOPIC_SCORES: list = []  # for --topic-scores: how close each kept link's remarks are to the bill's own description
 
 
-# Remarks less similar than this to the bill's own description (TF-IDF cosine) are about something else. Set from a
-# hand-labeled sample of 100 links (writeups/checking-the-congressional-record.md): below 0.06, most links were wrong.
-TOPIC_MIN = 0.06
+# Remarks less similar than this to the bill (TF-IDF cosine, best of the whole description and each part of it) are
+# about something else. Set from a hand-labeled sample of 100 links (writeups/checking-the-congressional-record.md).
+TOPIC_MIN = 0.07
+PART_MIN_TERMS = 8  # a part of the bill counts on its own only if it has this many distinct weighted words
 STOP = {"speaker", "president", "chair", "chairman", "madam", "gentleman", "gentlewoman", "gentleman's", "colleague",
         "colleagues", "time", "yield", "minutes", "balance", "today", "rise", "support", "oppose", "opposition",
         "urge", "vote", "votes", "voted", "bill", "bills", "legislation", "act", "resolution", "amendment", "amendments",
@@ -321,6 +322,17 @@ def topic_scores(rows: pd.DataFrame, said: dict) -> list[tuple[float | None, flo
                               max_df=0.3 if big else 1.0, token_pattern=r"(?u)\b[a-zA-Z][a-zA-Z]{2,}\b")
         bills = vec.fit_transform([prof[k] for k in keys])
         where = {k: i for i, k in enumerate(keys)}
+        split = bill_topics.parts(int(congress))
+        piece: dict = {}  # bill -> TF-IDF rows of its parts, built on first use
+
+        def pieces(b):
+            if b not in piece:
+                p = vec.transform(split[b]) if split.get(b) else None
+                if p is not None:  # a short part ("In the nature of a substitute.") would match on a single word
+                    p = p[(p.getnnz(axis=1) >= PART_MIN_TERMS).nonzero()[0]]
+                piece[b] = p if p is not None and p.shape[0] else None
+            return piece[b]
+
         idx = [i for i, r in enumerate(recs) if r.congress == congress]
         speech_keys = list(dict.fromkeys((recs[i].date, recs[i].granule, recs[i].bioguide_id) for i in idx))
         speech = vec.transform([said.get(k, "") for k in speech_keys])
@@ -328,7 +340,14 @@ def topic_scores(rows: pd.DataFrame, said: dict) -> list[tuple[float | None, flo
         for i in idx:
             r = recs[i]
             v = speech[sk[(r.date, r.granule, r.bioguide_id)]]
-            sim = lambda b: float(v.multiply(bills[where[b]]).sum()) if b in where else None
+
+            def sim(b, v=v):
+                """Best match between the remarks and the bill: the whole profile or any one part of it."""
+                if b not in where:
+                    return None
+                whole = float(v.multiply(bills[where[b]]).sum())
+                p = pieces(b)
+                return max(whole, float((p @ v.T).max())) if p is not None else whole
             others = [x for x in (sim(o) for o in str(r.others).split()) if x is not None]
             out[i] = (sim(r.bill_number), max(others) if others else None)
             TOPIC_SCORES.append({"congress": r.congress, "bill_number": r.bill_number, "bioguide_id": r.bioguide_id,

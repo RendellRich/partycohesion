@@ -1,0 +1,61 @@
+sample,congress,bill_number,bioguide_id,date,granule,label
+random kept link,114,SJRES28,M000303,2016-05-24,pt1-PgS3084-2,about the bill
+random kept link,118,S1890,B001261,2024-12-20,pt1-PgS7288,not about the bill
+random kept link,112,HJRES37,M000133,2011-04-08,pt1-PgH2552-3,about the bill
+random kept link,110,HR3043,W000795,2007-07-17,pt1-PgH7935,about the bill
+random kept link,115,HR2842,K000381,2017-06-23,pt1-PgH5114-6,about the bill
+random kept link,117,HR8589,H001072,2022-07-29,pt1-PgH7411-3,about the bill
+random kept link,114,HR48,J000032,2015-12-10,pt1-PgE1770-4,unclear
+random kept link,115,HRES1099,C001103,2018-09-28,pt1-PgH9174-2,about the bill
+random kept link,113,HR3547,M000312,2014-01-15,pt1-PgH244,about the bill
+random kept link,110,HR3920,M000725,2007-10-31,pt1-PgH12253-3,about the bill
+random kept link,110,HJRES20,H001032,2007-01-31,pt1-PgH1071-3,about the bill
+random kept link,114,S524,V000128,2016-07-08,pt1-PgH4554-3,about the bill
+random kept link,110,SCONRES70,B000287,2008-05-14,pt1-PgH3847,about the bill
+random kept link,110,HJRES14,J000255,2007-02-06,pt1-PgH1235,about the bill
+random kept link,114,HR685,S001168,2015-04-14,pt1-PgH2178,about the bill
+random kept link,112,HRES79,J000288,2011-02-10,pt1-PgH621,unclear
+random kept link,110,HR1424,M000404,2008-03-05,pt1-PgH1274-2,about the bill
+random kept link,110,HR3773,M001163,2007-11-15,pt1-PgH13969-2,about the bill
+random kept link,112,HR4310,P000590,2012-12-04,pt1-PgS7381-2,about the bill
+random kept link,111,HR2200,J000032,2009-12-02,pt1-PgH13415,not about the bill
+random kept link,110,HR800,E000215,2007-03-01,pt1-PgH2043-3,about the bill
+random kept link,119,HR2721,K000402,2025-09-15,pt1-PgH4286,about the bill
+random kept link,115,HR4986,S001176,2018-03-06,pt1-PgH1398,about the bill
+random kept link,112,HR5652,V000128,2012-05-10,pt1-PgH2573-2,about the bill
+random kept link,110,S1164,C000141,2007-04-19,pt1-PgS4756,about the bill
+random kept link,116,HR3144,S001156,2019-10-16,pt1-PgH8172,about the bill
+random kept link,115,HR6756,L000585,2018-09-27,pt1-PgH9113,about the bill
+random kept link,113,HR4745,H001048,2014-06-10,pt1-PgE946-4,about the bill
+random kept link,111,HR3288,S001148,2009-07-24,pt1-PgE1943,unclear
+random kept link,118,HR1425,O000175,2024-09-11,pt1-PgH5173-3,about the bill
+random kept link,118,HR4365,K000009,2023-09-27,pt1-PgH4567-8,about the bill
+random kept link,118,S759,T000467,2024-12-18,pt1-PgH7337,about the bill
+random kept link,111,HR3271,B000574,2010-07-14,pt1-PgH5577-2,not about the bill
+random kept link,110,S3186,M001111,2008-07-31,pt1-PgS7811-2,about the bill
+random kept link,112,S2204,M001176,2012-03-28,pt1-PgS2117-3,about the bill
+random kept link,117,HR3967,M000934,2022-06-13,pt1-PgS2901-3,about the bill
+random kept link,113,HR152,L000577,2013-01-28,pt1-PgS311,about the bill
+random kept link,114,HR5293,B001289,2016-06-15,pt1-PgH3837-2,about the bill
+random kept link,112,S637,F000062,2011-03-17,pt1-PgS1845,about the bill
+random kept link,112,HR327,F000116,2011-02-08,pt1-PgE160-2,about the bill
+recovered by best-part matching,113,HR3590,H001052,2013-03-21,pt1-PgH1804,not about the bill
+recovered by best-part matching,116,HR3055,B001284,2019-06-19,pt1-PgH4797-2,about the bill
+recovered by best-part matching,114,HJRES61,C000141,2015-09-09,pt1-PgS6490-2,about the bill
+recovered by best-part matching,114,HR2029,H001052,2015-04-29,pt1-PgH2574-3,about the bill
+recovered by best-part matching,110,HR3685,K000360,2007-11-07,pt1-PgH13228-2,about the bill
+recovered by best-part matching,115,HR1628,E000215,2017-03-24,pt1-PgH2393,about the bill
+recovered by best-part matching,117,HR3985,M001157,2021-07-22,pt1-PgH3807-2,about the bill
+recovered by best-part matching,115,HR3219,S000051,2017-07-27,pt1-PgH6480-6,about the bill
+recovered by best-part matching,110,HR3963,R000570,2007-10-25,pt1-PgH12042-2,about the bill
+recovered by best-part matching,116,HR266,G000551,2019-01-11,pt1-PgH469-3,about the bill
+recovered by best-part matching,114,HR2577,I000024,2015-11-19,pt1-PgS8119-2,about the bill
+recovered by best-part matching,114,HR5722,H000874,2016-07-13,pt1-PgH4875,about the bill
+recovered by best-part matching,119,S2296,C001096,2025-10-09,pt1-PgS7062-3,about the bill
+recovered by best-part matching,110,HR2638,D000533,2007-06-12,pt1-PgH6260-3,about the bill
+recovered by best-part matching,114,HR1295,R000580,2015-04-15,pt1-PgH2236,about the bill
+recovered by best-part matching,112,HR4310,H001032,2012-05-17,pt1-PgH2847,about the bill
+recovered by best-part matching,110,HR2237,H000762,2007-05-10,pt2-PgH4796-3,about the bill
+recovered by best-part matching,112,HR2112,C001087,2011-06-14,pt1-PgH4108-6,about the bill
+recovered by best-part matching,112,HR4310,D000191,2012-05-17,pt1-PgH2827,about the bill
+recovered by best-part matching,113,HR1960,H001057,2013-06-14,pt1-PgH3594-6,unclear

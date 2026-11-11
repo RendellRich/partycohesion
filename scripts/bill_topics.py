@@ -45,16 +45,64 @@ def strip(text: str | None) -> str:
     return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", text or ""))).strip()
 
 
-def profile(bill: ET.Element) -> str:
-    titles = [strip(t.findtext("title")) for t in bill.findall("titles/item")]
+def _fields(bill: ET.Element) -> tuple[list[str], str, list[str], str, list[str]]:
+    titles = list(dict.fromkeys(t for t in (strip(t.findtext("title")) for t in bill.findall("titles/item")) if t))
     subjects = [strip(s.findtext("name")) for s in bill.findall("subjects/legislativeSubjects/item")]
     area = strip(bill.findtext("policyArea/name"))
     sums = bill.findall("summaries/summary") or bill.findall("summaries/item")
     summary = " ".join(strip(sums[-1].findtext("text")).split()[:SUMMARY_WORDS]) if sums else ""
     amends = [strip(a.findtext("description") or a.findtext("purpose")) for a in
               (bill.findall("amendments/amendment") or bill.findall("amendments/item"))]
-    parts = list(dict.fromkeys(t for t in titles if t)) + [area] + subjects[:40] + [summary] + [a for a in amends if a][:60]
+    return titles, area, subjects, summary, list(dict.fromkeys(a for a in amends if a))
+
+
+def profile(bill: ET.Element) -> str:
+    titles, area, subjects, summary, amends = _fields(bill)
+    parts = titles + [area] + subjects[:40] + [summary] + amends[:60]
     return " ".join(p for p in parts if p)
+
+
+def profile_parts(bill: ET.Element) -> list[str]:
+    """The profile split into the pieces a speech can be about: the titles with the policy area, the subject terms,
+    the summary, and each amendment on its own. A big bill such as a defense authorization covers hundreds of topics,
+    and a speech on one amendment shares few words with all of them together, but many with that amendment."""
+    titles, area, subjects, summary, amends = _fields(bill)
+    parts = [" ".join(titles + [area]), " ".join(subjects), summary] + amends
+    return [p for p in parts if p.strip()]
+
+
+def _bills(congress: int, cache: Path):
+    for path in download(congress, cache):
+        try:
+            z = zipfile.ZipFile(path)
+        except zipfile.BadZipFile:
+            continue
+        for name in z.namelist():
+            try:
+                bill = ET.fromstring(z.read(name)).find("bill")
+            except ET.ParseError:
+                continue
+            if bill is not None:
+                yield f"{(bill.findtext('type') or bill.findtext('billType') or '').upper()}{bill.findtext('number')}", bill
+
+
+def _rule_targets(text: str) -> set[str]:
+    """Bills a rule ("Providing for consideration of the bill (H.R. 3074) ...") sets up for debate."""
+    if not re.match(r"providing for (?:the )?consideration", text, re.I):
+        return set()
+    return {re.sub(r"[^A-Z0-9]", "", b.upper()) for b in re.findall(r"\(((?:H|S)\.[^)]{1,20}?\d+)\)", text[:3000])}
+
+
+@functools.lru_cache(maxsize=12)
+def parts(congress: int, cache: Path = CACHE) -> dict[str, list[str]]:
+    """{"HR2913": [titles, subjects, summary, amendment, ...]} for every bill and resolution of a Congress. A rule also
+    gets the parts of the bills it sets up."""
+    out = {key: profile_parts(bill) for key, bill in _bills(congress, cache)}
+    for key, ps in list(out.items()):
+        if key.startswith("HRES") and ps:
+            for b in sorted(_rule_targets(ps[0])):
+                out[key] = out[key] + out.get(b, [])
+    return out
 
 
 @functools.lru_cache(maxsize=12)
