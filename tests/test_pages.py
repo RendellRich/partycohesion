@@ -357,13 +357,13 @@ def test_position_flips_says_who_is_left_out():
 
 
 def test_lobbying_page_waits_for_data(monkeypatch, tmp_path):
-    monkeypatch.setenv("LOBBYING_DATA", str(tmp_path / "missing.csv.gz"))
+    monkeypatch.setenv("LOBBYING_DATA", str(tmp_path / "missing"))
     at = open_page("views/15_Lobbying.py")
     assert any("still being downloaded" in i.value for i in at.info)
 
 
 def test_lobbying_page_with_data(monkeypatch):
-    monkeypatch.setenv("LOBBYING_DATA", str(ROOT / "tests" / "fixtures" / "lobbying_sample.csv.gz"))
+    monkeypatch.setenv("LOBBYING_DATA", str(ROOT / "tests" / "fixtures" / "lobbying_sample"))
     at = open_page("views/15_Lobbying.py")
     text = html(at)
     assert "which members were contacted" in text and "for or against" in text  # what the reports can't say, up front

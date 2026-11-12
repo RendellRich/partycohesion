@@ -6,13 +6,13 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from chart_utils import ordinal, show_chart
-from lobbying import CANT_SAY, bill_counts, bill_titles, load, period_label, summary_line
+from lobbying import CANT_SAY, bill_counts, bill_titles, congresses as lobbied_congresses, load, period_label, summary_line
 from theme import tokens
 from ui import bill_label, explainer, inject_css, intro, metric_row
 from vote_index import load_votes, voteview_url
 
 inject_css()
-links = load()
+congresses = sorted(lobbied_congresses(), reverse=True)
 votes = load_votes()
 
 st.title("Lobbying Reports")
@@ -21,13 +21,12 @@ intro("Every quarter, lobbyists file a public report with Congress listing the i
       "votes on that bill.")
 explainer(CANT_SAY)
 
-if links.empty:
+if not congresses:
     st.info("The lobbying reports are still being downloaded and matched to bills. This page fills in once that's "
             "done.")
     st.stop()
 
 voted = votes.dropna(subset=["bill_number"])[["congress", "bill_number"]].drop_duplicates()
-congresses = sorted(links["congress"].unique(), reverse=True)
 want = st.query_params.get("congress")
 c1, c2, c3 = st.columns([1.1, 1.3, 1.4])
 with c1:
@@ -39,7 +38,7 @@ with c2:
 with c3:
     query = st.text_input("Bill or client", "", key="lb_q", placeholder="e.g. H.R. 8070 or a company name")
 
-here = links[links["congress"] == congress]
+here = load(congress)
 counts = bill_counts(here).merge(voted.assign(has_vote=True), on=["congress", "bill_number"], how="left")
 counts["has_vote"] = counts["has_vote"].fillna(False).astype(bool)
 if only_voted:
@@ -84,7 +83,7 @@ bill = st.selectbox("Bill", options, key="lb_bill", label_visibility="collapsed"
                     index=options.index(want_bill) if want_bill in options else 0,
                     format_func=lambda b: f"{bill_label(b)} · {str(counts.set_index('bill_number').at[b, 'title'] or '')[:90]}")
 one = here[here["bill_number"] == bill]
-st.markdown(summary_line(links, congress, bill))
+st.markdown(summary_line(here, congress, bill))
 
 per_q = one.drop_duplicates("filing_uuid").groupby("period").size().rename("reports").reset_index()
 per_q["start"] = pd.to_datetime([f"{p // 10}-{3 * (p % 10) - 2:02d}-01" for p in per_q["period"]])

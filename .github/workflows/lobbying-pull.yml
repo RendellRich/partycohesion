@@ -2,7 +2,7 @@ name: Pull lobbying reports
 
 # Downloads Lobbying Disclosure Act quarterly reports from lda.gov (scripts/lobbying_pull.py), matches the bills they
 # name to PartyCohesion's bills (scripts/lobbying_index.py), and opens a pull request with
-# data/lobbying_bill_mentions.csv.gz, data/lobbying_coverage.csv and data/lobbying_bill_titles.csv.gz. Nothing on the
+# data/lobbying, data/lobbying_coverage.csv and data/lobbying_bill_titles.csv.gz. Nothing on the
 # site changes until it is merged.
 #
 # - The full 2008-to-now pull ran once, started by a push of this file (since removed so edits don't restart it). It
@@ -86,7 +86,7 @@ jobs:
           retention-days: 14
 
   index:
-    needs: pull
+    needs: [plan, pull]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -106,23 +106,30 @@ jobs:
           merge-multiple: true
 
       - name: Match bills
+        env:
+          YEARS: ${{ needs.plan.outputs.years }}
         run: |
           ls -la data/raw/lda
           python scripts/lobbying_index.py data/raw/lda/lda_*.jsonl.gz | tee /tmp/index.txt
+          # A year whose pull job failed has no file; say so in the pull request so it can be re-run.
+          missing=$(python3 -c "import json, os; print(' '.join(str(y) for y in json.loads(os.environ['YEARS']) if not os.path.exists(f'data/raw/lda/lda_{y}.jsonl.gz')))")
+          if [ -n "$missing" ]; then
+            echo "Missing years (their pull job failed; run this workflow by hand for them): $missing" | tee -a /tmp/index.txt
+          fi
 
       - name: Open or update a pull request
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          git add -N data/lobbying_bill_mentions.csv.gz data/lobbying_coverage.csv data/lobbying_bill_titles.csv.gz
-          if git diff --quiet -- data/lobbying_bill_mentions.csv.gz data/lobbying_coverage.csv data/lobbying_bill_titles.csv.gz; then
+          git add -N data/lobbying data/lobbying_coverage.csv data/lobbying_bill_titles.csv.gz
+          if git diff --quiet -- data/lobbying data/lobbying_coverage.csv data/lobbying_bill_titles.csv.gz; then
             echo "No change in the lobbying data."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B auto/lobbying
-          git add data/lobbying_bill_mentions.csv.gz data/lobbying_coverage.csv data/lobbying_bill_titles.csv.gz
+          git add data/lobbying data/lobbying_coverage.csv data/lobbying_bill_titles.csv.gz
           git commit -m "Lobbying reports matched to bills ($(date -u +%Y-%m-%d))"
           git push --force origin auto/lobbying
           {

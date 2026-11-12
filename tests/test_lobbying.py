@@ -86,3 +86,26 @@ def test_page_titles_prefer_official_then_votes(tmp_path):
     assert t[(118, "HR8997")] == "Energy and Water Act, 2025"
     assert t[(118, "HR7024")] == "Tax Relief Act"
     assert (118, "HR4820") not in t.index  # only an amendment vote: no title rather than the amendment's text
+
+
+def test_store_round_trip_and_one_congress(tmp_path):
+    root = Path(__file__).resolve().parents[1]
+    sys.path.insert(0, str(root))
+    import lobbying_store as S
+    links = pd.DataFrame({
+        "congress": [118, 118, 118, 117], "bill_number": ["HR8070", "HR8070", "S12", "HR1"],
+        "filing_uuid": ["a-1", "a-1", "a-1", "b-2"], "filing_year": [2024, 2024, 2024, 2022], "quarter": [2, 2, 2, 4],
+        "client_id": pd.array([7, 7, 7, 9], dtype="Int64"), "client": ["Acme", "Acme", "Acme", "Beta"],
+        "registrant_id": pd.array([3, 3, 3, 4], dtype="Int64"), "registrant": ["Firm", "Firm", "Firm", "Other"],
+        "issue_code": ["DEF", "BUD", "DEF", "TAX"],
+        "url": ["https://lda.gov/filings/public/filing/a-1/print/"] * 3 + ["https://lda.gov/filings/public/filing/b-2/print/"],
+    })
+    S.save(links, tmp_path)
+    assert S.congresses(tmp_path) == [117, 118]
+    back = S.read(tmp_path).sort_values(["congress", "bill_number", "issue_code"]).reset_index(drop=True)
+    want = links.sort_values(["congress", "bill_number", "issue_code"]).reset_index(drop=True)
+    for col in S.COLUMNS:
+        assert back[col].astype(str).tolist() == want[col].astype(str).tolist(), col
+    one = S.read(tmp_path, 118)
+    assert set(one["congress"]) == {118} and len(one) == 3
+    assert S.read(tmp_path / "missing").empty
