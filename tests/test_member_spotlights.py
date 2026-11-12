@@ -116,3 +116,13 @@ def test_final_record_wording():
     assert f"In the {s['latest']}th Congress" in cap and "final record" in cap
     assert "this Congress" not in cap and "current Congress" not in cap
     assert "final record" in ms.card(D, s, "wide")
+
+
+def test_every_state_has_an_outline():
+    import json
+    from ui import STATES
+    shapes = json.loads((ROOT / "data" / "state_shapes.json").read_text())
+    states = {a for a in STATES if len(a) == 2} - {"AS", "GU", "MP", "PR", "VI"}
+    assert states <= set(shapes), states - set(shapes)
+    for a in states:
+        assert shapes[a]["d"].startswith("M") and max(shapes[a]["w"], shapes[a]["h"]) == 100
