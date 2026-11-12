@@ -8,7 +8,8 @@ is singled out. See spotlight_order().
   python scripts/member_spotlights.py --bioguide R000575  render one member
 
 Images use the same style as scripts/make_social_cards.py. No photos of members: the highlighted seat on the
-chamber map is the visual.
+chamber map and an outline of the member's state (data/state_shapes.json, from scripts/build_state_shapes.py) are
+the visuals.
 """
 
 from __future__ import annotations
@@ -292,6 +293,25 @@ def seat_svg(d: dict, s: dict, width: int) -> str:
     return f'<svg width="{width}" height="{h:.0f}" viewBox="0 0 {width} {h:.0f}">{"".join(out)}</svg>'
 
 
+STATE_SHAPES = ROOT / "data" / "state_shapes.json"
+
+
+def state_svg(abbrev: str, party: str, size: int) -> str:
+    """The member's state as a plain outline in their party's color, fit in a size by size box. Empty if there is no
+    shape (territories)."""
+    import json
+    shapes = json.loads(STATE_SHAPES.read_text()) if STATE_SHAPES.exists() else {}
+    sh = shapes.get(abbrev)
+    if not sh:
+        return ""
+    color = mc.PARTY.get(party, mc.C["ind"])
+    w, h = sh["w"] * size / 100, sh["h"] * size / 100
+    return (f'<svg width="{w:.0f}" height="{h:.0f}" viewBox="-2 -2 {sh["w"] + 4} {sh["h"] + 4}" role="img" '
+            f'aria-label="Outline of {escape(STATES.get(abbrev, abbrev))}">'
+            f'<path d="{sh["d"]}" fill="{color}" fill-opacity="0.18" stroke="{color}" stroke-width="1.5" '
+            f'stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>')
+
+
 ADJ = {"Democrat": "Democratic", "Republican": "Republican", "Independent": "Independent"}
 
 
@@ -376,8 +396,10 @@ def card(d: dict, s: dict, size: str) -> str:
 <div style="display:flex;gap:36px">
   <div style="flex:1.15">
     <div class="muted" style="font-size:17px">{escape(label)}</div>
-    <h1 style="font-size:42px;line-height:1.05;margin-top:6px">{escape(s['name'])}</h1>
-    <div class="body" style="font-size:19px;margin-top:4px">{escape(who)}</div>
+    <div style="display:flex;align-items:center;gap:22px;margin-top:6px">
+      <div><h1 style="font-size:42px;line-height:1.05">{escape(s['name'])}</h1>
+      <div class="body" style="font-size:19px;margin-top:4px">{escape(who)}</div></div>
+      <div style="flex:none">{state_svg(s['abbrev'], s['row']['party'], 84)}</div></div>
     <div style="display:flex;align-items:baseline;gap:14px;margin-top:12px">
       <div class="accent" style="font-family:'Source Serif 4';font-weight:700;font-size:62px;line-height:1">{big}</div>
       <div class="body" style="font-size:17px;line-height:1.35;max-width:300px">{escape(line)}</div></div>
@@ -390,8 +412,10 @@ def card(d: dict, s: dict, size: str) -> str:
     else:
         body = f"""
 <div class="muted" style="font-size:22px;margin-top:8px">{escape(label)}</div>
-<h1 style="font-size:58px;line-height:1.05;margin-top:10px">{escape(s['name'])}</h1>
-<div class="body" style="font-size:26px;margin-top:6px">{escape(who)}</div>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:10px">
+<div><h1 style="font-size:58px;line-height:1.05">{escape(s['name'])}</h1>
+<div class="body" style="font-size:26px;margin-top:6px">{escape(who)}</div></div>
+<div style="flex:none">{state_svg(s['abbrev'], s['row']['party'], 130)}</div></div>
 <div class="accent" style="font-family:'Source Serif 4';font-weight:700;font-size:104px;line-height:1;margin-top:24px">{big}</div>
 <div class="body" style="font-size:26px;line-height:1.35;margin-top:6px">{escape(line)}</div>
 <div style="margin-top:16px">{compare_bar(s, 920, 22)}</div>
@@ -440,7 +464,7 @@ def alt_text(d: dict, s: dict) -> str:
             f"{a['what']}, {a['date']}, voted {a['vote']} while most {a['plural']} voted {a['party_vote']}" for a in lines) + ".")
     if missed_line(s):
         parts.append(missed_line(s))
-    parts.append(f"A half-circle chart of the {s['chamber']} with their seat circled.")
+    parts.append(f"An outline of {s['state']}, and a half-circle chart of the {s['chamber']} with their seat circled.")
     return " ".join(parts)
 
 
