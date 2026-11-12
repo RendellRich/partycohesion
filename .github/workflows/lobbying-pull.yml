@@ -18,8 +18,8 @@ on:
   workflow_dispatch:
     inputs:
       first_year:
-        description: First filing year to pull
-        default: "2008"
+        description: First filing year to pull (blank for this year; 2008 for everything, about 15 hours)
+        default: ""
       last_year:
         description: Last filing year to pull (blank for this year)
         default: ""
@@ -49,7 +49,7 @@ jobs:
             schedule)
               if [ "$(date -u +%m)" = "01" ]; then first=$((now - 1)); else first=$now; fi; last=$now ;;
             workflow_dispatch)
-              first=${FIRST:-2008}; last=${LAST:-$now} ;;
+              first=${FIRST:-$now}; last=${LAST:-$now} ;;
             *)
               first=2008; last=$now ;;
           esac
