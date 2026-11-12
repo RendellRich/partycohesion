@@ -3,8 +3,8 @@
     python scripts/lobbying_index.py data/raw/lda/lda_*.jsonl.gz
 
 Reads the files from scripts/lobbying_pull.py and writes:
-- data/lobbying_bill_mentions.csv.gz: one row per report and bill it names (congress, bill_number, client, registrant,
-  year, quarter, issue code, link to the report on lda.gov)
+- data/lobbying/: one row per report and bill it names (congress, bill_number, client, registrant, year, quarter,
+  issue code, link to the report on lda.gov), stored as two Parquet files (see lobbying_store.py)
 - data/lobbying_coverage.csv: per year, how many reports there were and how many name at least one bill
 
 What the reports can't say, and the site must not imply: which members were lobbied (reports name only the chamber),
@@ -35,8 +35,11 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(ROOT))
 
-OUT = ROOT / "data" / "lobbying_bill_mentions.csv.gz"
+import lobbying_store  # noqa: E402
+
+OUT = ROOT / "data" / "lobbying"  # reports.parquet and mentions.parquet, see lobbying_store.py
 COVERAGE = ROOT / "data" / "lobbying_coverage.csv"
 TITLES = ROOT / "data" / "lobbying_bill_titles.csv.gz"
 QUARTER_END = {"first_quarter": "03-31", "second_quarter": "06-30", "third_quarter": "09-30", "fourth_quarter": "12-31"}
@@ -157,8 +160,8 @@ def main() -> None:
     p.add_argument("paths", nargs="+", type=Path)
     a = p.parse_args()
     out, coverage, reasons = build(load(a.paths))
-    if OUT.exists():  # keep years that weren't pulled this time
-        old = pd.read_csv(OUT)
+    if lobbying_store.exists(OUT):  # keep years that weren't pulled this time
+        old = lobbying_store.read(OUT)
         out = pd.concat([old[~old["filing_year"].isin(coverage["filing_year"])], out], ignore_index=True)
     if COVERAGE.exists():
         oldc = pd.read_csv(COVERAGE)
@@ -168,7 +171,7 @@ def main() -> None:
         titles = pd.concat([titles, pd.read_csv(TITLES)]).drop_duplicates(["congress", "bill_number"])
     keep = set(zip(out["congress"], out["bill_number"]))
     titles = titles[[k in keep for k in zip(titles["congress"], titles["bill_number"])]]
-    out.to_csv(OUT, index=False, compression="gzip")
+    lobbying_store.save(out, OUT)
     coverage.to_csv(COVERAGE, index=False)
     titles.sort_values(["congress", "bill_number"]).to_csv(TITLES, index=False, compression="gzip")
     print(json.dumps(reasons), f"{len(out):,} report-bill links -> {OUT}", sep="\n")

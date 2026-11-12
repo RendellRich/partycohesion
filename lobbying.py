@@ -14,9 +14,10 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+import lobbying_store
+from lobbying_store import COLUMNS
+
 DATA_DIR = Path(__file__).parent / "data"
-COLUMNS = ["congress", "bill_number", "filing_uuid", "filing_year", "quarter", "client_id", "client", "registrant_id",
-           "registrant", "issue_code", "url"]
 
 CANT_SAY = ("Lobbying reports name the bills a client lobbied on, but not which members were contacted (only the "
             "House, the Senate or an agency), not whether the client was for or against the bill, and not how much was "
@@ -25,23 +26,39 @@ CANT_SAY = ("Lobbying reports name the bills a client lobbied on, but not which 
 
 
 def data_path() -> Path:
-    return Path(os.environ.get("LOBBYING_DATA") or DATA_DIR / "lobbying_bill_mentions.csv.gz")
+    """The folder written by scripts/lobbying_index.py (see lobbying_store.py)."""
+    return Path(os.environ.get("LOBBYING_DATA") or DATA_DIR / "lobbying")
 
 
-@st.cache_data
-def _read(path: str, mtime: float) -> pd.DataFrame:
-    df = pd.read_csv(path, dtype={"client_id": "Int64", "registrant_id": "Int64"})
+def _mtime(folder: Path) -> float:
+    return max((f.stat().st_mtime for f in folder.glob("*.parquet")), default=0.0)
+
+
+@st.cache_data(show_spinner=False)
+def _congresses(path: str, mtime: float) -> list[int]:
+    return lobbying_store.congresses(Path(path))
+
+
+@st.cache_data(show_spinner=False, max_entries=3)
+def _read(path: str, mtime: float, congress: int) -> pd.DataFrame:
+    df = lobbying_store.read(Path(path), congress)
     df["issue"] = df["issue_code"].map(issue_names()).fillna(df["issue_code"])
     df["period"] = df["filing_year"] * 10 + df["quarter"]
     return df
 
 
-def load() -> pd.DataFrame:
-    """Every report-bill link, or an empty frame before the first download is merged."""
+def congresses() -> list[int]:
+    """Congresses whose bills the reports name, oldest first; empty before the first download is merged."""
     path = data_path()
-    if not path.exists():
+    return _congresses(str(path), _mtime(path)) if lobbying_store.exists(path) else []
+
+
+def load(congress: int) -> pd.DataFrame:
+    """Every report-bill link for one Congress (one Congress at a time keeps the app's memory small)."""
+    path = data_path()
+    if not lobbying_store.exists(path):
         return pd.DataFrame(columns=[*COLUMNS, "issue", "period"])
-    return _read(str(path), path.stat().st_mtime)
+    return _read(str(path), _mtime(path), int(congress))
 
 
 @st.cache_data

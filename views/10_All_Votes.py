@@ -109,7 +109,7 @@ if pd.notna(v["topic"]):
             f"Democratic platform and a {v['rep_platform_vote']} vote matched the Republican platform.")
     st.page_link("views/11_Platform_Votes.py", label="See who voted against their party's platform")
 if isinstance(v["bill_number"], str) and v["bill_number"]:
-    lobbied = summary_line(load_lobbying(), int(v["congress"]), v["bill_number"])
+    lobbied = summary_line(load_lobbying(int(v["congress"])), int(v["congress"]), v["bill_number"])
     if lobbied:
         st.markdown(f"**Lobbying:** {lobbied}")
         if st.button("See who filed them", key="av_lobby"):
