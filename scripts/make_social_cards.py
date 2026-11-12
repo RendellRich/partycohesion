@@ -10,6 +10,7 @@ Needs Playwright with Chromium (pip install playwright && python -m playwright i
 """
 
 import hashlib
+import os
 import json
 from datetime import date
 from html import escape
@@ -30,8 +31,14 @@ SITE = "https://partycohesion.streamlit.app"
 PAGES_URL = "https://rendellrich.github.io/partycohesion"
 SIZES = {"wide": (1200, 627), "tall": (1080, 1350)}
 
-C = {"bg": "#171614", "surface": "#21201D", "border": "#3A3733", "text": "#FAFAFA", "body": "#E7E5E4",
-     "muted": "#A8A29E", "accent": "#E9C46A", "dem": "#5A97D2", "rep": "#E06C6C", "ind": "#A8A29E"}
+THEMES = {
+    "dark": {"bg": "#171614", "surface": "#21201D", "border": "#3A3733", "text": "#FAFAFA", "body": "#E7E5E4",
+             "muted": "#A8A29E", "accent": "#E9C46A", "dem": "#5A97D2", "rep": "#E06C6C", "ind": "#A8A29E"},
+    # Every text color passes WCAG AA (4.5:1) on the background.
+    "light": {"bg": "#FBFAF8", "surface": "#F2F0EC", "border": "#DDD8D0", "text": "#1C1A17", "body": "#3B3732",
+              "muted": "#6B655E", "accent": "#946300", "dem": "#2563A8", "rep": "#B73A34", "ind": "#6B655E"},
+}
+C = THEMES[os.environ.get("CARD_THEME", "light")]
 PARTY = {"Democrat": C["dem"], "Republican": C["rep"], "Independent": C["ind"]}
 FONTS = ("https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&"
          "family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap")
