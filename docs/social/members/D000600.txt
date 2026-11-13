@@ -1,0 +1,13 @@
+Member spotlight: Mario Diaz-Balart (R-FL), House.
+In the current Congress (votes through Nov 11, 2026), Mario Diaz-Balart voted with the Republican majority on 437 of 457 party-line votes (95.6%). The House Republican average is 97.1%.
+
+Votes apart from most House Republicans (20 in all) included:
+- Passing H.R. 1346, Nationwide Consumer and Fuel Retailer Choice Act (May 13, 2026): voted Nay; most Republicans voted Yea.
+- Passing H.R. 1689, To require the Secretary of Homeland Security to designate Haiti for temporary protected status (Apr 16, 2026): voted Yea; most Republicans voted Nay.
+- Overriding the veto of H.R. 504, Miccosukee Reserved Area Amendments Act (Jan 8, 2026): voted Yea; most Republicans voted Nay.
+
+Missed 3.8% of roll calls this Congress. Roll call records don't give reasons for absences.
+
+Full voting record: https://partycohesion.streamlit.app/Member_Explorer?member=D000600
+Look up how your own members vote: https://partycohesion.streamlit.app
+Members are featured in a fixed random rotation, not chosen by hand. Data: Voteview, Congressional Record.

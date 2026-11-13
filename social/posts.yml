@@ -98,3 +98,9 @@
   post_on: 2027-01-12
   time: "09:15"
   require_text: "119th Congress"
+
+- id: spotlight-119-D000600
+  card: member/D000600
+  post_on: 2026-11-25
+  time: "16:50"
+  expires_after_days: 1
