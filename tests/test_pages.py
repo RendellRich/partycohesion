@@ -285,6 +285,7 @@ def test_member_deep_link_details_and_share():
     assert at.selectbox(key="me_member").value.startswith("Fitzpatrick, Brian")
     text = html(at)
     assert "pc-person" in text and "fitzpatrick.house.gov" in text and "Committees:" in text
+    assert "campaign-money.streamlit.app/?member=F000466" in text  # funding link, a separate site
     assert any("member=F000466" in c.value for c in at.code)
 
 

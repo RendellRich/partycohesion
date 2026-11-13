@@ -43,6 +43,9 @@ def load_details() -> pd.DataFrame:
     return pd.read_csv(DATA_DIR / "member_details.csv").fillna("").set_index("bioguide_id")
 
 
+CAMPAIGN_MONEY = "https://campaign-money.streamlit.app/"
+
+
 def member_facts(bioguide: str) -> None:
     details = load_details()
     if bioguide not in details.index:
@@ -66,6 +69,10 @@ def member_facts(bioguide: str) -> None:
         lines.append("Contact: " + ", ".join(contact))
     if d["committees"]:
         lines.append("Committees: " + escape(d["committees"]))
+    if d["in_office"]:
+        # A separate site on purpose: campaign money is never shown next to votes here.
+        lines.append(f'Campaign money: <a href="{CAMPAIGN_MONEY}?member={escape(bioguide)}" target="_blank" '
+                     'rel="noopener">individual donations by industry</a> on Campaign Money by Industry, a separate site')
     st.markdown(f'<div class="pc-person">{photo}<div class="pc-facts">{"<br>".join(lines)}</div></div>',
                 unsafe_allow_html=True)
 
