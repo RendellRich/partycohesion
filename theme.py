@@ -16,6 +16,9 @@ DARK = {
     "dem": "#5A97D2", "rep": "#E06C6C", "ind": "#A8A29E",
     "yea": "#8ECAE6", "nay": "#577590",
     "consistent": "#E7DFF5", "partly": "#B9A6E3", "changed": "#9576D8", "opposite": "#7A8597",
+    # Site color beyond the data: the navy hero panel, heading color, and three card tones
+    "hero": "#1F2B45", "hero_text": "#F3EEE3", "head": "#C9D3EE",
+    "tone1": "#E2A94B", "tone2": "#5FBFB2", "tone3": "#A993E6",
 }
 LIGHT = {
     "bg": "#F6F7F9", "surface": "#FFFFFF", "border": "#DADDE3", "grid": "#E3E6EA",
@@ -23,6 +26,8 @@ LIGHT = {
     "dem": "#2E6CAD", "rep": "#B8403F", "ind": "#6B7280",
     "yea": "#1F6F99", "nay": "#9DB2C8",
     "consistent": "#3F2A88", "partly": "#6B4FBF", "changed": "#9A82D9", "opposite": "#7A8597",
+    "hero": "#1C2A4A", "hero_text": "#F6F1E7", "head": "#1C2A4A",
+    "tone1": "#A86A12", "tone2": "#23746A", "tone3": "#5E45A8",
 }
 FONT = "'Public Sans', 'Segoe UI', system-ui, sans-serif"
 

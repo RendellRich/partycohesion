@@ -15,7 +15,7 @@ from seat_map import seat_map
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import all_member_platform_votes, load_platform, party_totals
 import find_members
-from ui import STATES, card, display_name, early_congress, fmt_date, inject_css
+from ui import STATES, card, display_name, early_congress, fmt_date, hero_panel, inject_css
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -38,11 +38,10 @@ current = members[members["congress"] == latest]
 stat_congress = latest - 1 if early_congress(members) else latest
 stat_members = members[members["congress"] == stat_congress]
 
-st.markdown('<div class="pc-hero">Do members of Congress vote the same way no matter who is president?</div>',
-            unsafe_allow_html=True)
-st.markdown('<div class="pc-intro">PartyCohesion uses the official roll-call record, every vote since 2007, to show how '
-            "often each member sides with their party, and whether their position on the same question changes when the "
-            "White House changes hands. No scorecards, no opinions: the votes and the method.</div>", unsafe_allow_html=True)
+hero_panel("Do members of Congress vote the same way no matter who is president?",
+           "PartyCohesion uses the official roll-call record, every vote since 2007, to show how often each member "
+           "sides with their party, and whether their position on the same question changes when the White House "
+           "changes hands. No scorecards, no opinions: the votes and the method.")
 
 # Look up a member: the most common reason someone opens the site
 pick_list = current.sort_values("congress").drop_duplicates("icpsr", keep="last").sort_values("name")

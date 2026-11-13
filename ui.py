@@ -88,6 +88,33 @@ CSS = f"""
 @media (max-width: 640px) {{ .pc-person {{ grid-template-columns: 80px 1fr; }} .pc-person img {{ width: 80px; }}
                              .pc-hero {{ font-size: 2rem; }} }}
 .pc-chip {{ border: 1px solid var(--pc-border); border-radius: 999px; padding: 3px 10px; font-size: 0.85rem; font-weight: 600; }}
+/* Color beyond the data. The aisle stripe across the top of every page is the site's mark: party blue, a gap
+   for the aisle, party red. */
+.stApp::before {{ content: ""; position: fixed; top: 0; left: 0; right: 0; height: 5px; z-index: 1000000;
+                  background: linear-gradient(90deg, var(--pc-dem) 0 49.2%, transparent 49.2% 50.8%, var(--pc-rep) 50.8% 100%); }}
+.stApp h2, .stApp h3 {{ color: var(--pc-head); }}
+.stApp h1::after {{ content: ""; display: block; width: 64px; height: 5px; margin-top: 12px; border-radius: 3px;
+                    background: linear-gradient(90deg, var(--pc-dem) 0 45%, transparent 45% 55%, var(--pc-rep) 55% 100%); }}
+.stApp [data-testid="stSidebar"] {{ background: color-mix(in srgb, var(--pc-hero) 7%, var(--pc-bg)); }}
+.pc-panel {{ background: var(--pc-hero); color: var(--pc-hero-text); border-radius: 16px; padding: 34px 36px 0 36px;
+             margin: 0.5rem 0 1.5rem 0; overflow: hidden; }}
+.pc-panel .pc-hero {{ color: var(--pc-hero-text); margin-top: 0; }}
+.pc-panel .pc-intro {{ color: color-mix(in srgb, var(--pc-hero-text) 82%, var(--pc-hero)); margin-bottom: 26px; }}
+.pc-aisle {{ display: grid; grid-template-columns: 1fr 22px 1fr; height: 10px; margin: 0 -36px; }}
+.pc-aisle span:first-child {{ background: var(--pc-dem); }}
+.pc-aisle span:last-child {{ background: var(--pc-rep); }}
+.pc-tone1 {{ --pc-tone: var(--pc-tone1); }}
+.pc-tone2 {{ --pc-tone: var(--pc-tone2); }}
+.pc-tone3 {{ --pc-tone: var(--pc-tone3); }}
+.pc-card {{ border-top: 4px solid var(--pc-tone, var(--pc-accent));
+            background: color-mix(in srgb, var(--pc-tone, var(--pc-accent)) 7%, var(--pc-surface)); }}
+.pc-card .pc-eyebrow {{ color: var(--pc-tone, var(--pc-accent)); }}
+.pc-grid .pc-metric {{ border-left: 4px solid var(--pc-tone1); }}
+.pc-grid .pc-metric:nth-child(3n+2) {{ border-left-color: var(--pc-tone2); }}
+.pc-grid .pc-metric:nth-child(3n) {{ border-left-color: var(--pc-tone3); }}
+.pc-explain {{ background: color-mix(in srgb, var(--pc-tone3) 8%, var(--pc-surface)); border-left-color: var(--pc-tone3); }}
+.pc-explain-title {{ color: var(--pc-tone3); }}
+@media (max-width: 640px) {{ .pc-panel {{ padding: 24px 20px 0 20px; }} .pc-aisle {{ margin: 0 -20px; }} }}
 </style>
 """
 
@@ -96,7 +123,11 @@ def inject_css() -> None:
     """Site styles plus the color variables for the visitor's light or dark theme."""
     t = tokens()
     names = {"bg": "bg", "surface": "surface", "border": "border", "text": "text", "body": "body", "muted": "muted",
-             "accent": "accent", "dem": "dem", "rep": "rep", "ind": "ind", "yea": "yea", "nay": "nay"}
+             "accent": "accent", "dem": "dem", "rep": "rep", "ind": "ind", "yea": "yea", "nay": "nay",
+             "hero": "hero", "hero_text": "hero-text", "head": "head", "tone1": "tone1", "tone2": "tone2",
+             "tone3": "tone3"}
+    global _card_count
+    _card_count = 0
     root = "".join(f"--pc-{css}: {t[key]}; " for key, css in names.items())
     st.markdown(f"<style>:root {{ {root}}}</style>" + CSS, unsafe_allow_html=True)
 
@@ -105,14 +136,28 @@ def intro(text: str) -> None:
     st.markdown(f'<div class="pc-intro">{escape(text)}</div>', unsafe_allow_html=True)
 
 
+def hero_panel(question: str, intro_text: str) -> None:
+    """The home page's opening: the question on navy, with the aisle stripe along the bottom."""
+    st.markdown(f'<div class="pc-panel"><div class="pc-hero">{escape(question)}</div>'
+                f'<div class="pc-intro">{escape(intro_text)}</div>'
+                '<div class="pc-aisle"><span></span><span></span><span></span></div></div>', unsafe_allow_html=True)
+
+
 def explainer(text: str) -> None:
     """A short plain-language note for first-time visitors, shown under a page's intro."""
     st.markdown(f'<div class="pc-explain"><div class="pc-explain-title">What this means</div>{escape(text)}</div>',
                 unsafe_allow_html=True)
 
 
+_card_count = 0
+
+
 def card(eyebrow: str, stat: str, body: str) -> None:
-    st.markdown(f'<div class="pc-card"><div class="pc-eyebrow">{escape(eyebrow)}</div>'
+    """A headline finding. Cards take turns through three tones so a row of them doesn't read as one gray block."""
+    global _card_count
+    tone = _card_count % 3 + 1
+    _card_count += 1
+    st.markdown(f'<div class="pc-card pc-tone{tone}"><div class="pc-eyebrow">{escape(eyebrow)}</div>'
                 f'<div class="pc-stat">{escape(stat)}</div><div class="pc-body">{escape(body)}</div></div>',
                 unsafe_allow_html=True)
 
