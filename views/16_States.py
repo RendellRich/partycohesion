@@ -8,28 +8,12 @@ import pandas as pd
 import streamlit as st
 
 import find_members
-from flip_utils import add_chamber_control, flip_scores
-from state_map import DELEGATE_PLACES, show_state_map, state_summary
+from state_map import DELEGATE_PLACES, load_records, show_state_map, state_summary
 from ui import STATES, html_table, inject_css, intro, metric_row, party_tag, pattern_badge, share_bar
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
 inject_css()
-
-
-@st.cache_data
-def load_records() -> pd.DataFrame:
-    """Each member's latest party unity, missed votes and Position Flips label, keyed by Bioguide ID."""
-    members = pd.read_csv(DATA_DIR / "members_processed.csv")
-    latest = members.sort_values("congress").drop_duplicates("icpsr", keep="last")
-    missed = pd.read_csv(DATA_DIR / "missed_votes.csv")
-    missed = missed.sort_values("congress").drop_duplicates(["icpsr"], keep="last")
-    missed["missed_pct"] = 100 * missed["missed"] / missed["eligible"]
-    flips = flip_scores(add_chamber_control(pd.read_csv(DATA_DIR / "flip_member_votes.csv"), members))
-    out = (latest[["icpsr", "bioguide_id", "congress", "party_unity_pct"]]
-           .merge(missed[["icpsr", "missed_pct"]], on="icpsr", how="left")
-           .merge(flips[["icpsr", "label"]], on="icpsr", how="left"))
-    return out.dropna(subset=["bioguide_id"]).drop_duplicates("bioguide_id", keep="last").set_index("bioguide_id")
 
 
 st.title("States")
@@ -45,7 +29,7 @@ state = st.selectbox("State", codes, index=codes.index(wanted) if wanted in code
 if not state:
     if "state" in st.query_params:
         del st.query_params["state"]
-    show_state_map("states_map", "Pick a state on the map")
+    show_state_map("states_map")
     st.stop()
 
 st.query_params["state"] = state
@@ -111,4 +95,4 @@ else:
     st.info("No members match that search. Try part of a last name, or clear the search.")
 
 with st.expander("Pick a different state on the map"):
-    show_state_map("states_map_more", "Members of Congress by state", height=420)
+    show_state_map("states_map_more", height=420)

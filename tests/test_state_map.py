@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 from streamlit.testing.v1 import AppTest
 
-from state_map import party_mix, state_summary
+from state_map import COLOR_BY, member_records, party_mix, state_map, state_summary
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -52,3 +52,34 @@ def test_states_page_opens_from_a_link():
     assert "Members from Florida" in text and "Member_Explorer?member=" in text
     at.text_input(key="st_query").set_value("zzzz").run()
     assert any("No members match" in i.value for i in at.info)
+
+
+def records():
+    return pd.DataFrame({"party_unity_pct": [90.0, 80.0, 96.0, 98.0, None], "missed_pct": [1.0, 3.0, 2.0, 2.0, None],
+                         "label": ["Consistent", "Partly changed", "Consistent", "Not enough votes", None]},
+                        index=pd.Index(["A1", "A2", "A3", "A4", "A5"], name="bioguide_id"))
+
+
+def test_summary_averages_skip_delegates_and_thin_flip_counts():
+    s = state_summary(seats(), records()).set_index("state")
+    me = s.loc["ME"]
+    assert me["avg_unity"] == 91.0 and me["avg_missed"] == 2.0
+    assert (me["n_consistent"], me["n_flip"]) == (2, 3) and round(me["consistent"]) == 67
+    assert pd.isna(s.loc["DC", "avg_unity"]) and pd.isna(s.loc["DC", "consistent"])
+
+
+def test_every_coloring_draws_and_grays_out_missing_states():
+    s = state_summary(seats(), records())
+    for color_by in COLOR_BY:
+        fig = state_map(s, color_by)
+        assert fig.data[0].customdata[0][0] in {"DC", "ME"}
+    fig = state_map(s, "Party unity")
+    assert list(fig.data[1].locations) == ["DC"]  # delegate-only: gray, no voting record
+    assert "no voting record" in fig.data[1].customdata[0][5]
+
+
+def test_real_data_has_averages_for_every_state():
+    real = state_summary(pd.read_csv(ROOT / "data" / "current_seats.csv"), member_records(ROOT / "data"))
+    states = real[~real["state"].isin(["DC", "PR", "GU", "VI", "AS", "MP"])]
+    assert states["avg_unity"].notna().all() and states["avg_missed"].notna().all()
+    assert states["avg_unity"].between(50, 100).all()
