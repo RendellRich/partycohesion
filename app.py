@@ -40,6 +40,7 @@ pages = {
         st.Page("views/11_Platform_Votes.py", title="Platform Votes", icon="📜"),
         st.Page("views/12_Cosponsored_Then_No.py", title="Cosponsored, Then Voted No", icon="✍️"),
         st.Page("views/14_Same_Bill_Different_Vote.py", title="Same Bill, Different Vote", icon="↔️"),
+        st.Page("views/17_Same_State_Different_Vote.py", title="Same State, Different Vote", icon="👥"),
         st.Page("views/13_Campaign_Statements.py", title="Campaign Statements and Votes", icon="📣"),
         st.Page("views/5_Key_Votes.py", title="Key Votes", icon="🗳️"),
         st.Page("views/8_Ideology_Drift.py", title="Ideology Drift", icon="📈"),
@@ -75,7 +76,7 @@ show_refresh_notice()
 nav.run()
 
 # Share this page (the Members and States pages have their own, which link to the member or state being viewed)
-if nav.url_path not in ("Member_Explorer", "States"):
+if nav.url_path not in ("Member_Explorer", "States", "Same_State_Different_Vote"):
     st.write("")
     text = ("PartyCohesion: do members of Congress vote the same way no matter who is president?" if not nav.url_path
             else f"{nav.title}, from PartyCohesion: how members of Congress vote, from the official record")

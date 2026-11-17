@@ -49,6 +49,9 @@ metric_row([
     ("Position Flips: consistent", f"{(flip_scored['label'] == 'Consistent').sum()} of {len(flip_scored)}",
      "members with enough comparable votes"),
 ])
+if state not in DELEGATE_PLACES:
+    st.markdown(f'<a href="Same_State_Different_Vote?state={state}" target="_self">See how often {escape(name)}\'s '
+                "senators vote opposite ways</a>", unsafe_allow_html=True)
 share_bar(f"{name}'s members of Congress and how they vote, on PartyCohesion", "States", {"state": state})
 
 # Search and filter within the state
