@@ -18,6 +18,7 @@ PartyCohesion is a free, neutral site built on the official roll-call record. It
 | Page | What it answers |
 |---|---|
 | **Members** | One member's full record: party unity, whether their votes shift with the president, their seat in the chamber, and every roll call they cast |
+| **States** | Every current member from one state, searchable by name, with party unity, Position Flips and missed votes. Opens from the clickable map on Home |
 | **Position Flips** | Did a member cast the same vote on debt limits, stopgap funding and war powers under presidents of both parties? |
 | **Platform Votes** | Votes where the two party platforms took opposite positions, and who voted against their own party's platform |
 | **Cosponsored, Then Voted No** | Members who signed on to a bill and then voted against it, and whether its text had changed first |

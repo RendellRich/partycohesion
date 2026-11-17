@@ -48,6 +48,7 @@ pages = {
         st.Page("views/10_All_Votes.py", title="All Votes", icon="🔎"),
         st.Page("views/15_Lobbying.py", title="Lobbying Reports", icon="💼"),
         st.Page("views/2_Member_Explorer.py", title="Members", icon="👤"),
+        st.Page("views/16_States.py", title="States", icon="🗺️"),
         st.Page("views/6_Compare.py", title="Compare Members", icon="⚖️"),
         st.Page("views/1_Overview.py", title="Overview", icon="📊"),
     ],
@@ -73,8 +74,8 @@ clear_cache_if_data_changed()  # new data from the twice-weekly refresh shows up
 show_refresh_notice()
 nav.run()
 
-# Share this page (the Members page has its own, which links to the member being viewed)
-if nav.url_path != "Member_Explorer":
+# Share this page (the Members and States pages have their own, which link to the member or state being viewed)
+if nav.url_path not in ("Member_Explorer", "States"):
     st.write("")
     text = ("PartyCohesion: do members of Congress vote the same way no matter who is president?" if not nav.url_path
             else f"{nav.title}, from PartyCohesion: how members of Congress vote, from the official record")

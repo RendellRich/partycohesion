@@ -12,6 +12,7 @@ import plotly.graph_objects as go
 
 from chart_utils import BG, PARTY_COLORS, ordinal, show_chart
 from seat_map import seat_map
+from state_map import show_state_map
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import all_member_platform_votes, load_platform, party_totals
 import find_members
@@ -106,6 +107,10 @@ with st.expander("Don't know who represents you? Find your members by ZIP code o
             member_button(r, find_members.district_label(state_pick, r.district))
     st.caption("ZIP codes to districts: U.S. Census Bureau, 2020 ZIP Code Tabulation Areas and 119th Congress "
                "districts. Current members: unitedstates/congress-legislators.")
+
+# Members of Congress by state: hover a state for its delegation, click it to see every member
+show_state_map("home_state_map")
+st.write("")
 
 # The chamber at a glance: every current member as one seat, arranged left to right by ideology score
 chamber = st.segmented_control("Chamber", ["House", "Senate"], default="House", key="home_chamber",
