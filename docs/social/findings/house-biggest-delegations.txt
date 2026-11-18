@@ -1,0 +1,6 @@
+The largest same-party House delegations, and the member in each who voted opposite their colleagues most often in the 119th Congress so far (2025 to now, through Nov 12, 2026): Texas Democrats (13 members), Henry Cuellar, 24.2%; California Democrats (43 members), Adam Gray, 16.4%; Texas Republicans (25 members), Chip Roy, 16.3%; New York Democrats (19 members), Laura Gillen, 10.3%; Florida Republicans (20 members), Anna Paulina Luna, 9.8%.
+
+See the votes: https://partycohesion.streamlit.app/Same_State_Different_Vote?chamber=house
+
+Data: Voteview, through Nov 12, 2026.
+#StopTheDivide #Congress #VotingRecord

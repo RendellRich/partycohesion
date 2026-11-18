@@ -135,10 +135,11 @@ def test_queue_file_is_valid_and_uses_real_cards():
     entries = ps.load_queue()
     caps = json.loads(ps.CAPTIONS.read_text())
     for e in entries:
-        if e["card"].startswith("member/"):  # a spotlight: its card and caption must be committed
-            b = e["card"].split("/", 1)[1]
-            for name in (f"{b}-wide.png", f"{b}-tall.jpg", f"{b}.txt", f"{b}.alt.txt"):
-                assert (ps.MEMBERS / name).exists(), name
+        if (found := ps.card_folder(e["card"])):  # a spotlight or finding post: its card and caption are committed
+            folder, b = found
+            images = [f"{b}-wide.png"] + ([f"{b}-tall.jpg"] if "instagram" in e.get("networks", ps.NETWORKS) else [])
+            for name in images + [f"{b}.txt", f"{b}.alt.txt"]:
+                assert (folder / name).exists(), name
         else:
             assert e["card"] in caps
         ps.check_caption(e.get("caption") or ps.default_caption(e["card"]))
@@ -287,3 +288,10 @@ def test_require_text_holds_a_post_until_the_card_catches_up(tmp_path, monkeypat
     ps.run_due(dry_run=False, today=at(11))
     assert calls == ["congress-final", "senate-unity"]  # g waits, and doesn't block the others
     assert ("g", "facebook") not in ps.load_posted(posted)
+
+
+def test_finding_cards_live_in_their_own_folder():
+    assert ps.image_url("finding/house-massie", "facebook").endswith("/social/findings/house-massie-wide.png")
+    cap = ps.default_caption("finding/house-massie")
+    assert "Thomas Massie" in cap and "Same_State_Different_Vote" in cap
+    assert ps.alt_text("finding/house-massie").startswith("Card about Thomas Massie")

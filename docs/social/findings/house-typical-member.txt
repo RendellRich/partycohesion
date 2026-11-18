@@ -1,0 +1,6 @@
+How often do House members vote the opposite way from colleagues of their own party from their own state? In the 119th Congress so far (2025 to now, through Nov 12, 2026), 94% of members split on fewer than 1 in 10 shared votes, and 52% on fewer than 1 in 20. Only 10 of 400 split on 15% or more.
+
+See the votes: https://partycohesion.streamlit.app/Same_State_Different_Vote?chamber=house
+
+Data: Voteview, through Nov 12, 2026.
+#StopTheDivide #Congress #VotingRecord

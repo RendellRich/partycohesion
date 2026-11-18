@@ -1,0 +1,6 @@
+Don Davis (D-NC) voted the opposite way from other North Carolina House Democrats more often than anyone else in that group in the 119th Congress so far (2025 to now, through Nov 12, 2026): an average of 22.0% of shared votes, most of all with Valerie Foushee (22.7%). The typical House member splits on about 5%.
+
+See the votes: https://partycohesion.streamlit.app/Same_State_Different_Vote?state=NC&chamber=house
+
+Data: Voteview, through Nov 12, 2026.
+#StopTheDivide #Congress #VotingRecord

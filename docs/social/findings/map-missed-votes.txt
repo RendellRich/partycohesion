@@ -1,0 +1,6 @@
+How often do members of Congress miss roll calls? Averaged across each state's current members, from 0.6% to 5.5% of the roll calls held while they served. Most missed: South Carolina (5.5%), Florida (5.4%), Vermont (4.9%). Fewest: Hawaii (0.6%), Nebraska (0.9%), Oregon (1.0%). Absences have many causes, from illness to campaigning, and a roll call doesn't record why.
+
+See the votes: https://partycohesion.streamlit.app/
+
+Data: Voteview, through Nov 12, 2026.
+#StopTheDivide #Congress #VotingRecord

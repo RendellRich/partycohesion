@@ -1,0 +1,6 @@
+Thomas Massie (R-KY) votes the opposite way from other Kentucky House Republicans more often than anyone else in that group. In the 119th Congress so far (2025 to now, through Nov 12, 2026), his average split with his 4 Republican colleagues from Kentucky was 25.8%, most of all with Hal Rogers (28.4%). The typical House member splits with their state's party colleagues on about 5% of votes. A split is a fact about the record, not a judgment.
+
+See the votes: https://partycohesion.streamlit.app/Same_State_Different_Vote?state=KY&chamber=house
+
+Data: Voteview, through Nov 12, 2026.
+#StopTheDivide #Congress #VotingRecord

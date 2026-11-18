@@ -1,0 +1,1 @@
+Histogram of 400 House members by average split with same-party colleagues from their state. Most members are under 5%: 52%. 94% are under 10%.

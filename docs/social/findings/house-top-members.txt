@@ -1,0 +1,6 @@
+Most House members vote with their state's party colleagues nearly all the time: the typical member split on 4.9% of shared votes in the 119th Congress so far (2025 to now, through Nov 12, 2026). These members split most often: Thomas Massie (R-KY) 25.8%; Henry Cuellar (D-TX) 24.2%; Don Davis (D-NC) 22.0%; Marie Gluesenkamp Perez (D-WA) 20.5%; Vicente Gonzalez Jr. (D-TX) 19.5%; Brian Fitzpatrick (R-PA) 16.7%; Adam Gray (D-CA) 16.4%; Chip Roy (R-TX) 16.3%. Members with fewer than two same-party colleagues from their state aren't ranked.
+
+See the votes: https://partycohesion.streamlit.app/Same_State_Different_Vote?chamber=house
+
+Data: Voteview, through Nov 12, 2026.
+#StopTheDivide #Congress #VotingRecord

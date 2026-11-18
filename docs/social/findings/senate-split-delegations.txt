@@ -1,0 +1,6 @@
+In the 119th Congress so far (2025 to now, through Nov 12, 2026), 3 states have one Democratic (or Democratic-caucusing) senator and one Republican: Wisconsin, Tammy Baldwin and Ron Johnson, split on 92.8% of shared votes; Pennsylvania, John Fetterman and David McCormick, split on 73.4% of shared votes; Maine, Susan Collins and Angus King Jr., split on 65.0% of shared votes. Angus King is an Independent who caucuses with Democrats.
+
+See the votes: https://partycohesion.streamlit.app/Same_State_Different_Vote?state=ME
+
+Data: Voteview, through Nov 12, 2026.
+#StopTheDivide #Congress #VotingRecord

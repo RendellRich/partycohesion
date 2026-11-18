@@ -104,3 +104,147 @@
   post_on: 2026-11-25
   time: "16:50"
   expires_after_days: 1
+
+# Same State, Different Vote and the state map: 20 finding posts, one a day, Facebook only.
+# Cards, captions and alt text: docs/social/findings/ (scripts/make_finding_posts.py). The numbers are as of
+# Nov 12, 2026, so each waits at most 3 days if it can't go out on time.
+
+- id: finding-new-same-state-different-vote
+  card: finding/new-same-state-different-vote
+  post_on: 2026-11-19
+  time: "12:20"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-ky-mcconnell-paul
+  card: finding/ky-mcconnell-paul
+  post_on: 2026-11-20
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-map-party-mix
+  card: finding/map-party-mix
+  post_on: 2026-11-21
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-house-massie
+  card: finding/house-massie
+  post_on: 2026-11-22
+  time: "12:20"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-senate-same-vs-mixed
+  card: finding/senate-same-vs-mixed
+  post_on: 2026-11-23
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-house-cuellar
+  card: finding/house-cuellar
+  post_on: 2026-11-24
+  time: "12:20"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-map-party-unity
+  card: finding/map-party-unity
+  post_on: 2026-11-25
+  time: "12:20"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-ak-murkowski-sullivan
+  card: finding/ak-murkowski-sullivan
+  post_on: 2026-11-26
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-house-typical-member
+  card: finding/house-typical-member
+  post_on: 2026-11-27
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-va-kaine-warner
+  card: finding/va-kaine-warner
+  post_on: 2026-11-28
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-house-fitzpatrick-perry
+  card: finding/house-fitzpatrick-perry
+  post_on: 2026-11-29
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-map-missed-votes
+  card: finding/map-missed-votes
+  post_on: 2026-11-30
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-house-gluesenkamp-perez
+  card: finding/house-gluesenkamp-perez
+  post_on: 2026-12-01
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-senate-top-same-party-pairs
+  card: finding/senate-top-same-party-pairs
+  post_on: 2026-12-02
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-house-brecheen-ok
+  card: finding/house-brecheen-ok
+  post_on: 2026-12-03
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-house-top-members
+  card: finding/house-top-members
+  post_on: 2026-12-04
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-house-golden-pingree
+  card: finding/house-golden-pingree
+  post_on: 2026-12-05
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-senate-split-delegations
+  card: finding/senate-split-delegations
+  post_on: 2026-12-06
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-house-davis-nc
+  card: finding/house-davis-nc
+  post_on: 2026-12-07
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
+
+- id: finding-house-biggest-delegations
+  card: finding/house-biggest-delegations
+  post_on: 2026-12-08
+  time: "19:05"
+  expires_after_days: 3
+  networks: [facebook]
