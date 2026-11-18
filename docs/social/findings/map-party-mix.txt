@@ -1,0 +1,6 @@
+Counting senators and representatives together, 20 states send a delegation entirely from one party: 12 all Republican (Alaska, Arkansas, Idaho, Iowa, Montana, Nebraska, North Dakota, Oklahoma, South Dakota, Utah, West Virginia, Wyoming) and 8 all Democratic or Democratic-caucusing (Connecticut, Delaware, Hawaii, Massachusetts, New Hampshire, New Mexico, Rhode Island, Vermont). Most are smaller states with one or two House seats. Click any state on the map to see its members.
+
+See the votes: https://partycohesion.streamlit.app/
+
+Data: Voteview, through Nov 12, 2026.
+#StopTheDivide #Congress #VotingRecord

@@ -1,0 +1,6 @@
+New on PartyCohesion: Same State, Different Vote. Pick your state to see how often its two senators, and its House members of the same party, cast opposite votes, and every roll call where they did, with which member broke with their party. Each member's page now shows their own numbers too, and the map on the home page opens every state's delegation.
+
+See the votes: https://partycohesion.streamlit.app/Same_State_Different_Vote
+
+Data: Voteview, through Nov 12, 2026.
+#StopTheDivide #Congress #VotingRecord

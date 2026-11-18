@@ -1,0 +1,1 @@
+Card comparing same-party and different-party senator pairs from one state. Large text: 2.7% vs 73%. Line chart by Congress: different-party pairs from 46% to 73%, same-party pairs from 2.1% to 7.6%.

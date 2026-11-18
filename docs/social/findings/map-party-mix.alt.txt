@@ -1,0 +1,1 @@
+Tile map of the 50 states shaded from blue (all Democrats) through gray to red (all Republicans) by their delegation's party mix. 20 states with a one-party delegation are outlined.

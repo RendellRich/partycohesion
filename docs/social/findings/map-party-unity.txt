@@ -1,0 +1,6 @@
+Party unity is the share of party-line votes on which a member sided with their own party. Averaged across each state's current members, every state is between 85% and 100%. The lowest: Maine (85.0%), New Hampshire (88.4%), Nevada (92.2%). The highest: Montana (99.2%), Wyoming (99.4%), North Dakota (99.6%). Darker means higher. Hover any state on the map to see its members.
+
+See the votes: https://partycohesion.streamlit.app/
+
+Data: Voteview, through Nov 12, 2026.
+#StopTheDivide #Congress #VotingRecord

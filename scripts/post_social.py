@@ -49,6 +49,8 @@ QUEUE = ROOT / "social" / "posts.yml"
 POSTED = ROOT / "social" / "posted.csv"
 CAPTIONS = ROOT / "docs" / "social" / "captions.json"
 MEMBERS = ROOT / "docs" / "social" / "members"
+# Cards kept in their own folder: card "member/<Bioguide ID>" or "finding/<slug>" -> docs/social/<folder>/<name>
+CARD_FOLDERS = {"member": "members", "finding": "findings"}
 PAGES_URL = "https://rendellrich.github.io/partycohesion"
 GRAPH_VERSION = "v26.0"
 NETWORKS = ("facebook", "instagram")
@@ -64,10 +66,18 @@ class MetaError(RuntimeError):
 
 # ---------------------------------------------------------------- captions and images
 
+def card_folder(card: str) -> tuple[Path, str] | None:
+    """(folder, name) for a card kept in its own folder, such as member/B001292 or finding/house-massie."""
+    kind, _, rest = card.partition("/")
+    if rest and kind in CARD_FOLDERS:
+        return CAPTIONS.parent / CARD_FOLDERS[kind], rest
+    return None
+
+
 def image_url(card: str, network: str) -> str:
     ext = "wide.png" if network == "facebook" else "tall.jpg"
-    if card.startswith("member/"):
-        return f"{PAGES_URL}/social/members/{card.split('/', 1)[1]}-{ext}"
+    if (found := card_folder(card)):
+        return f"{PAGES_URL}/social/{found[0].name}/{found[1]}-{ext}"
     return f"{PAGES_URL}/social/{card}-{ext}"
 
 
@@ -95,8 +105,8 @@ def check_caption(caption: str) -> None:
 def alt_text(card: str) -> str | None:
     """The image description for screen readers: docs/social/alt.json for finding cards, <id>.alt.txt for spotlights.
     Meta allows up to 1,000 characters."""
-    if card.startswith("member/"):
-        path = MEMBERS / f"{card.split('/', 1)[1]}.alt.txt"
+    if (found := card_folder(card)):
+        path = found[0] / f"{found[1]}.alt.txt"
         text = path.read_text().strip() if path.exists() else None
     else:
         path = CAPTIONS.parent / "alt.json"
@@ -105,10 +115,11 @@ def alt_text(card: str) -> str | None:
 
 
 def default_caption(card: str) -> str:
-    if card.startswith("member/"):
-        path = MEMBERS / f"{card.split('/', 1)[1]}.txt"
+    if (found := card_folder(card)):
+        path = found[0] / f"{found[1]}.txt"
         if not path.exists():
-            raise ValueError(f"No spotlight caption at {path.relative_to(ROOT)}; run scripts/member_spotlights.py.")
+            script = "member_spotlights.py" if card.startswith("member/") else "make_finding_posts.py"
+            raise ValueError(f"No caption at {path.relative_to(ROOT)}; run scripts/{script}.")
         return path.read_text().strip()
     caps = json.loads(CAPTIONS.read_text())
     if card not in caps:

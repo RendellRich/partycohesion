@@ -1,0 +1,6 @@
+Maine has two House members, both Democrats: Jared Golden and Chellie Pingree. In the 119th Congress so far (2025 to now, through Nov 12, 2026), they voted opposite ways on 133 of the 636 roll calls both voted on (20.9%). A typical pair of same-party House members from one state splits on about 4%. A split is a fact about the record, not a judgment.
+
+See the votes: https://partycohesion.streamlit.app/Same_State_Different_Vote?state=ME&chamber=house
+
+Data: Voteview, through Nov 12, 2026.
+#StopTheDivide #Congress #VotingRecord

@@ -1,0 +1,6 @@
+Tim Kaine and Mark Warner both represent Virginia as Democrats. In the 119th Congress so far (2025 to now, through Nov 12, 2026), they cast opposite votes on 90 of the 871 roll calls both voted on (10.3%). A typical pair of same-party senators from one state splits on about 3% of votes. Since 2013, they have split on 0% to 10% of votes each Congress. A split is a fact about the record, not a judgment: a roll call can't show a senator's reasons.
+
+See the votes: https://partycohesion.streamlit.app/Same_State_Different_Vote?state=VA
+
+Data: Voteview, through Nov 12, 2026.
+#StopTheDivide #Congress #VotingRecord
