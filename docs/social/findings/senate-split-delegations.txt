@@ -3,4 +3,4 @@ In the 119th Congress so far (2025 to now, through Nov 12, 2026), 3 states have 
 See the votes: https://partycohesion.streamlit.app/Same_State_Different_Vote?state=ME
 
 Data: Voteview, through Nov 12, 2026.
-#StopTheDivide #Congress #VotingRecord
+#StopTheDivide #Congress #VotingRecord #Wisconsin #Pennsylvania #Maine

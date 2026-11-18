@@ -3,4 +3,4 @@ Henry Cuellar (D-TX) votes the opposite way from other Texas House Democrats mor
 See the votes: https://partycohesion.streamlit.app/Same_State_Different_Vote?state=TX&chamber=house
 
 Data: Voteview, through Nov 12, 2026.
-#StopTheDivide #Congress #VotingRecord
+#StopTheDivide #Congress #VotingRecord #Texas

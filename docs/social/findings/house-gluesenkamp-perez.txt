@@ -3,4 +3,4 @@ Marie Gluesenkamp Perez (D-WA) voted the opposite way from other Washington Hous
 See the votes: https://partycohesion.streamlit.app/Same_State_Different_Vote?state=WA&chamber=house
 
 Data: Voteview, through Nov 12, 2026.
-#StopTheDivide #Congress #VotingRecord
+#StopTheDivide #Congress #VotingRecord #Washington

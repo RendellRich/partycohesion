@@ -3,4 +3,4 @@ Lisa Murkowski and Daniel Sullivan both represent Alaska as Republicans. In the 
 See the votes: https://partycohesion.streamlit.app/Same_State_Different_Vote?state=AK
 
 Data: Voteview, through Nov 12, 2026.
-#StopTheDivide #Congress #VotingRecord
+#StopTheDivide #Congress #VotingRecord #Alaska

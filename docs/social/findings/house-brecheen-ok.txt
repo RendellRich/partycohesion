@@ -3,4 +3,4 @@ Josh Brecheen (R-OK) voted the opposite way from other Oklahoma House Republican
 See the votes: https://partycohesion.streamlit.app/Same_State_Different_Vote?state=OK&chamber=house
 
 Data: Voteview, through Nov 12, 2026.
-#StopTheDivide #Congress #VotingRecord
+#StopTheDivide #Congress #VotingRecord #Oklahoma

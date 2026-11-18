@@ -3,4 +3,4 @@ Mitch McConnell and Rand Paul both represent Kentucky as Republicans. In the 119
 See the votes: https://partycohesion.streamlit.app/Same_State_Different_Vote?state=KY
 
 Data: Voteview, through Nov 12, 2026.
-#StopTheDivide #Congress #VotingRecord
+#StopTheDivide #Congress #VotingRecord #Kentucky

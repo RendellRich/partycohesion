@@ -31,6 +31,16 @@ from ui import STATES, display_name  # noqa: E402
 OUT = ROOT / "docs" / "social" / "findings"
 SITE = msc.SITE
 TAGS = "#StopTheDivide #Congress #VotingRecord"
+# Extra hashtags for posts about particular states, for people following news from those states
+STATE_TAGS = {"ky-mcconnell-paul": ["KY"], "ak-murkowski-sullivan": ["AK"], "va-kaine-warner": ["VA"],
+              "senate-split-delegations": ["WI", "PA", "ME"], "house-massie": ["KY"], "house-cuellar": ["TX"],
+              "house-fitzpatrick-perry": ["PA"], "house-davis-nc": ["NC"], "house-gluesenkamp-perez": ["WA"],
+              "house-brecheen-ok": ["OK"], "house-golden-pingree": ["ME"]}
+
+
+def tags(slug: str) -> str:
+    extra = " ".join("#" + STATES[st].replace(" ", "") for st in STATE_TAGS.get(slug, []))
+    return f"{TAGS} {extra}".strip()
 PURPLE_LO, PURPLE_HI = "#D9CFEF", "#4B2E8C"
 GRAY = "#C3C6CC"
 
@@ -233,7 +243,7 @@ def build() -> list[dict]:
         posts.append({"slug": slug, "head": head,
                       "html": card(kicker, head, stat, line, visual, source, note, stat_color),
                       "caption": f"{caption}\n\n{'See the map' if slug.startswith('map-') else 'See the votes'}: "
-                                 f"{link}\n\nData: Voteview, through {through}.\n{TAGS}",
+                                 f"{link}\n\nData: Voteview, through {through}.\n{tags(slug)}",
                       "alt": alt})
 
     def pair(df, a, b):
