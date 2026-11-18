@@ -212,3 +212,33 @@ def show_state_map(key: str, title: str | None = None, height: int = 470) -> Non
     if code:
         st.session_state[clicks] = st.session_state.get(clicks, 0) + 1  # a fresh map, with no selection, next visit
         st.switch_page("views/16_States.py", query_params={"state": code})
+
+
+def _blend(c1: str, c2: str, t: float) -> str:
+    a = [int(c1[i:i + 2], 16) for i in (1, 3, 5)]
+    b = [int(c2[i:i + 2], 16) for i in (1, 3, 5)]
+    return "#" + "".join(f"{round(x + (y - x) * t):02x}" for x, y in zip(a, b))
+
+
+def outline_svg(state: str, rep_share: float, width: int = 132) -> str:
+    """The state's outline as inline SVG, filled with its party-mix color from the map (blue, gray or red), or ''
+    for a place with no outline (the territories). Shapes come from data/state_shapes.json."""
+    import json
+
+    from theme import mode, tokens
+    global _shapes
+    try:
+        _shapes
+    except NameError:
+        _shapes = json.loads((DATA_DIR / "state_shapes.json").read_text())
+    shape = _shapes.get(state)
+    if not shape:
+        return ""
+    t = tokens()
+    middle = "#C3C6CC" if mode() == "light" else "#8A8580"
+    fill = (_blend(t["dem"], middle, rep_share / 0.5) if rep_share <= 0.5
+            else _blend(middle, t["rep"], (rep_share - 0.5) / 0.5))
+    w, h = shape["w"], shape["h"]
+    return (f'<svg viewBox="-2 -2 {w + 4} {h + 4}" width="{width}" height="{round(width * (h + 4) / (w + 4))}" '
+            f'role="img" aria-label="Outline of {STATES.get(state, state)}"><path d="{shape["d"]}" fill="{fill}" '
+            f'stroke="{t["text"]}" stroke-width="0.8" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>')

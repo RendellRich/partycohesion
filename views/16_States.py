@@ -8,7 +8,7 @@ import pandas as pd
 import streamlit as st
 
 import find_members
-from state_map import DELEGATE_PLACES, load_records, show_state_map, state_summary
+from state_map import DELEGATE_PLACES, load_records, outline_svg, show_state_map, state_summary
 from ui import STATES, html_table, inject_css, intro, metric_row, party_tag, pattern_badge, share_bar
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -39,6 +39,13 @@ records = load_records()
 delegation = seats[seats["state_abbrev"] == state].copy()
 delegation = delegation.join(records, on="bioguide_id")
 
+# The state's outline, in its party-mix color from the map, beside its name
+outline = outline_svg(state, row["rep_share"])
+st.markdown(f'<div style="display:flex;align-items:center;gap:1.25rem;margin:0.25rem 0 1rem">{outline}<div>'
+            f'<div style="font-size:1.6rem;font-weight:700;line-height:1.2">{escape(name)}</div>'
+            f'<div class="pc-body">{escape(row["seats_line"])}. {escape(row["mix"])}.</div></div></div>',
+            unsafe_allow_html=True)
+
 scored = delegation.dropna(subset=["party_unity_pct"])
 flip_scored = delegation[delegation["label"].notna() & (delegation["label"] != "Not enough votes")]
 metric_row([
@@ -50,8 +57,10 @@ metric_row([
      "members with enough comparable votes"),
 ])
 if state not in DELEGATE_PLACES:
-    st.markdown(f'<a href="Same_State_Different_Vote?state={state}" target="_self">See how often {escape(name)}\'s '
-                "senators vote opposite ways</a>", unsafe_allow_html=True)
+    house_link = (f', and its <a href="Same_State_Different_Vote?state={state}&chamber=house" target="_self">House '
+                  "members of the same party</a>" if row["house"] >= 2 else "")
+    st.markdown(f'See how often {escape(name)}\'s <a href="Same_State_Different_Vote?state={state}" target="_self">'
+                f"senators</a>{house_link} vote opposite ways.", unsafe_allow_html=True)
 share_bar(f"{name}'s members of Congress and how they vote, on PartyCohesion", "States", {"state": state})
 
 # Search and filter within the state
