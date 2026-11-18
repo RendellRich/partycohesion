@@ -63,3 +63,36 @@ def test_page_opens_a_state_from_a_link():
     at.segmented_control(key="ss_chamber").set_value("House").run()
     assert not at.exception, [e.value for e in at.exception]
     assert "Same-party House pairs" in " ".join(m.value for m in at.markdown)
+
+
+def test_member_summary_ranks_within_delegation():
+    from state_splits import member_summary
+    pairs = pd.DataFrame([
+        {"congress": 119, "chamber": "House", "state": "KY", "side": "Republican", "same_side": True,
+         "icpsr_a": a, "icpsr_b": b, "name_a": na, "name_b": nb, "party_a": "Republican", "party_b": "Republican",
+         "bioguide_a": None, "bioguide_b": None, "both_voted": 600, "splits": sp, "split_pct": sp / 6}
+        for a, b, na, nb, sp in [(1, 2, "A", "B", 150), (1, 3, "A", "C", 120), (2, 3, "B", "C", 30)]])
+    s = member_summary(pairs).set_index("name")
+    assert s.loc["A", "rank"] == 1 and s.loc["A", "colleagues"] == 2 and s.loc["A", "delegation"] == 3
+    assert round(s.loc["A", "avg_split"], 2) == 22.5 and s.loc["A", "most_split_with"] == "B"
+    assert s.loc["C", "rank"] == 3
+
+
+def test_member_page_shows_same_state_section():
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=180)
+    at.run()
+    at.switch_page("views/2_Member_Explorer.py")
+    at.query_params["member"] = "M000355"  # Mitch McConnell
+    at.run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert any("Same state, different vote" in h.value for h in at.subheader)
+
+
+def test_member_page_ranks_against_the_whole_delegation():
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=180)
+    at.run()
+    at.switch_page("views/2_Member_Explorer.py")
+    at.query_params["member"] = "M001184"  # Thomas Massie, who splits most among Kentucky Republicans
+    at.run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert "1 of 5 (splits most)" in " ".join(m.value for m in at.markdown)

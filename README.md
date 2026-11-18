@@ -22,7 +22,7 @@ PartyCohesion is a free, neutral site built on the official roll-call record. It
 | **Position Flips** | Did a member cast the same vote on debt limits, stopgap funding and war powers under presidents of both parties? |
 | **Platform Votes** | Votes where the two party platforms took opposite positions, and who voted against their own party's platform |
 | **Cosponsored, Then Voted No** | Members who signed on to a bill and then voted against it, and whether its text had changed first |
-| **Same State, Different Vote** | How often a state's two senators, or two House members of the same party from one state, cast opposite votes, which pairs split most, and every split vote, with who broke with their party |
+| **Same State, Different Vote** | How often a state's two senators, or two House members of the same party from one state, cast opposite votes, which pairs and House members split most, and every split vote, with who broke with their party. Each member's page shows their own numbers |
 | **Campaign Statements and Votes** | What House candidates wrote on their campaign websites, and what members of both chambers said in floor debates, next to how they voted |
 | **Key Votes** | The highest-profile votes in each Congress and exactly who crossed party lines |
 | **All Votes** | Search every roll call by bill number or title |

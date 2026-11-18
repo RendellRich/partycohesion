@@ -12,10 +12,11 @@ import streamlit as st
 
 from chart_utils import ACCENT, MUTED, PARTY_COLORS, ordinal, show_chart
 from seat_map import seat_map
+from state_splits import MIN_SHARED, load_all, member_summary
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import platform_record
 from ui import (bill_label, explainer, display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row,
-                pattern_badge, share_bar)
+                party_tag, pattern_badge, share_bar, STATES)
 from vote_index import load_votes, member_record, search_votes, voteview_url
 import floor_remarks
 
@@ -112,6 +113,13 @@ def load_matrix(congress: int, chamber: str):
         return None
     with np.load(path) as f:
         return f["icpsr"], f["rollnumber"], f["votes"]
+
+
+@st.cache_data
+def house_summary() -> pd.DataFrame:
+    """Every House member's average split with their state's same-party colleagues, each Congress."""
+    _, _, _, pairs = load_all()
+    return member_summary(pairs[pairs["chamber"] == "House"])
 
 
 @st.cache_data
@@ -310,6 +318,48 @@ if pick:
                      f"{x.party_first} then {x.party_final}"] for x in mine_vch.itertuples()], muted_cols=(0,))
         st.caption("The bill's text often changes between votes, and a roll call can't show a member's reasons.")
         st.page_link("views/14_Same_Bill_Different_Vote.py", label="See every bill and how changes are counted")
+
+    # Same state, different vote
+    _, _, _, state_pairs = load_all()
+    mine_sp = state_pairs[(state_pairs["icpsr_a"] == icpsr) | (state_pairs["icpsr_b"] == icpsr)]
+    sen_pairs = mine_sp[(mine_sp["chamber"] == "Senate") & (mine_sp["both_voted"] >= MIN_SHARED["Senate"])]
+    # Ranks need every pair in the delegation, not only this member's, so summarize the whole House once
+    all_house = house_summary() if (mine_sp["chamber"] == "House").any() else None
+    house_rows = all_house[all_house["icpsr"] == icpsr] if all_house is not None else mine_sp.iloc[0:0]
+    if len(sen_pairs) or len(house_rows):
+        st.subheader("Same state, different vote")
+        st.markdown(f"How often {short} cast the opposite vote from members of Congress from the same state, on roll "
+                    "calls both voted on.")
+        if len(sen_pairs):
+            sen_all = state_pairs[(state_pairs["chamber"] == "Senate") & state_pairs["same_side"]]
+            typical = sen_all.groupby("congress")["split_pct"].median()
+            rows_sp = []
+            for r in sen_pairs.sort_values("congress", ascending=False).itertuples():
+                mine_a = r.icpsr_a == icpsr
+                other, other_party = (r.name_b, r.party_b) if mine_a else (r.name_a, r.party_a)
+                rows_sp.append([ordinal(int(r.congress)), display_name(other), party_tag(other_party),
+                                f"{r.splits:,} of {r.both_voted:,}", f"{r.split_pct:.1f}%",
+                                f"{typical.get(r.congress, float('nan')):.1f}%"])
+            html_table(["Congress", "Other senator", "Party", "Split on", "Share", "Typical same-party pair"],
+                       rows_sp, raw_cols=(2,), muted_cols=(5,))
+        if len(house_rows):
+            typical_h = all_house[all_house["colleagues"] >= 2].groupby("congress")["avg_split"].median()
+            html_table(["Congress", "Average split with their state's party", "Colleagues compared",
+                        "Rank in that delegation", "Splits most with", "Typical member"],
+                       [[ordinal(int(r.congress)), f"{r.avg_split:.1f}%", str(r.colleagues),
+                         f"{r.rank} of {r.delegation}" + (" (splits most)" if r.rank == 1 and r.delegation > 1 else ""),
+                         f"{display_name(r.most_split_with)} ({r.most_split_pct:.1f}%)",
+                         f"{typical_h.get(r.congress, float('nan')):.1f}%"]
+                        for r in house_rows.sort_values("congress", ascending=False).itertuples()],
+                       muted_cols=(5,))
+        st.caption("Only Yea and Nay count. House comparisons are with members of the same party from the same "
+                   f"state who shared at least {MIN_SHARED['House']} votes; senators are compared with their state's "
+                   f"other senator when they shared at least {MIN_SHARED['Senate']} votes. A split is a fact about "
+                   "the record, not a judgment.")
+        state_now = member["state_abbrev"]
+        st.markdown(f'<a href="Same_State_Different_Vote?state={state_now}&chamber={member["chamber"].lower()}" '
+                    f'target="_self">See every split vote for {STATES.get(state_now, state_now)}</a>',
+                    unsafe_allow_html=True)
 
     # Missed votes
     missed_all = load_missed()

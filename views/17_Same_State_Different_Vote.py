@@ -7,24 +7,16 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from chart_utils import ACCENT, ordinal, show_chart
-from state_splits import MIN_SHARED, find_pairs, load_inputs, pair_votes
-from ui import STATES, SITE, bill_label, display_name, explainer, fmt_date, inject_css, intro, metric_row, share_bar
+from state_splits import MIN_SHARED, load_all, member_summary, pair_votes
+from ui import STATES, SITE, bill_label, display_name, explainer, fmt_date, html_table, inject_css, intro, metric_row, party_tag, share_bar
 from vote_index import voteview_url
 
 inject_css()
 
 
 @st.cache_data
-def load():
-    members, rollcalls, matrices = load_inputs()
-    pairs = pd.concat([find_pairs(members, matrices[c], c) for c in ("Senate", "House")], ignore_index=True)
-    pairs["key"] = pairs["icpsr_a"].astype(int).astype(str) + "-" + pairs["icpsr_b"].astype(int).astype(str)
-    return members, rollcalls, matrices, pairs
-
-
-@st.cache_data
 def votes_for(chamber: str, congress: int, key: str) -> pd.DataFrame:
-    members, rollcalls, matrices, pairs = load()
+    members, rollcalls, matrices, pairs = load_all()
     pair = pairs[(pairs["chamber"] == chamber) & (pairs["congress"] == congress) & (pairs["key"] == key)].iloc[0]
     return pair_votes(pair, members, rollcalls, matrices[chamber])
 
@@ -50,7 +42,7 @@ def one_per_member(ranked: pd.DataFrame, n: int) -> pd.DataFrame:
     return ranked.loc[keep]
 
 
-members, rollcalls, matrices, pairs = load()
+members, rollcalls, matrices, pairs = load_all()
 
 st.title("Same State, Different Vote")
 intro("Members of Congress from the same state answer to many of the same voters. This page shows how often two of "
@@ -125,6 +117,38 @@ if len(shown):
         st.session_state[f"ss_pair_{chamber}"] = points[0]["customdata"][1]
         st.rerun()
 
+# House: the members who split most, on average, from their own state's same-party colleagues
+if chamber == "House":
+    people = member_summary(now)
+    loners = people[people["colleagues"] >= 2].head(15).iloc[::-1]
+    if len(loners):
+        fig = go.Figure(go.Bar(
+            x=loners["avg_split"], orientation="h",
+            y=[f"{short(r.name)} ({r.party[0]}-{r.state})" for r in loners.itertuples()],
+            marker=dict(color=ACCENT), text=[f"{v:.1f}%" for v in loners["avg_split"]], textposition="outside",
+            cliponaxis=False,
+            customdata=[[r.state, r.colleagues, r.side, short(r.most_split_with), r.most_split_pct]
+                        for r in loners.itertuples()],
+            hovertemplate=("%{y}<br>Splits on %{x:.1f}% of votes, on average, with %{customdata[1]} "
+                           "%{customdata[2]} colleagues from their state<br>Most with %{customdata[3]} "
+                           "(%{customdata[4]:.1f}%)<br><i>Click to see the votes</i><extra></extra>")))
+        fig.update_layout(height=120 + 30 * len(loners), margin=dict(l=10, r=60, b=20),
+                          xaxis=dict(ticksuffix="%", title=None, rangemode="tozero"), yaxis=dict(title=None),
+                          showlegend=False)
+        own = show_chart(fig, f"House members who split most from their own state's party, {ordinal(congress)} Congress",
+                         f"same_state_members_{congress}",
+                         key=f"ss_people_{congress}_{st.session_state.get('ss_clicks', 0)}", on_select="rerun")
+        st.caption(f"Each member's average split with the colleagues of their party from their state, among those they "
+                   f"shared at least {MIN_SHARED['House']} votes with. Members with fewer than two such colleagues are "
+                   f"left out. The typical member splits on {people['avg_split'].median():.1f}% of votes with their "
+                   "state's party colleagues.")
+        hit = (own or {}).get("selection", {}).get("points", []) if own else []
+        if hit and hit[0].get("customdata"):
+            st.session_state["ss_clicks"] = st.session_state.get("ss_clicks", 0) + 1
+            st.session_state["ss_state_House"] = hit[0]["customdata"][0]
+            st.session_state.pop("ss_pair_House", None)
+            st.rerun()
+
 # One state's pairs and every vote where a pair split
 st.subheader("Every split vote, by state")
 states = sorted(now["state"].unique(), key=lambda a: STATES.get(a, a))
@@ -144,6 +168,13 @@ st.query_params["chamber"] = chamber.lower()
 
 here = now[now["state"] == state].sort_values("split_pct", ascending=False)
 if chamber == "House":
+    people_here = member_summary(here)
+    if len(people_here):
+        rows = [[f"{short(r.name)}", party_tag(r.party), f"{r.avg_split:.1f}%", str(r.colleagues),
+                 f"{short(r.most_split_with)} ({r.most_split_pct:.1f}%)"]
+                for r in people_here.sort_values(["side", "avg_split"], ascending=[True, False]).itertuples()]
+        html_table(["Member", "Party", "Average split with their state's party", "Colleagues compared",
+                    "Splits most with"], rows, raw_cols=(1,))
     st.caption(f"{len(here)} same-party pairs from {STATES.get(state, state)} in the House, most split first.")
 pair_key = f"ss_pair_{chamber}"
 if st.session_state.get(pair_key) not in set(here["key"]):

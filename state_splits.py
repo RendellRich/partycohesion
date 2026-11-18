@@ -99,3 +99,50 @@ def load_inputs(data_dir: Path = DATA_DIR):
             with np.load(path) as f:
                 matrices[chamber][int(path.stem[1:])] = (f["icpsr"], f["rollnumber"], f["votes"])
     return members, rollcalls, matrices
+
+
+def member_summary(pairs: pd.DataFrame, chamber: str = "House") -> pd.DataFrame:
+    """One row per member per Congress: how often they split, on average, with the same-party colleagues from their
+    state they share enough votes with (MIN_SHARED), their most split colleague, and where they rank in that
+    delegation (1 = splits most). Built from find_pairs() rows."""
+    p = pairs[(pairs["chamber"] == chamber) & pairs["same_side"] & (pairs["both_voted"] >= MIN_SHARED[chamber])]
+    a = p.rename(columns={"icpsr_a": "icpsr", "name_a": "name", "party_a": "party", "bioguide_a": "bioguide_id",
+                          "icpsr_b": "other_icpsr", "name_b": "other_name", "bioguide_b": "other_bioguide"})
+    b = p.rename(columns={"icpsr_b": "icpsr", "name_b": "name", "party_b": "party", "bioguide_b": "bioguide_id",
+                          "icpsr_a": "other_icpsr", "name_a": "other_name", "bioguide_a": "other_bioguide"})
+    cols = ["congress", "state", "side", "icpsr", "name", "party", "bioguide_id", "other_icpsr", "other_name",
+            "other_bioguide", "both_voted", "splits", "split_pct"]
+    long = pd.concat([a[cols], b[cols]], ignore_index=True)
+    if long.empty:
+        return pd.DataFrame(columns=["congress", "state", "side", "icpsr", "name", "party", "bioguide_id",
+                                     "colleagues", "avg_split", "most_split_with", "most_split_pct", "rank",
+                                     "delegation"])
+    top = long.sort_values("split_pct", ascending=False).drop_duplicates(["congress", "icpsr"])
+    out = (long.groupby(["congress", "state", "side", "icpsr", "name", "party", "bioguide_id"], dropna=False)
+           .agg(colleagues=("other_icpsr", "nunique"), avg_split=("split_pct", "mean")).reset_index())
+    out = out.merge(top[["congress", "icpsr", "other_name", "split_pct"]].rename(
+        columns={"other_name": "most_split_with", "split_pct": "most_split_pct"}), on=["congress", "icpsr"])
+    grp = out.groupby(["congress", "state", "side"])["avg_split"]
+    out["rank"] = grp.rank(ascending=False, method="min").astype(int)
+    out["delegation"] = grp.transform("size")
+    return out.sort_values(["congress", "avg_split"], ascending=[True, False]).reset_index(drop=True)
+
+
+_cached_all = None
+
+
+def load_all():
+    """Members, roll calls, vote matrices and every same-state pair in both chambers, cached for the server's life
+    (cleared when the data files change). Shared by the Same State, Different Vote and Members pages."""
+    global _cached_all
+    if _cached_all is None:
+        import streamlit as st
+
+        @st.cache_data(show_spinner="Comparing members from the same state...")
+        def _load():
+            members, rollcalls, matrices = load_inputs()
+            pairs = pd.concat([find_pairs(members, matrices[c], c) for c in ("Senate", "House")], ignore_index=True)
+            pairs["key"] = pairs["icpsr_a"].astype(int).astype(str) + "-" + pairs["icpsr_b"].astype(int).astype(str)
+            return members, rollcalls, matrices, pairs
+        _cached_all = _load
+    return _cached_all()
