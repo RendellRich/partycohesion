@@ -244,7 +244,7 @@ if pick:
             st.rerun()
 
     # Same question, different president
-    st.subheader("Same question, different president")
+    st.header("Same question, different president")
     st.markdown("How often this member gave the president room on the same kinds of votes, under their own party's "
                 "presidents and under the other party's.")
     table_rows = []
@@ -267,7 +267,7 @@ if pick:
         st.caption("This member cast no Yea or Nay votes on debt limit, funding, disaster aid or war powers bills in this data.")
 
     # Platform Votes
-    st.subheader("Votes on their party's platform")
+    st.header("Votes on their party's platform")
     if plat_rows.empty:
         st.caption("No votes in this data on topics where the Democratic and Republican platforms take opposite, "
                    "specific positions.")
@@ -289,7 +289,7 @@ if pick:
     camp = load_campaign()
     mine_camp = camp[camp["icpsr"] == icpsr].sort_values(["campaign_year", "topic"], ascending=[False, True])
     if not mine_camp.empty:
-        st.subheader("Campaign statements and votes")
+        st.header("Campaign statements and votes")
         n_diff = int((mine_camp["same_direction"] == "No").sum())
         n_same = int((mine_camp["same_direction"] == "Yes").sum())
         st.markdown(f"What {short}'s own campaign website said, next to their vote on the closest roll call after "
@@ -306,7 +306,7 @@ if pick:
     vch = load_vote_changes()
     mine_vch = vch[vch["icpsr"] == icpsr].sort_values("final_date", ascending=False)
     if not mine_vch.empty:
-        st.subheader("Same bill, different vote")
+        st.header("Same bill, different vote")
         n_apart = int(mine_vch["apart"].sum())
         st.markdown(f"Bills where {short} voted Yea at one stage and Nay at another, in the same chamber and Congress: "
                     f"**{len(mine_vch)}**." + (f" On **{n_apart}** of them, most of their party voted the same way both "
@@ -327,7 +327,7 @@ if pick:
     all_house = house_summary() if (mine_sp["chamber"] == "House").any() else None
     house_rows = all_house[all_house["icpsr"] == icpsr] if all_house is not None else mine_sp.iloc[0:0]
     if len(sen_pairs) or len(house_rows):
-        st.subheader("Same state, different vote")
+        st.header("Same state, different vote")
         st.markdown(f"How often {short} cast the opposite vote from members of Congress from the same state, on roll "
                     "calls both voted on.")
         if len(sen_pairs):
@@ -365,7 +365,7 @@ if pick:
     missed_all = load_missed()
     mine_missed = missed_all[missed_all["icpsr"] == icpsr].sort_values(["congress", "chamber"], ascending=[False, True])
     if not mine_missed.empty:
-        st.subheader("Missed votes")
+        st.header("Missed votes")
         medians = missed_all.groupby(["congress", "chamber"])["missed_pct"].median()
         tot_missed, tot_held = int(mine_missed["missed"].sum()), int(mine_missed["eligible"].sum())
         st.markdown(f"{short} missed **{tot_missed:,} of {tot_held:,}** roll calls held while they served "
@@ -378,7 +378,7 @@ if pick:
 
     # Party unity over time
     if len(scored) > 1:
-        st.subheader("Party unity over time")
+        st.header("Party unity over time")
         compare_party = caucus if pd.notna(caucus) else member["party"]
         avg = (df[df["caucus"] == compare_party].groupby(["congress", "chamber"])["party_unity_pct"].mean()
                .reset_index().rename(columns={"party_unity_pct": "party_avg"}))
@@ -411,7 +411,7 @@ if pick:
         sup = sup.groupby(["president", "president_party"], sort=False).sum().reset_index()
         sup = sup[sup["votes"] > 0]
     if not sup.empty:
-        st.subheader("Voted with the president's stated position")
+        st.header("Voted with the president's stated position")
         st.markdown("Bills where the White House published a position before the vote (2009 on). This shows whose "
                     "positions this member sided with. It is **not** a consistency score: agreeing more with one "
                     "party's presidents can simply reflect a member's views.")
@@ -424,7 +424,7 @@ if pick:
     peers = df[(df["congress"] == member["congress"]) & (df["chamber"] == member["chamber"])
                & (df["party"] == member["party"])]
     if len(peers) > 5 and pd.notna(ideo):
-        st.subheader("Where they sit in their party")
+        st.header("Where they sit in their party")
         fig = px.histogram(peers, x="nominate_dim1", nbins=25, labels={"nominate_dim1": "Ideology score (DW-NOMINATE)"},
                            color_discrete_sequence=[PARTY_COLORS.get(member["party"], MUTED)])
         fig.add_vline(x=ideo, line_dash="dash", line_color=ACCENT, annotation_text=short, annotation_position="top")
@@ -432,7 +432,7 @@ if pick:
         show_chart(fig, f"{short} among {member['party']}s in the {member['chamber']}, {ordinal(member['congress'])} Congress",
                    f"ideology_position_{short.lower().replace(' ', '_')}_{int(member['congress'])}")
     # Full voting record
-    st.subheader("Voting record")
+    st.header("Voting record")
     side = caucus if pd.notna(caucus) else member["party"]
     st.markdown(f"Every roll call {short} was eligible for while in office, from 2007 on. A vote is flagged when "
                 f"{short} voted against the {side} majority.")

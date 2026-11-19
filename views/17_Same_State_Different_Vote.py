@@ -150,7 +150,7 @@ if chamber == "House":
             st.rerun()
 
 # One state's pairs and every vote where a pair split
-st.subheader("Every split vote, by state")
+st.header("Every split vote, by state")
 states = sorted(now["state"].unique(), key=lambda a: STATES.get(a, a))
 state_key = f"ss_state_{chamber}"
 wanted = st.query_params.get("state", "").upper()

@@ -128,7 +128,7 @@ scored = view[view["label"] != "Not enough votes"]
 # ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
-st.subheader("How consistent are members?")
+st.header("How consistent are members?")
 if scored.empty:
     st.info("No members in this selection have enough votes under both parties' presidents.")
 else:
@@ -186,7 +186,7 @@ else:
 # One member in detail
 # ---------------------------------------------------------------------------
 st.markdown("---")
-st.subheader("One member's votes")
+st.header("One member's votes")
 pool = scores if not current_only else scores[scores["congress"] == newest]
 labels = {f"{r.name} ({r.party[0]}-{r.state_abbrev}, {r.chamber})": r.icpsr for r in pool.sort_values("name").itertuples()}
 pick = st.selectbox("Member", list(labels), index=None, placeholder="Type a name…", key="fl_member")

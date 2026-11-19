@@ -202,7 +202,7 @@ else:
 # Position Flips side by side
 # ---------------------------------------------------------------------------
 if flips["icpsr"].isin([a_id, b_id]).any():
-    st.subheader("Same question, different president")
+    st.header("Same question, different president")
     st.markdown("Whether each member's vote on the same kind of bill changed when the White House changed parties. "
                 "The number is the shift in percentage points, comparing only matched votes (same type of vote, same position "
                 "in the chamber); near zero means the same vote under both parties' presidents.")
@@ -217,7 +217,7 @@ if flips["icpsr"].isin([a_id, b_id]).any():
 a_plat, a_cast, a_against = platform_record(a_id)
 b_plat, b_cast, b_against = platform_record(b_id)
 if a_cast or b_cast:
-    st.subheader("Votes on their party's platform")
+    st.header("Votes on their party's platform")
     st.markdown("On topics where the Democratic and Republican platforms take opposite positions, how often each member "
                 "voted against their own party's platform. Counted votes only, each topic once.")
     html_table(["Member", "Topics against their party's platform", "Topics voted on"],
@@ -240,7 +240,7 @@ if a_cast or b_cast:
 # ---------------------------------------------------------------------------
 history = pd.concat([a_rows.assign(Member=a_name), b_rows.assign(Member=b_name)]).dropna(subset=["party_unity_pct"])
 if not history.empty:
-    st.subheader("Party unity across Congresses")
+    st.header("Party unity across Congresses")
     fig = px.line(history, x="congress", y="party_unity_pct", color="Member", markers=True,
                   hover_data={"chamber": True, "party": True}, color_discrete_sequence=PAIR_COLORS,
                   labels={"congress": "Congress", "party_unity_pct": "Party Unity %"})
@@ -249,7 +249,7 @@ if not history.empty:
                f"compare_unity_{a_name.lower()}_{b_name.lower()}".replace(" ", "_"))
 
 if tot_both:
-    st.subheader("Key votes where they split")
+    st.header("Key votes where they split")
     if splits:
         st.caption(f"Key votes where {a_name} and {b_name} voted on opposite sides. Key votes are the series listed on "
                    "the Key Votes page.")

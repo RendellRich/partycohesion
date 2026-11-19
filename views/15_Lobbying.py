@@ -76,7 +76,7 @@ st.dataframe(pd.DataFrame({
 st.caption("Reports counts each lobbying report once, however many times it names the bill. A report covers one "
            "client for one quarter. Issue areas are the categories filers choose for each item on a report.")
 
-st.subheader("Look at one bill")
+st.header("Look at one bill")
 options = list(counts["bill_number"])
 want_bill = st.query_params.get("bill")
 bill = st.selectbox("Bill", options, key="lb_bill", label_visibility="collapsed",

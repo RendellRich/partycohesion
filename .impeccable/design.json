@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-19T06:05:51.538944Z",
+  "title": "Design System: PartyCohesion",
+  "extensions": {
+    "colorMeta": {
+      "light-accent": {
+        "role": "primary",
+        "displayName": "Record Gold"
+      },
+      "record-navy": {
+        "role": "secondary",
+        "displayName": "Record Navy"
+      },
+      "record-paper": {
+        "role": "secondary",
+        "displayName": "Record Paper"
+      },
+      "tone-amber": {
+        "role": "tertiary",
+        "displayName": "Card Amber"
+      },
+      "tone-teal": {
+        "role": "tertiary",
+        "displayName": "Card Teal"
+      },
+      "tone-violet": {
+        "role": "tertiary",
+        "displayName": "Card Violet"
+      }
+    },
+    "shadows": [],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "640px"
+      },
+      {
+        "name": "ios-input-zoom",
+        "value": "768px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Stat card with a toned top edge.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-eyebrow\">House party unity</div><div class=\"ds-stat\">96.4%</div><div class=\"ds-body\">Average for House Democrats this Congress.</div></div>",
+      "css": ".ds-card{background:color-mix(in srgb,#A86A12 7%,#fff);border:1px solid #DADDE3;border-top:4px solid #A86A12;border-radius:10px;padding:20px;font-family:'Public Sans',system-ui,sans-serif}.ds-eyebrow{color:#A86A12;font-size:.9rem;font-weight:600}.ds-stat{font-size:2.4rem;font-weight:700;font-variant-numeric:tabular-nums}.ds-body{color:#555B65}"
+    },
+    {
+      "name": "Share pill",
+      "kind": "chip",
+      "refersTo": "share-pill",
+      "description": "Share link pill.",
+      "html": "<a class=\"ds-pill\" href=\"#\">Facebook</a>",
+      "css": ".ds-pill{display:inline-flex;align-items:center;min-height:44px;border:1px solid #DADDE3;border-radius:999px;padding:4px 14px;font-weight:600;color:#1B1D21;text-decoration:none;font-family:'Public Sans',system-ui,sans-serif}.ds-pill:hover{border-color:#7A5A10}.ds-pill:focus-visible{outline:2px solid #7A5A10;outline-offset:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Public Record",
+    "keyCharacteristics": [
+      "Serif titles, sans body, tabular numbers.",
+      "Friendly and warm surfaces: lightly tinted cards with a colored top edge, rounded corners, no shadows.",
+      "Party color only identifies a party, always next to a label.",
+      "Equal weight for both parties in every chart, stripe and legend.",
+      "Light and dark themes are first-class and token-driven."
+    ],
+    "rules": [
+      {
+        "name": "The Equal Aisle Rule",
+        "section": "colors",
+        "body": "Democratic and Republican colors get the same size, weight and prominence everywhere."
+      },
+      {
+        "name": "The Label Beside Color Rule",
+        "section": "colors",
+        "body": "A party or vote color never stands alone."
+      },
+      {
+        "name": "The Flat Record Rule",
+        "section": "elevation",
+        "body": "If something needs to stand out, give it a border, tone or position, never a shadow."
+      }
+    ]
+  }
+}

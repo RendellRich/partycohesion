@@ -108,7 +108,7 @@ if mine.empty:
 # Step 1
 # ---------------------------------------------------------------------------
 st.markdown("---")
-st.subheader("Step 1. Pick votes that come up under every president")
+st.header("Step 1. Pick votes that come up under every president")
 st.markdown(
     "Some questions return no matter who is president. On each one, one side of the vote **gives whichever president "
     "is in office more room** to govern. That is the *president-friendly* vote. It is not the \"right\" vote, just the "
@@ -122,7 +122,7 @@ st.caption("When the White House published an official Statement of Administrati
 # ---------------------------------------------------------------------------
 # Step 2
 # ---------------------------------------------------------------------------
-st.subheader("Step 2. Split their votes by who was president")
+st.header("Step 2. Split their votes by who was president")
 st.markdown(
     f"Every vote is matched to the president in office on that date. Then each of {short}'s votes goes in one of two "
     f"piles: votes cast when **their own party** held the White House, and votes cast when **the other party** did. "
@@ -149,7 +149,7 @@ for flag, title in [(1, "Pile 1: their own party's president"), (0, "Pile 2: the
 scored_votes = mine.drop(columns=["date", "president", "president_party", "label", "friendly_vote", "position_source"])
 s = flip_scores(scored_votes)
 r = s.iloc[0]
-st.subheader("Step 3. Count the president-friendly votes in each pile")
+st.header("Step 3. Count the president-friendly votes in each pile")
 m1, m2 = st.columns(2)
 own_txt = f"{r['rate_own']:.0f}%" if r["n_own"] else "No votes"
 other_txt = f"{r['rate_other']:.0f}%" if r["n_other"] else "No votes"
@@ -170,7 +170,7 @@ if r["n_own"] and r["n_other"]:
 # ---------------------------------------------------------------------------
 # Step 4
 # ---------------------------------------------------------------------------
-st.subheader("Step 4. Compare like with like")
+st.header("Step 4. Compare like with like")
 st.markdown(
     "The votes are put in groups by **type of vote** and by **whether their party ran the chamber**. Inside each "
     "group, the rate under the other party's president is subtracted from the rate under their own party's "
@@ -192,7 +192,7 @@ st.caption("Weight = own × other ÷ (own + other), using each side's number of 
 # ---------------------------------------------------------------------------
 # Step 5
 # ---------------------------------------------------------------------------
-st.subheader("Step 5. Average the differences, and place the result on the scale")
+st.header("Step 5. Average the differences, and place the result on the scale")
 used = groups[groups["compared"]]
 if r["label"] == "Not enough votes":
     st.markdown(
@@ -227,7 +227,7 @@ st.markdown("""
 # Why and limits
 # ---------------------------------------------------------------------------
 st.markdown("---")
-st.subheader("Why it works this way")
+st.header("Why it works this way")
 st.markdown(f"""
 - **Same question, different president.** Comparing a member with themselves on the same kind of bill takes their
   ideology out of the picture. Liberal or conservative, the question is only whether the vote moved with the White House.
@@ -237,7 +237,7 @@ st.markdown(f"""
   position in the chamber, so a change in who runs Congress isn't counted as a change of position.
 - **A minimum number of votes.** At least {MIN_VOTES_EACH_SIDE} compared votes on each side, so a single vote never sets a label.
 """)
-st.subheader("What it can't tell you")
+st.header("What it can't tell you")
 st.markdown("""
 - **The bills are not identical.** Two funding bills can carry different cuts or riders, so a changed vote can reflect
   a changed bill rather than a changed principle. That is why every vote is listed, so you can judge for yourself.

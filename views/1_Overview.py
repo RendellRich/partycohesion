@@ -41,7 +41,7 @@ if chamber != "Both":
     filtered = filtered[filtered["chamber"] == chamber]
 
 # Key metrics
-st.subheader(f"{ordinal(congress)} Congress: {chamber_label(chamber)}")
+st.header(f"{ordinal(congress)} Congress: {chamber_label(chamber)}")
 
 party_counts = filtered["party"].value_counts()
 dem = filtered[filtered["party"] == "Democrat"]
@@ -59,7 +59,7 @@ metric_row([
 ])
 
 # Ideology distribution
-st.subheader("Where members sit on the ideology scale")
+st.header("Where members sit on the ideology scale")
 st.caption("Voteview's ideology score (DW-NOMINATE, first dimension) runs from -1 to +1. Lower scores lean liberal and "
            "higher scores lean conservative. It is estimated from roll-call votes alone.")
 
@@ -87,7 +87,7 @@ else:
     st.info("No data for the selected filters.")
 
 # Party unity distribution
-st.subheader("How often members vote with their party")
+st.header("How often members vote with their party")
 st.caption(
     "Share of party-unity votes (a majority of Democrats opposed a majority of Republicans) "
     "on which each member voted with their own party's majority. Computed from Voteview roll-call records."
@@ -113,7 +113,7 @@ if not unity_df.empty:
     fig_u.update_layout(showlegend=False, height=420, margin=dict(l=40, r=40, t=30, b=40))
     show_chart(fig_u, f"Share of party-line votes cast with own party, {ordinal(congress)} Congress, {chamber_label(chamber)}", f"party_unity_{congress}_{chamber.lower()}")
 
-st.subheader("Party unity over time")
+st.header("Party unity over time")
 unity_trend = (
     df[df["party"].isin(["Democrat", "Republican"])]
     .groupby(["congress", "chamber", "party"])["party_unity_pct"]
@@ -138,7 +138,7 @@ fig_ut.update_layout(height=400, margin=dict(l=40, r=40, t=40, b=40))
 show_chart(fig_ut, "Average share of party-line votes cast with own party, by Congress", "party_unity_trend")
 
 # Cohesion proxy distribution
-st.subheader("How close members sit to their party's middle")
+st.header("How close members sit to their party's middle")
 st.caption(
     "Higher values mean a member's ideology score sits closer to their party's median in that chamber and Congress. "
     "This is a separate, ideology-based measure. It complements the party unity rate above; it does not replace it."
@@ -160,7 +160,7 @@ if "cohesion_proxy" in plot_df.columns and not plot_df.empty:
     show_chart(fig2, f"Closeness to party median ideology, {ordinal(congress)} Congress, {chamber_label(chamber)}", f"cohesion_proxy_{congress}_{chamber.lower()}")
 
 # Party median comparison over recent Congresses
-st.subheader("How far apart the parties sit over time")
+st.header("How far apart the parties sit over time")
 trend = (
     df[df["party"].isin(["Democrat", "Republican"])]
     .groupby(["congress", "chamber", "party"])["nominate_dim1"]

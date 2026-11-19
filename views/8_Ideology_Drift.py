@@ -125,7 +125,7 @@ st.dataframe(pd.DataFrame({
 }), width="stretch", hide_index=True, height=420)
 
 st.markdown("---")
-st.subheader("One member over time")
+st.header("One member over time")
 opts = {f"{r.name} ({r.party[0]}-{r.state}, {r.chamber})": r.icpsr for r in view.sort_values("name").itertuples()}
 pick = st.selectbox("Member", list(opts), index=None, placeholder="Type a name…", key="dr_member")
 if pick:

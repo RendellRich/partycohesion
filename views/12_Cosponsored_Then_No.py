@@ -98,7 +98,7 @@ st.dataframe(pd.DataFrame({
 top = (view.groupby(["congress", "chamber", "bill", "vote_desc"], dropna=False).size().sort_values(ascending=False)
        .head(5))
 if len(top):
-    st.subheader("Bills with the most signers voting no")
+    st.header("Bills with the most signers voting no")
     for (c, ch, b, t), n in top.items():
         v = votes[(votes["congress"] == c) & (votes["chamber"] == ch) & (votes["bill"] == b)].iloc[0]
         changed = "text changed before the vote" if v["changed_before_vote"] else "text unchanged"

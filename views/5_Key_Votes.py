@@ -87,7 +87,7 @@ else:
                               & (defectors["rollnumber"] == v["rollnumber"])]
             vote_card(v, broke, link=voteview_url(congress, v["chamber"], v["rollnumber"]))
 
-            st.subheader(f"All {len(sv)} votes in this series")
+            st.header(f"All {len(sv)} votes in this series")
             st.dataframe(pd.DataFrame({
                 "Date": sv["date"],
                 "Chamber": sv["chamber"],
@@ -114,7 +114,7 @@ if chamber != "Both":
     s = s[s["chamber"] == chamber]
 n_unity = int(s["party_unity_votes"].sum())
 
-st.subheader("How united was each party?")
+st.header("How united was each party?")
 st.markdown(f"On the {n_unity:,} party-line votes in the {ordinal(congress)} Congress (most Democrats against most "
             "Republicans), the share of the time members sided with their own party.")
 unity = current.dropna(subset=["party_unity_pct"])
