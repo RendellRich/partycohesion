@@ -16,6 +16,6 @@ def test_css_file_is_current():
         "Run python scripts/build_css.py"
 
 
-def test_css_file_starts_with_imports():
-    lines = [line for line in (ROOT / "static" / "pc.css").read_text().splitlines() if line and not line.startswith("/*")]
-    assert lines[0].startswith("@import")
+def test_css_file_has_no_imports():
+    # An @import holds the whole stylesheet back until the imported file loads
+    assert "@import" not in (ROOT / "static" / "pc.css").read_text()
