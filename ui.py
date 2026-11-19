@@ -43,6 +43,10 @@ CSS = f"""
 .stApp h2, .stApp h3 {{ font-family: {SANS}; font-weight: 700; }}
 .stApp [data-testid="stMetricValue"], .pc-stat, .pc-metric-value {{ font-variant-numeric: tabular-nums; }}
 .stApp a:focus-visible, .stApp button:focus-visible {{ outline: 2px solid var(--pc-accent); outline-offset: 2px; }}
+/* Expander headers: 44px to tap, and the same solid focus ring as links (Streamlit's own is a faint glow) */
+.stApp [data-testid="stExpander"] summary {{ min-height: 44px; display: flex; align-items: center; }}
+.stApp [data-testid="stExpander"] summary:focus-visible, .stApp a:focus-visible {{ outline: 2px solid var(--pc-accent);
+    outline-offset: 2px; box-shadow: none !important; }}
 .stApp [data-testid="stMain"] [data-testid="stPageLink-NavLink"] p {{ color: var(--pc-accent); font-weight: 600; }}
 .stApp [data-testid="stMain"] [data-testid="stPageLink-NavLink"]:hover p {{ text-decoration: underline; }}
 .pc-hero {{ font-family: {SERIF}; font-size: 2.6rem; font-weight: 700; line-height: 1.15; max-width: 22ch;
@@ -60,6 +64,8 @@ CSS = f"""
 .pc-metric-note {{ color: var(--pc-muted); font-size: 0.85rem; }}
 .pc-name {{ display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 1.6rem; font-weight: 600; }}
 .pc-place {{ color: var(--pc-muted); font-size: 1rem; margin: 4px 0 12px 0; }}
+.pc-state-head {{ display: flex; align-items: center; gap: 1rem; margin: 0 0 1rem; }}
+.pc-state-head svg {{ flex-shrink: 0; width: auto; height: auto; max-width: 96px; max-height: 80px; }}
 .pc-tag {{ display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; }}
 .pc-dot {{ width: 10px; height: 10px; border-radius: 50%; display: inline-block; }}
 .pc-badge {{ display: inline-block; padding: 2px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }}
@@ -190,6 +196,10 @@ CSS = f"""
                                 text-align: left; flex-shrink: 0; }}
   .pc-table-stack td:first-child {{ display: block; text-align: left; font-weight: 700; font-size: 1.05rem; padding-bottom: 6px; }}
   .pc-table-stack td:first-child::before {{ content: none; }}
+  .pc-table-stack td {{ flex-wrap: wrap; }}
+  .pc-table-stack td > .pc-badge {{ white-space: nowrap; margin-left: auto; }}
+  .pc-table-stack td.pc-td-wide {{ display: block; text-align: left; }}
+  .pc-table-stack td.pc-td-wide::before {{ display: block; }}
 }}
 /* Phones: 16px fields so iPhones don't zoom in on tap */
 @media (max-width: 767px) {{ .stApp input, .stApp textarea, .stApp select {{ font-size: 16px !important; }} }}
@@ -290,24 +300,30 @@ def pattern_badge(label: str) -> str:
 
 
 def html_table(header: list[str], rows: list[list[str]], raw_cols: tuple[int, ...] = (), muted_cols: tuple[int, ...] = (),
-               label: str = "Table", stack: bool = False) -> None:
+               label: str = "Table", stack: bool = False, wide_cols: tuple[int, ...] = ()) -> None:
     """Small table with design-system styling. Cells in raw_cols are trusted HTML (badges); others are escaped.
     stack shows each row as a small card on phones (first column as its title, the others as label and value pairs)
-    instead of a table that scrolls sideways."""
-    head = "".join(f'<th scope="col">{escape(h)}</th>' for h in header)
+    instead of a table that scrolls sideways. In a stacked card, wide_cols (long text) sit under their label instead
+    of beside it."""
+    # Stacked cards change the table's display on phones, which can drop its table meaning for screen readers, so
+    # the roles are spelled out.
+    role = (lambda r: f' role="{r}"') if stack else (lambda r: "")
+    head = "".join(f'<th scope="col"{role("columnheader")}>{escape(h)}</th>' for h in header)
     body = ""
     for r in rows:
         cells = []
         for i, c in enumerate(r):
-            cls = ' class="pc-muted"' if i in muted_cols else ""
+            classes = (["pc-muted"] if i in muted_cols else []) + (["pc-td-wide"] if stack and i in wide_cols else [])
+            cls = f' class="{" ".join(classes)}"' if classes else ""
             lab = f' data-label="{escape(header[i])}"' if stack and i < len(header) else ""
-            cells.append(f"<td{cls}{lab}>{c if i in raw_cols else escape(str(c))}</td>")
-        body += "<tr>" + "".join(cells) + "</tr>"
+            cells.append(f"<td{cls}{lab}{role('cell')}>{c if i in raw_cols else escape(str(c))}</td>")
+        body += f"<tr{role('row')}>" + "".join(cells) + "</tr>"
     # The wrapper scrolls sideways on narrow screens instead of squeezing words; it takes keyboard focus so it can
     # be scrolled without a mouse.
     table_cls = "pc-table pc-table-stack" if stack else "pc-table"
     st.markdown(f'<div class="pc-table-wrap" role="region" tabindex="0" aria-label="{escape(label)}">'
-                f'<table class="{table_cls}"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>',
+                f'<table class="{table_cls}"{role("table")}><thead{role("rowgroup")}><tr{role("row")}>{head}</tr></thead>'
+                f'<tbody{role("rowgroup")}>{body}</tbody></table></div>',
                 unsafe_allow_html=True)
 
 
@@ -376,7 +392,8 @@ def member_header(name: str, party: str, state: str, chamber: str, first: int, l
                   as_title: bool = False) -> None:
     """The member's name, party and seat. as_title makes the name the page's h1 (the Members page with a member open)."""
     from chart_utils import ordinal
-    place = f"{STATES.get(state, state)}, {chamber}, {ordinal(first)} to {ordinal(last)} Congress " \
+    span = f"{ordinal(first)} Congress" if int(first) == int(last) else f"{ordinal(first)} to {ordinal(last)} Congress"
+    place = f"{STATES.get(state, state)}, {chamber}, {span} " \
             f"({congress_years(first, last, newest)})" + ("; data starts in 2007" if int(first) == 110 else "")
     if as_title:
         st.title(display_name(name))

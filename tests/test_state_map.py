@@ -49,9 +49,29 @@ def test_states_page_opens_from_a_link():
     at.run()
     assert not at.exception, [e.value for e in at.exception]
     text = " ".join(m.value for m in at.markdown)
-    assert "Members from Florida" in text and "Member_Explorer?member=" in text
+    assert at.title[0].value == "Florida" and "Member_Explorer?member=" in text
+    assert [h.value for h in at.header][:2] == ["Senators", "House, by district"]
     at.text_input(key="st_query").set_value("zzzz").run()
     assert any("No members match" in i.value for i in at.info)
+
+
+def test_states_zip_narrows_to_your_members():
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=120)
+    at.run()
+    at.switch_page("views/16_States.py")
+    at.query_params["state"] = "TX"
+    at.run()
+    at.text_input(key="st_zip").set_value("78701").run()
+    assert not at.exception, [e.value for e in at.exception]
+    text = " ".join(m.value for m in at.markdown)
+    assert "Your members for ZIP code 78701" in text
+    seats = pd.read_csv(ROOT / "data" / "current_seats.csv")
+    tx = seats[seats["state_abbrev"] == "TX"]
+    shown = [b for b in tx["bioguide_id"] if f"member={b}" in text]
+    assert len(shown) == 3  # two senators and one House member
+    # A ZIP code from another state points there instead
+    at.text_input(key="st_zip").set_value("34219").run()
+    assert "is in Florida" in " ".join(m.value for m in at.markdown)
 
 
 def records():

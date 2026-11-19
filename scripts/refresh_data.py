@@ -35,6 +35,7 @@ MEMBERS_RAW = RAW_DIR / "HSall_members.csv"
 PROCESSED_FILE = DATA_DIR / "members_processed.csv"
 SUMMARY_FILE = DATA_DIR / "unity_summary.csv"
 MISSED_FILE = DATA_DIR / "missed_votes.csv"
+SERVICE_RUNS_FILE = DATA_DIR / "service_runs.csv"
 
 BASE_URL = "https://voteview.com/static/data/out"
 MEMBERS_URL = f"{BASE_URL}/members/HSall_members.csv"
@@ -423,6 +424,33 @@ def build_missed_votes(members: pd.DataFrame) -> None:
           f"{out['eligible'].sum():,} roll calls held while members served)")
 
 
+def build_service_runs(members: pd.DataFrame) -> None:
+    """For members Voteview does not list on every roll call of a Congress, the runs of roll calls it does list them
+    on (first and last roll number of each unbroken run). That covers members who joined or left partway through,
+    and delegates, who can vote only on some roll calls (amendments in the Committee of the Whole, in Congresses
+    whose rules allow it). The vote matrices can't tell "not listed" from "not voting", so a member's voting record
+    uses these runs to leave out roll calls held before or after their service, or that they could not vote on."""
+    rows = []
+    for cong in CONGRESSES:
+        for chamber, prefix in CHAMBERS.items():
+            ids = members.loc[(members["congress"] == cong) & (members["chamber"] == chamber), "icpsr"].unique()
+            votes = pd.read_csv(RAW_DIR / f"{prefix}{cong}_votes.csv", usecols=["rollnumber", "icpsr", "cast_code"])
+            votes = votes[votes["icpsr"].isin(ids) & votes["cast_code"].between(1, 9)]
+            rolls = np.sort(votes["rollnumber"].unique())
+            pos = {r: i for i, r in enumerate(rolls)}
+            for icpsr, grp in votes.groupby("icpsr"):
+                if len(grp) == len(rolls):
+                    continue
+                idx = np.sort(grp["rollnumber"].map(pos).to_numpy())
+                breaks = np.flatnonzero(np.diff(idx) != 1)
+                starts, ends = np.r_[idx[0], idx[breaks + 1]], np.r_[idx[breaks], idx[-1]]
+                rows += [(cong, chamber, int(icpsr), int(rolls[a]), int(rolls[b])) for a, b in zip(starts, ends)]
+    out = pd.DataFrame(rows, columns=["congress", "chamber", "icpsr", "first_roll", "last_roll"])
+    out.to_csv(SERVICE_RUNS_FILE, index=False)
+    print(f"Wrote {SERVICE_RUNS_FILE.name} ({len(out):,} runs for {out[['congress', 'chamber', 'icpsr']].drop_duplicates().shape[0]:,} "
+          "member rows not listed on every roll call)")
+
+
 # ---------------------------------------------------------------------------
 # Position flips: recurring votes under presidents of both parties
 # ---------------------------------------------------------------------------
@@ -598,6 +626,7 @@ def process() -> None:
 
     print("\nCounting missed votes…")
     build_missed_votes(members)
+    build_service_runs(members)
 
     print("\nLinking the president's stated positions…")
     positions = link_president_positions()

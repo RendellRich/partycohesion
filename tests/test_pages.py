@@ -384,3 +384,42 @@ def test_check_floor_quotes_catches_a_cut_sentence():
                          "quote": ['It is unacceptable to throw money "away," especially',
                                    "It is unacceptable to throw money away, especially."]})
     assert [b[0] for b in missing(rows, fetch=lambda url: page)] == ["B"]
+
+
+def open_member(bioguide: str) -> AppTest:
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=120)
+    at.run()
+    at.switch_page("views/2_Member_Explorer.py")
+    at.query_params["member"] = bioguide
+    at.run()
+    assert not at.exception, [e.value for e in at.exception]
+    return at
+
+
+def test_delegate_missed_votes_count_only_roll_calls_open_to_delegates():
+    at = open_member("R000600")  # Aumua Amata Coleman Radewagen, delegate from American Samoa
+    text = html(at)
+    assert "roll calls open to delegates" in text
+    assert "Delegate median" in text and "Chamber median" not in text
+    assert any("can vote only on some House roll calls" in c.value for c in at.caption)
+    # The voting record leaves out the roll calls a delegate could not vote on
+    missed = pd.read_csv(ROOT / "data" / "missed_votes.csv")
+    held = int(missed.loc[missed["icpsr"] == 21995, "eligible"].sum())
+    assert f"of {held:,} roll calls while in office" in text
+
+
+def test_member_who_joined_mid_congress():
+    at = open_member("W000832")  # Aisha Wahab, sworn in during the 119th Congress
+    text = html(at)
+    assert "Small sample:" in text and "119th to 119th" not in text and "119th Congress (" in text
+    missed = pd.read_csv(ROOT / "data" / "missed_votes.csv")
+    held = int(missed.loc[missed["icpsr"] == 22572, "eligible"].sum())
+    assert f"of {held:,} roll calls while in office" in text  # not every roll call of the Congress
+    details = pd.read_csv(ROOT / "data" / "member_details.csv").set_index("bioguide_id")
+    assert str(details.loc["W000832", "first_year"]) in text
+
+
+def test_member_tables_stack_on_phones():
+    at = open_member("C001098")
+    text = html(at)
+    assert text.count("pc-table-stack") >= 4 and 'role="table"' in text and 'data-label="Pattern"' in text
