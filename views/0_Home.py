@@ -16,7 +16,7 @@ from state_map import show_state_map
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import all_member_platform_votes, load_platform, party_totals
 import find_members
-from ui import STATES, card, display_name, early_congress, fmt_date, hero_panel, inject_css
+from ui import STATES, card, display_name, early_congress, fmt_date, hero_panel, inject_css, section_heading
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -109,10 +109,12 @@ with st.expander("Don't know who represents you? Find your members by ZIP code o
                "districts. Current members: unitedstates/congress-legislators.")
 
 # Members of Congress by state: hover a state for its delegation, click it to see every member
+section_heading("Members of Congress by state")
 show_state_map("home_state_map")
 st.write("")
 
 # The chamber at a glance: every current member as one seat, arranged left to right by ideology score
+section_heading("The chamber at a glance")
 chamber = st.segmented_control("Chamber", ["House", "Senate"], default="House", key="home_chamber",
                                label_visibility="collapsed") or "House"
 in_chamber = (current[current["chamber"] == chamber].sort_values("party_unity_pct")
@@ -122,8 +124,8 @@ event = show_chart(seat_map(in_chamber, chamber), f"The {chamber}, {ordinal(late
                    f"seat_map_{chamber.lower()}",
                    key=f"seat_map_{chamber}_{st.session_state.get('seat_clicks', 0)}", on_select="rerun")
 st.caption("One dot per member, placed left to right by their Voteview ideology score (lower scores lean liberal, "
-           "higher scores lean conservative). Hover a dot for their record "
-           "with their party; click it to open their page. The count includes members who left office and their "
+           "higher scores lean conservative). Hover over a dot for their record "
+           "with their party, or click or tap it to open their page. The count includes members who left office and their "
            "replacements.")
 picked = (event or {}).get("selection", {}).get("points", []) if event else []
 if picked and picked[0].get("customdata") and picked[0]["customdata"][2]:
@@ -147,6 +149,7 @@ breaks = key_votes[(key_votes["congress"] == stat_congress) & (key_votes["series
 breaks["broke"] = breaks["dem_defectors"] + breaks["rep_defectors"]
 top = breaks.sort_values("broke", ascending=False).iloc[0] if len(breaks) else None
 
+section_heading("What the record shows")
 c1, c2, c3 = st.columns(3, gap="medium")
 with c1:
     card("Position flips", f"{pct_changed:.0f}%",

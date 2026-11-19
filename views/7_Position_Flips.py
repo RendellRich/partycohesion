@@ -7,7 +7,7 @@ import streamlit as st
 from pathlib import Path
 from chart_utils import show_chart, ordinal, PATTERN_COLORS, ACCENT, MUTED
 from flip_utils import add_chamber_control, flip_scores, MIN_VOTES_EACH_SIDE
-from ui import explainer
+from ui import explainer, shortcuts
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 CATEGORIES = ["All categories", "Debt limit", "Stopgap funding", "Full-year funding", "Disaster aid", "War powers limits"]
@@ -38,6 +38,7 @@ members, votes, member_votes, latest = load()
 newest = int(members["congress"].max())
 
 st.title("Position Flips")
+shortcuts()
 st.markdown(
     "Some questions come up under presidents of both parties: raising the debt limit, funding the government, paying "
     "for disaster relief, and limiting the president's power to keep troops in combat. This page checks whether a member's vote on those "

@@ -11,7 +11,7 @@ from theme import FONT, text_on, to_mode
 import streamlit as st
 
 from chart_utils import ACCENT, BG, PATTERN_COLORS, show_chart
-from ui import html_table, inject_css
+from ui import html_table, inject_css, shortcuts
 from flip_utils import MIN_VOTES_EACH_SIDE, add_chamber_control, comparison_groups, flip_scores
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -64,6 +64,7 @@ inject_css()
 votes, member_votes, latest = load()
 
 st.title("How We Measure Consistency")
+shortcuts()
 st.markdown(
     "PartyCohesion asks one question: **does a member vote the same way on the same kind of bill no matter which party "
     "holds the White House?** This page walks through the exact math behind the Position Flips page in five steps, "

@@ -65,9 +65,10 @@ theme.sync()  # keeps the site's colors in step with the light/dark setting
 inject_css()  # site styles for every page, including pages that don't load them themselves
 
 with st.sidebar:
-    st.radio("Chart download size", list(EXPORT_SIZES), key="export_size",
-             index=list(EXPORT_SIZES).index(DEFAULT_EXPORT))
-    st.caption("Use the camera icon on any chart to download a PNG at this size.")
+    with st.container(key="pc_export"):  # hidden on phones, where the chart toolbar is hidden too
+        st.radio("Chart download size", list(EXPORT_SIZES), key="export_size",
+                 index=list(EXPORT_SIZES).index(DEFAULT_EXPORT))
+        st.caption("Use the camera icon on any chart to download a PNG at this size.")
     st.caption("Light or dark: open the three-dot menu at the top right, choose Settings, then pick a theme. "
                "Charts and downloads follow your choice.")
 

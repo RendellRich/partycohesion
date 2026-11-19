@@ -202,8 +202,8 @@ def show_state_map(key: str, title: str | None = None, height: int = 470) -> Non
     event = show_chart(state_map(summary, color_by, height), title or spec["title"],
                        f"states_{color_by.lower().replace(' ', '_')}",
                        key=f"{key}_{color_by}_{st.session_state.get(clicks, 0)}", on_select="rerun")
-    st.caption(spec["caption"] + " Hover a state for its senators and representatives; click it to see every "
-               "member and their voting record.")
+    st.caption(spec["caption"] + " Hover over a state for its senators and representatives, or click or tap it to "
+               "see every member and their voting record.")
     points = (event or {}).get("selection", {}).get("points", []) if event else []
     code = points[0].get("location") if points else None
     other = st.pills("Delegates from places that are not states", OFF_MAP, format_func=lambda a: STATES[a],

@@ -5,7 +5,7 @@ import plotly.express as px
 import streamlit as st
 from pathlib import Path
 from chart_utils import show_chart, ordinal, PARTY_COLORS, MUTED, ACCENT
-from ui import explainer
+from ui import explainer, shortcuts
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 NOISE = 0.10  # per-Congress scores move this much from noise alone; smaller changes aren't flagged
@@ -33,6 +33,7 @@ m = load()
 newest = int(m["congress"].max())
 
 st.title("Ideology Drift")
+shortcuts()
 st.markdown(
     "How far has each member's voting moved over their time in Congress, and did they move **with their party** or "
     "**on their own**? Scores are Voteview's per-Congress ideology estimates: negative is more liberal, positive is "

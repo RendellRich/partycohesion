@@ -18,7 +18,7 @@ inject_css()
 
 st.title("States")
 intro("Every current member of Congress from one state, with how often they vote with their party, whether their "
-      "votes change with the White House, and how many votes they miss.")
+      "votes change with the White House, and how many votes they miss.", shortcuts=False)
 
 seats, _ = find_members.load_cached()
 codes = sorted(seats["state_abbrev"].unique(), key=lambda a: STATES.get(a, a))
@@ -100,7 +100,8 @@ rows = [[member_cell(r), seat(r), party_tag(r.party),
          f"{r.missed_pct:.1f}%" if pd.notna(r.missed_pct) else "None"]
         for r in shown.itertuples()]
 if rows:
-    html_table(["Member", "Seat", "Party", "Party unity", "Position Flips", "Missed votes"], rows, raw_cols=(0, 2, 4))
+    html_table(["Member", "Seat", "Party", "Party unity", "Position Flips", "Missed votes"], rows, raw_cols=(0, 2, 4),
+               label="Members from this state", stack=True)
     st.caption("Party unity and missed votes are from each member's latest Congress in the data. Position Flips "
                "compares the same kinds of votes under presidents of both parties. Click a name for the full record.")
 else:

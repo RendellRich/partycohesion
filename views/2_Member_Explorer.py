@@ -185,7 +185,7 @@ def member_picker(label: str) -> str | None:
 
 if not pick:
     st.title("Members")
-    intro(PAGE_INTRO)
+    intro(PAGE_INTRO, shortcuts=False)
     explainer(PAGE_EXPLAINER)
     pick = member_picker("Find a member")
 
@@ -251,7 +251,7 @@ if pick:
                                 f"seat_map_{short.lower().replace(' ', '_')}",
                                 key=f"me_seat_{icpsr}_{st.session_state.get('me_seat_clicks', 0)}", on_select="rerun")
         st.caption(f"Every member who served in the {member['chamber']} in {when}, one dot each, placed left to right "
-                   f"by Voteview ideology score. {short}'s seat is ringed. Click any other dot to open that member.")
+                   f"by Voteview ideology score. {short}'s seat is ringed. Click or tap any other dot to open that member.")
         clicked = (seat_event or {}).get("selection", {}).get("points", []) if seat_event else []
         target = clicked[0].get("customdata", [None, None, ""])[2] if clicked else ""
         if target and target != bioguide and target in label_of:

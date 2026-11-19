@@ -2,8 +2,11 @@
 
 import streamlit as st
 
+from ui import shortcuts
+
 
 st.title("Methodology & Sources")
+shortcuts()
 st.markdown("Transparent definitions so anyone can understand (and critique) the numbers.")
 st.page_link("views/9_How_It_Works.py", label="New here? Start with How We Measure Consistency, a step-by-step example")
 

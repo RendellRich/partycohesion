@@ -155,6 +155,42 @@ CSS = f"""
     outline: 2px solid var(--pc-accent); outline-offset: 2px; border-radius: 6px; }}
 /* Toggle and checkbox boxes: a 3:1 outline so the off state is visible */
 .stApp label:has(input[type="checkbox"]) > div:first-of-type {{ box-shadow: inset 0 0 0 1px var(--pc-control); }}
+/* The Home question is an h1 but keeps the hero look, without the rule other titles get */
+.stApp h1.pc-hero {{ padding: 0; margin: 0 0 0.75rem 0; }}
+.stApp h1.pc-hero::after {{ content: none; }}
+/* Visually hidden headings for screen readers */
+.pc-sr-only {{ position: absolute !important; width: 1px; height: 1px; padding: 0 !important; margin: -1px;
+              overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }}
+/* Shortcuts under each page's intro */
+.pc-shortcuts {{ display: flex; flex-wrap: wrap; align-items: center; gap: 0 10px; margin: -0.75rem 0 1rem 0;
+                font-weight: 600; }}
+.pc-shortcuts a {{ color: var(--pc-accent); text-decoration: none; }}
+.pc-shortcuts a:hover {{ text-decoration: underline; }}
+.pc-shortcuts span {{ color: var(--pc-muted); }}
+.pc-shortcuts-solo {{ margin: -0.5rem 0 0.5rem 0; }}
+/* Sidebar "View more" is a 44px target */
+.stApp [data-testid="stSidebarNavViewButton"] {{ min-height: 44px; }}
+/* Toggle labels and page links wrap instead of being cut off */
+.stApp label:has(input[type="checkbox"]) [data-testid="stWidgetLabel"],
+.stApp label:has(input[type="checkbox"]) [data-testid="stWidgetLabel"] *:not(button),
+.stApp [data-testid="stPageLink-NavLink"] span, .stApp [data-testid="stPageLink-NavLink"] span * {{
+    white-space: normal !important; overflow: visible !important; text-overflow: clip !important; min-width: 0; }}
+.stApp label:has(input[type="checkbox"]) {{ min-width: 0; }}
+/* Phones: the chart download size setting is for desktop downloads */
+@media (max-width: 640px) {{ .stApp .st-key-pc_export {{ display: none; }} }}
+/* Phones: stacked tables show each row as a small card */
+@media (max-width: 640px) {{
+  .pc-table-stack thead {{ display: none; }}
+  .pc-table-stack, .pc-table-stack tbody, .pc-table-stack tr {{ display: block; width: 100%; }}
+  .pc-table-stack tr {{ padding: 12px 16px; border-top: 1px solid var(--pc-border); }}
+  .pc-table-stack tr:first-child {{ border-top: none; }}
+  .pc-table-stack td {{ display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+                        padding: 4px 0; border: none; text-align: right; }}
+  .pc-table-stack td::before {{ content: attr(data-label); color: var(--pc-muted); font-size: 0.85rem; font-weight: 600;
+                                text-align: left; flex-shrink: 0; }}
+  .pc-table-stack td:first-child {{ display: block; text-align: left; font-weight: 700; font-size: 1.05rem; padding-bottom: 6px; }}
+  .pc-table-stack td:first-child::before {{ content: none; }}
+}}
 /* Phones: 16px fields so iPhones don't zoom in on tap */
 @media (max-width: 767px) {{ .stApp input, .stApp textarea, .stApp select {{ font-size: 16px !important; }} }}
 /* Touch screens: no chart toolbar (its 24px buttons only appear on mouse hover). Phones: less space above the title */
@@ -177,13 +213,31 @@ def inject_css() -> None:
     st.markdown(f"<style>:root {{ {root}}}</style>" + CSS, unsafe_allow_html=True)
 
 
-def intro(text: str) -> None:
-    st.markdown(f'<div class="pc-intro">{escape(text)}</div>', unsafe_allow_html=True)
+def intro(text: str, shortcuts: bool = True) -> None:
+    """A page's opening line. shortcuts adds links to the two pages most visitors come for (Members and States),
+    which otherwise sit low in the sidebar on phones; the Members and States pages leave them off."""
+    links = SHORTCUTS_HTML.format(extra="") if shortcuts else ""
+    st.markdown(f'<div class="pc-intro">{escape(text)}</div>{links}', unsafe_allow_html=True)
+
+
+SHORTCUTS_HTML = ('<div class="pc-shortcuts{extra}"><a class="pc-link-target" href="Member_Explorer" target="_self">'
+                  'Find your member</a><span aria-hidden="true">·</span>'
+                  '<a class="pc-link-target" href="States" target="_self">Your state</a></div>')
+
+
+def shortcuts() -> None:
+    """The Find your member and Your state links, for pages that write their own intro instead of using intro()."""
+    st.markdown(SHORTCUTS_HTML.format(extra=" pc-shortcuts-solo"), unsafe_allow_html=True)
+
+
+def section_heading(text: str) -> None:
+    """A section heading for screen readers where the section already has a visible chart title or card row."""
+    st.markdown(f'<h2 class="pc-sr-only">{escape(text)}</h2>', unsafe_allow_html=True)
 
 
 def hero_panel(question: str, intro_text: str) -> None:
     """The home page's opening: the question on navy, with the aisle stripe along the bottom."""
-    st.markdown(f'<div class="pc-panel"><div class="pc-hero">{escape(question)}</div>'
+    st.markdown(f'<div class="pc-panel"><h1 class="pc-hero">{escape(question)}</h1>'
                 f'<div class="pc-intro">{escape(intro_text)}</div>'
                 '<div class="pc-aisle"><span></span><span></span><span></span></div></div>', unsafe_allow_html=True)
 
@@ -236,20 +290,24 @@ def pattern_badge(label: str) -> str:
 
 
 def html_table(header: list[str], rows: list[list[str]], raw_cols: tuple[int, ...] = (), muted_cols: tuple[int, ...] = (),
-               label: str = "Table") -> None:
-    """Small table with design-system styling. Cells in raw_cols are trusted HTML (badges); others are escaped."""
-    head = "".join(f"<th>{escape(h)}</th>" for h in header)
+               label: str = "Table", stack: bool = False) -> None:
+    """Small table with design-system styling. Cells in raw_cols are trusted HTML (badges); others are escaped.
+    stack shows each row as a small card on phones (first column as its title, the others as label and value pairs)
+    instead of a table that scrolls sideways."""
+    head = "".join(f'<th scope="col">{escape(h)}</th>' for h in header)
     body = ""
     for r in rows:
         cells = []
         for i, c in enumerate(r):
             cls = ' class="pc-muted"' if i in muted_cols else ""
-            cells.append(f"<td{cls}>{c if i in raw_cols else escape(str(c))}</td>")
+            lab = f' data-label="{escape(header[i])}"' if stack and i < len(header) else ""
+            cells.append(f"<td{cls}{lab}>{c if i in raw_cols else escape(str(c))}</td>")
         body += "<tr>" + "".join(cells) + "</tr>"
     # The wrapper scrolls sideways on narrow screens instead of squeezing words; it takes keyboard focus so it can
     # be scrolled without a mouse.
+    table_cls = "pc-table pc-table-stack" if stack else "pc-table"
     st.markdown(f'<div class="pc-table-wrap" role="region" tabindex="0" aria-label="{escape(label)}">'
-                f'<table class="pc-table"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>',
+                f'<table class="{table_cls}"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>',
                 unsafe_allow_html=True)
 
 
