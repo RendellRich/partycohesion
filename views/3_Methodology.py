@@ -113,7 +113,10 @@ record online, which stay unnamed, and one 2009 vote missing from its bill's fil
 **Missed votes.** Each member's profile and the Members table count the roll calls held while the member served on
 which they cast no Yea, Nay or Present vote (Voteview's "not voting" record). Votes held before a member took office or
 after they left are not counted against them. The record doesn't say why a vote was missed: common reasons include
-illness, a family emergency or new child, running for another office, and the last months before leaving Congress.
+illness, a family emergency or new child, running for another office, and the last months before leaving Congress. Delegates and the Resident Commissioner can vote only on some House roll
+calls (mostly amendments, and only in Congresses whose rules allow it), so their counts include only those roll calls
+and are compared with the other delegates, not the whole House. Each member's voting record follows the same rule: it
+lists only roll calls held while they served, and for delegates only those they could vote on.
 
 **Cosponsored, then voted no.** For every final passage vote on a bill or joint resolution, the site checks how the
 bill's own sponsor and cosponsors voted (from GovInfo's bill status files, the Congress.gov record of each bill;

@@ -66,3 +66,12 @@ def test_bill_label():
     assert bill_label("HCONRES5") == "H.Con.Res. 5"
     assert bill_label("S365") == "S. 365"
     assert bill_label("SENATE") == "SENATE"
+
+
+def test_served_on_keeps_only_listed_runs():
+    import pandas as pd
+    from vote_index import served_on
+    rolls = pd.Series([1, 2, 3, 4, 5, 6])
+    runs = pd.DataFrame({"first_roll": [2, 5], "last_roll": [3, 5]})
+    assert served_on(rolls, runs).tolist() == [False, True, True, False, True, False]
+    assert served_on(rolls, runs.iloc[0:0]).all()

@@ -12,6 +12,7 @@ import streamlit as st
 
 from chart_utils import ACCENT, MUTED, PARTY_COLORS, ordinal, show_chart
 from seat_map import seat_map
+from state_map import DELEGATE_PLACES
 from state_splits import MIN_SHARED, load_all, member_summary
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import platform_record
@@ -95,6 +96,11 @@ def load_vote_changes():
     path = DATA_DIR / "vote_changes.csv"
     return pd.read_csv(path) if path.exists() else pd.DataFrame(columns=["icpsr"])
 
+
+DELEGATE_NOTE = ("Delegates and the Resident Commissioner can vote only on some House roll calls, mostly amendments, "
+                 "and only in Congresses whose rules allow it. Their counts here include only those roll calls, and "
+                 "they appear in this data only in those Congresses.")
+SMALL_SAMPLE = 50  # below this many party-line votes, a party unity rate is shown as a small sample
 
 MISSED_NOTE = ("A missed vote is a roll call held while the member served on which they cast no vote. The record "
                "doesn't say why. Common reasons include illness, a family emergency or new child, running for another "
@@ -210,8 +216,16 @@ if pick:
         unity = ("Party unity", "None", "No party-line votes scored")
     else:
         u = scored.iloc[-1]
-        unity = (f"Party unity, {ordinal(u['congress'])}", f"{u['party_unity_pct']:.1f}%",
-                 f"{int(u['votes_with_party']):,} of {int(u['unity_votes_cast']):,} party-line votes")
+        cast_n = int(u["unity_votes_cast"])
+        if cast_n < SMALL_SAMPLE:
+            # A handful of votes can't carry a decimal place, and the reader should know the record is short
+            so_far = " so far" if int(u["congress"]) == newest else ""
+            unity = (f"Party unity, {ordinal(u['congress'])}", f"{u['party_unity_pct']:.0f}%",
+                     f"Small sample: {int(u['votes_with_party']):,} of {cast_n:,} party-line vote"
+                     f"{'' if cast_n == 1 else 's'}{so_far}")
+        else:
+            unity = (f"Party unity, {ordinal(u['congress'])}", f"{u['party_unity_pct']:.1f}%",
+                     f"{int(u['votes_with_party']):,} of {cast_n:,} party-line votes")
     overall = flip_scores(flips[flips["icpsr"] == icpsr])
     if overall.empty:
         flip = ("Position Flips", "No votes", "No votes in these categories")
@@ -220,18 +234,28 @@ if pick:
         n = int(o["matched_own"] + o["matched_other"])
         flip = ("Position Flips", o["label"],
                 f"{o['shift']:+.0f} point shift, {n} matched votes" if o["label"] != "Not enough votes"
-                else f"{int(o['n_own'] + o['n_other'])} votes, too few matched")
+                else f"{int(o['n_own'] + o['n_other'])} vote{'' if int(o['n_own'] + o['n_other']) == 1 else 's'}, "
+                "too few matched")
     ideo = member["nominate_dim1"]
     chambers = " and ".join(sorted(rows["chamber"].unique()))
     plat_rows, plat_cast, plat_against = platform_record(icpsr)
     platform = (("Against party platform", f"{plat_against} of {plat_cast}", "Platform Votes topics")
                 if plat_cast else ("Against party platform", "None", "No counted Platform Votes"))
+    delegate = member["chamber"] == "House" and member["state_abbrev"] in DELEGATE_PLACES
+    first_cong = int(rows["congress"].min())
+    since = 2 * first_cong + 1787
+    details = load_details()
+    joined = details.loc[bioguide, "first_year"] if bioguide in details.index else ""
+    if str(joined).isdigit() and since < int(joined) <= since + 1:  # joined in the second year of that Congress
+        since = int(joined)
+    n_cong = rows["congress"].nunique()
     metric_row([
         unity, flip, platform,
         ("Ideology score", f"{ideo:.2f}" if pd.notna(ideo) else "None", "−1 liberal to +1 conservative"),
-        ("In this data since", str(2 * int(rows["congress"].min()) + 1787),
-         f"{rows['congress'].nunique()} Congress{'es' if rows['congress'].nunique() > 1 else ''}, {chambers}"
-         + (" (data starts in 2007)" if int(rows["congress"].min()) == int(df["congress"].min()) else "")),
+        ("In this data since", str(since),
+         f"{n_cong} Congress{'es' if n_cong > 1 else ''}, {chambers}"
+         + (" (data starts in 2007)" if first_cong == int(df["congress"].min()) else "")
+         + ("; delegates appear only in Congresses where they could vote" if delegate else "")),
     ])
     member_facts(bioguide)
     share_bar(f"{display_name(member['name'])} ({member['party'][0]}-{member['state_abbrev']}): voting record on "
@@ -275,7 +299,7 @@ if pick:
         table_rows.append([cat, own, other, shift, pattern_badge(r["label"])])
     if table_rows:
         html_table(["Type of vote", "Own party's president", "Other party's president", "Shift", "Pattern"], table_rows,
-                   raw_cols=(4,), muted_cols=(1, 2))
+                   raw_cols=(4,), muted_cols=(1, 2), label="Same question, different president", stack=True)
         st.caption("The first two columns count every vote. The shift compares only matched votes: the same type of "
                    "vote, cast when the member's party was in the same position in the chamber.")
         st.page_link("views/9_How_It_Works.py", label="How this is measured")
@@ -293,10 +317,11 @@ if pick:
                     f"{side} platform on **{plat_against} of {plat_cast}** topics they cast a counted vote on.")
         show_all = st.toggle("Include procedural and related votes (not counted)", key="me_plat_all")
         shown = plat_rows if show_all else plat_rows[plat_rows["counts"]]
-        html_table(["Date", "Vote", "Their vote", "Matches their platform"] + (["Counted"] if show_all else []),
-                   [[fmt_date(x.date), x.measure, x.vote, "No" if x.against else "Yes"]
+        html_table(["Vote", "Date", "Their vote", "Matches their platform"] + (["Counted"] if show_all else []),
+                   [[x.measure, fmt_date(x.date), x.vote, "No" if x.against else "Yes"]
                     + (["Yes" if x.counts else "No"] if show_all else [])
-                    for x in shown.sort_values("date", ascending=False).itertuples()], muted_cols=(0,))
+                    for x in shown.sort_values("date", ascending=False).itertuples()], muted_cols=(1,),
+                   label="Votes on their party's platform", stack=True)
         st.caption("A platform is the party's official policy document, not a personal promise, and members often give "
                    "reasons a roll call can't show. Procedural and related votes are shown but not counted.")
         st.page_link("views/11_Platform_Votes.py", label="See every topic and the rules")
@@ -311,9 +336,10 @@ if pick:
         st.markdown(f"What {short}'s own campaign website said, next to their vote on the closest roll call after "
                     f"that election. **{n_same} of {len(mine_camp)}** votes went in the same direction"
                     + (f"; **{n_diff}** went in a different direction." if n_diff else "."))
-        html_table(["Campaign", "Topic", "Stance", "Campaign website text", "Vote", "Their vote", "Same direction"],
-                   [[str(x.campaign_year), x.topic, x.stance, x.statement, x.vote_label, x.actual_vote,
-                     x.same_direction] for x in mine_camp.itertuples()], muted_cols=(0,))
+        html_table(["Topic", "Campaign", "Stance", "Campaign website text", "Vote", "Their vote", "Same direction"],
+                   [[x.topic, str(x.campaign_year), x.stance, x.statement, x.vote_label, x.actual_vote,
+                     x.same_direction] for x in mine_camp.itertuples()], muted_cols=(1,),
+                   label="Campaign statements and votes", stack=True, wide_cols=(3, 4))
         st.caption("Statements come from CampaignView's collection of House candidates' campaign websites. A roll call "
                    "can't show a member's reasons, and the bill voted on is rarely the campaign promise word for word.")
         st.page_link("views/13_Campaign_Statements.py", label="See every topic and how stances are coded")
@@ -331,7 +357,8 @@ if pick:
                    [[bill_label(x.bill_number), x.title if isinstance(x.title, str) and x.title else x.first_vote_desc,
                      f"{x.first_vote} · {x.first_stage} · {fmt_date(x.first_date)}",
                      f"{x.final_vote} · {x.final_stage} · {fmt_date(x.final_date)}",
-                     f"{x.party_first} then {x.party_final}"] for x in mine_vch.itertuples()], muted_cols=(0,))
+                     f"{x.party_first} then {x.party_final}"] for x in mine_vch.itertuples()], muted_cols=(0,),
+                   label="Same bill, different vote", stack=True, wide_cols=(1, 2, 3))
         st.caption("The bill's text often changes between votes, and a roll call can't show a member's reasons.")
         st.page_link("views/14_Same_Bill_Different_Vote.py", label="See every bill and how changes are counted")
 
@@ -357,7 +384,7 @@ if pick:
                                 f"{r.splits:,} of {r.both_voted:,}", f"{r.split_pct:.1f}%",
                                 f"{typical.get(r.congress, float('nan')):.1f}%"])
             html_table(["Congress", "Other senator", "Party", "Split on", "Share", "Typical same-party pair"],
-                       rows_sp, raw_cols=(2,), muted_cols=(5,))
+                       rows_sp, raw_cols=(2,), muted_cols=(5,), label="Splits with the other senator", stack=True)
         if len(house_rows):
             typical_h = all_house[all_house["colleagues"] >= 2].groupby("congress")["avg_split"].median()
             html_table(["Congress", "Average split with their state's party", "Colleagues compared",
@@ -367,7 +394,7 @@ if pick:
                          f"{display_name(r.most_split_with)} ({r.most_split_pct:.1f}%)",
                          f"{typical_h.get(r.congress, float('nan')):.1f}%"]
                         for r in house_rows.sort_values("congress", ascending=False).itertuples()],
-                       muted_cols=(5,))
+                       muted_cols=(5,), label="Splits with House members of the same party", stack=True)
         st.caption("Only Yea and Nay count. House comparisons are with members of the same party from the same "
                    f"state who shared at least {MIN_SHARED['House']} votes; senators are compared with their state's "
                    f"other senator when they shared at least {MIN_SHARED['Senate']} votes. A split is a fact about "
@@ -382,15 +409,26 @@ if pick:
     mine_missed = missed_all[missed_all["icpsr"] == icpsr].sort_values(["congress", "chamber"], ascending=[False, True])
     if not mine_missed.empty:
         st.header("Missed votes")
-        medians = missed_all.groupby(["congress", "chamber"])["missed_pct"].median()
         tot_missed, tot_held = int(mine_missed["missed"].sum()), int(mine_missed["eligible"].sum())
-        st.markdown(f"{short} missed **{tot_missed:,} of {tot_held:,}** roll calls held while they served "
-                    f"({100 * tot_missed / tot_held:.1f}%) since 2007.")
-        html_table(["Congress", "Chamber", "Missed", "Roll calls held while serving", "Share", "Chamber median"],
+        if delegate:
+            # Compared with the other delegates, who could vote on the same roll calls, not with the whole House
+            places = df.loc[(df["chamber"] == "House") & df["state_abbrev"].isin(DELEGATE_PLACES), ["congress", "icpsr"]]
+            peers_m = missed_all[missed_all["chamber"] == "House"].merge(places.drop_duplicates(), on=["congress", "icpsr"])
+            medians = peers_m.groupby(["congress", "chamber"])["missed_pct"].median()
+            held, typical = "Roll calls open to delegates", "Delegate median"
+            st.markdown(f"{short} missed **{tot_missed:,} of {tot_held:,}** roll calls open to delegates while they "
+                        f"served ({100 * tot_missed / tot_held:.1f}%) since 2007.")
+        else:
+            medians = missed_all.groupby(["congress", "chamber"])["missed_pct"].median()
+            held, typical = "Roll calls held while serving", "Chamber median"
+            st.markdown(f"{short} missed **{tot_missed:,} of {tot_held:,}** roll calls held while they served "
+                        f"({100 * tot_missed / tot_held:.1f}%) since 2007.")
+        html_table(["Congress", "Chamber", "Missed", held, "Share", typical],
                    [[ordinal(int(x.congress)), x.chamber, f"{int(x.missed):,}", f"{int(x.eligible):,}",
                      f"{x.missed_pct:.1f}%", f"{medians.loc[(x.congress, x.chamber)]:.1f}%"]
-                    for x in mine_missed.itertuples()], muted_cols=(3, 5))
-        st.caption(MISSED_NOTE)
+                    for x in mine_missed.itertuples()], muted_cols=(3, 5), label="Missed votes by Congress",
+                   stack=True)
+        st.caption((DELEGATE_NOTE + " " if delegate else "") + MISSED_NOTE)
 
     # Party unity over time
     if len(scored) > 1:

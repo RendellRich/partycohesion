@@ -34,6 +34,27 @@ def load_matrix(congress: int, chamber: str):
         return f["icpsr"], f["rollnumber"], f["votes"]
 
 
+@st.cache_data
+def load_service_runs() -> pd.DataFrame:
+    """Runs of roll calls Voteview lists a member on, for members not listed on every roll call of a Congress: those
+    who joined or left partway through, and delegates, who can vote only on some roll calls (built by
+    scripts/refresh_data.py)."""
+    path = DATA_DIR / "service_runs.csv"
+    if not path.exists():
+        return pd.DataFrame(columns=["congress", "chamber", "icpsr", "first_roll", "last_roll"])
+    return pd.read_csv(path)
+
+
+def served_on(rolls: pd.Series, runs: pd.DataFrame) -> pd.Series:
+    """True for roll numbers inside one of the member's runs. With no runs the member was listed on every roll call."""
+    if runs.empty:
+        return pd.Series(True, index=rolls.index)
+    keep = pd.Series(False, index=rolls.index)
+    for r in runs.itertuples():
+        keep |= rolls.between(r.first_roll, r.last_roll)
+    return keep
+
+
 def voteview_url(congress: int, chamber: str, rollnumber: int) -> str:
     return f"https://voteview.com/rollcall/R{PREFIX[chamber]}{int(congress):03d}{int(rollnumber):04d}"
 
@@ -105,6 +126,10 @@ def member_record(icpsr: int, member_rows: pd.DataFrame, votes: pd.DataFrame) ->
         if not len(row):
             continue
         mine = pd.DataFrame({"rollnumber": rolls, "v": matrix[row[0]]})
+        # Only roll calls held while they served, and for delegates only those they could vote on
+        runs = load_service_runs()
+        mine = mine[served_on(mine["rollnumber"], runs[(runs["congress"] == r.congress) & (runs["chamber"] == r.chamber)
+                                                        & (runs["icpsr"] == icpsr)])]
         vv = votes[(votes["congress"] == r.congress) & (votes["chamber"] == r.chamber)].merge(mine, on="rollnumber")
         side = r.caucus if pd.notna(r.caucus) else r.party
         vv["party_position"] = vv["dem_position"] if side == "Democrat" else (
