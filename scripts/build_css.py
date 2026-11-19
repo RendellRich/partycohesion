@@ -35,10 +35,10 @@ def tokens(t: dict) -> str:
 
 def build() -> str:
     body = ui.CSS.strip().removeprefix("<style>").removesuffix("</style>").strip()
-    # @import has to come first in a stylesheet
-    imports = "\n".join(line for line in body.splitlines() if line.startswith("@import"))
+    # No @import of the web fonts: a stylesheet with an @import isn't applied until the imported file loads too,
+    # which made the site styles land after the content. The fonts load from the theme's headingFont setting instead.
     rules = "\n".join(line for line in body.splitlines() if not line.startswith("@import"))
-    return (f"/* Built by scripts/build_css.py from ui.CSS. Edit ui.py, then run the script. */\n{imports}\n"
+    return ("/* Built by scripts/build_css.py from ui.CSS. Edit ui.py, then run the script. */\n"
             f":root {{ {tokens(theme.LIGHT)} }}\n"
             f"@media (prefers-color-scheme: dark) {{ :root {{ {tokens(theme.DARK)} }} }}\n{rules}\n")
 
