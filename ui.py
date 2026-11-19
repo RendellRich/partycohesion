@@ -130,6 +130,8 @@ CSS = f"""
 /* A collapsed sidebar sits off screen; hide it so keyboard focus skips its links until it is opened */
 .stApp [data-testid="stSidebar"][data-collapsed="true"] {{ visibility: hidden; }}
 /* Captions use the muted token so they pass 4.5:1 in both themes */
+/* Streamlit also fades captions to 60% opacity; with the muted color that stacks to under 3:1, so drop the fade */
+.stApp [data-testid="stCaptionContainer"] {{ opacity: 1; }}
 .stApp [data-testid="stCaptionContainer"], .stApp [data-testid="stCaptionContainer"] p {{ color: var(--pc-muted); }}
 /* Everything people tap is at least 44px */
 .stApp [data-testid="stPageLink-NavLink"], .stApp [data-testid="stSidebarNavLink"] {{ min-height: 44px; display: flex; align-items: center; }}
