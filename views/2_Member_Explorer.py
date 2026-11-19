@@ -151,14 +151,6 @@ df = load_members()
 flips = load_flips()
 newest = int(df["congress"].max())
 
-st.title("Members")
-intro("Look up any member of Congress since 2007: how often they vote with their party, whether their votes change "
-      "with the White House, and where they sit ideologically.")
-explainer("A member's record shows how often they side with their party, whether their votes shift when the "
-          'White House changes hands, and, for many House members, what their campaign website said. High party '
-          "unity is normal in today's Congress, so the votes where a member breaks from their party usually "
-          'tell you the most.')
-
 # One entry per person, labeled with their most recent party, state and chamber
 latest = df.sort_values("congress").groupby("icpsr").tail(1)
 latest = latest.assign(label=latest["name"] + " (" + latest["party"].str[0] + "-" + latest["state_abbrev"] + ", "
@@ -174,8 +166,28 @@ linked = label_of.get(st.query_params.get("member", ""))
 labels = list(options)
 if "me_pending" in st.session_state:  # a seat clicked on the map below opens that member
     st.session_state["me_member"] = st.session_state.pop("me_pending")
-pick = st.selectbox("Find a member", labels, index=labels.index(linked) if linked else None,
-                    placeholder="Type a name…", key="me_member")
+# Which member is open, worked out before the picker is drawn so a member's page can lead with their name. The picker
+# itself sits under the member's numbers; without a member it sits under the page intro as before.
+pick = st.session_state["me_member"] if "me_member" in st.session_state else linked
+PAGE_INTRO = ("Look up any member of Congress since 2007: how often they vote with their party, whether their votes "
+              "change with the White House, and where they sit ideologically.")
+PAGE_EXPLAINER = ("A member's record shows how often they side with their party, whether their votes shift when the "
+                  "White House changes hands, and, for many House members, what their campaign website said. High party "
+                  "unity is normal in today's Congress, so the votes where a member breaks from their party usually "
+                  "tell you the most.")
+
+
+def member_picker(label: str) -> str | None:
+    # Same label and key in both places, so switching layouts keeps the widget's state
+    return st.selectbox(label, labels, index=labels.index(linked) if linked else None, placeholder="Type a name…",
+                        key="me_member")
+
+
+if not pick:
+    st.title("Members")
+    intro(PAGE_INTRO)
+    explainer(PAGE_EXPLAINER)
+    pick = member_picker("Find a member")
 
 if pick:
     icpsr = options[pick]
@@ -185,11 +197,9 @@ if pick:
     bioguide = bioguide_of.get(icpsr, "")
     if bioguide:
         st.query_params["member"] = bioguide
+    # The member's name is the page title, so a shared link opens straight onto them
     member_header(member["name"], member["party"], member["state_abbrev"], member["chamber"],
-                  rows["congress"].min(), rows["congress"].max(), newest)
-    member_facts(bioguide)
-    share_bar(f"{display_name(member['name'])} ({member['party'][0]}-{member['state_abbrev']}): voting record on "
-              "PartyCohesion", "Member_Explorer", {"member": bioguide} if bioguide else None)
+                  rows["congress"].min(), rows["congress"].max(), newest, as_title=True)
     caucus = member.get("caucus")
     if member["party"] not in ("Democrat", "Republican") and pd.notna(caucus):
         st.caption(f"Caucuses with the {caucus}s, so party unity and Position Flips compare them with {caucus}s.")
@@ -223,6 +233,12 @@ if pick:
          f"{rows['congress'].nunique()} Congress{'es' if rows['congress'].nunique() > 1 else ''}, {chambers}"
          + (" (data starts in 2007)" if int(rows["congress"].min()) == int(df["congress"].min()) else "")),
     ])
+    member_facts(bioguide)
+    share_bar(f"{display_name(member['name'])} ({member['party'][0]}-{member['state_abbrev']}): voting record on "
+              "PartyCohesion", "Member_Explorer", {"member": bioguide} if bioguide else None)
+    member_picker("Find a member")
+    with st.expander("About this page"):
+        st.markdown(PAGE_INTRO + "\n\n" + PAGE_EXPLAINER)
 
     # Their seat in the chamber, in their most recent Congress
     room = (df[(df["congress"] == member["congress"]) & (df["chamber"] == member["chamber"])]
