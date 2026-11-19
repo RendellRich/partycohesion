@@ -1,0 +1,173 @@
+/* Built by scripts/build_css.py from ui.CSS. Edit ui.py, then run the script. */
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap');
+:root { --pc-bg: #F6F7F9; --pc-surface: #FFFFFF; --pc-border: #DADDE3; --pc-text: #1B1D21; --pc-body: #2A2E35; --pc-muted: #555B65; --pc-accent: #7A5A10; --pc-dem: #2E6CAD; --pc-rep: #B8403F; --pc-ind: #6B7280; --pc-yea: #1F6F99; --pc-nay: #7A8FA6; --pc-hero: #1C2A4A; --pc-hero-text: #F6F1E7; --pc-head: #1C2A4A; --pc-tone1: #94590A; --pc-tone2: #23746A; --pc-tone3: #5E45A8; --pc-control: #868C96; }
+@media (prefers-color-scheme: dark) { :root { --pc-bg: #171614; --pc-surface: #21201D; --pc-border: #3A3733; --pc-text: #FAFAFA; --pc-body: #E7E5E4; --pc-muted: #A8A29E; --pc-accent: #E9C46A; --pc-dem: #5A97D2; --pc-rep: #E06C6C; --pc-ind: #A8A29E; --pc-yea: #8ECAE6; --pc-nay: #577590; --pc-hero: #1F2B45; --pc-hero-text: #F3EEE3; --pc-head: #C9D3EE; --pc-tone1: #E2A94B; --pc-tone2: #5FBFB2; --pc-tone3: #A993E6; --pc-control: #7A746C; } }
+.stApp, .stApp p, .stApp li, .stApp label, .stApp input, .stApp textarea, .stApp button,
+.stApp [data-testid="stMarkdownContainer"] { font-family: 'Public Sans', 'Segoe UI', system-ui, sans-serif; }
+.stApp h1 { font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; letter-spacing: -0.01em; }
+.stApp h2, .stApp h3 { font-family: 'Public Sans', 'Segoe UI', system-ui, sans-serif; font-weight: 700; }
+.stApp [data-testid="stMetricValue"], .pc-stat, .pc-metric-value { font-variant-numeric: tabular-nums; }
+.stApp a:focus-visible, .stApp button:focus-visible { outline: 2px solid var(--pc-accent); outline-offset: 2px; }
+/* Expander headers: 44px to tap, and the same solid focus ring as links (Streamlit's own is a faint glow) */
+.stApp [data-testid="stExpander"] summary { min-height: 44px; display: flex; align-items: center; }
+.stApp [data-testid="stExpander"] summary:focus-visible, .stApp a:focus-visible { outline: 2px solid var(--pc-accent);
+    outline-offset: 2px; box-shadow: none !important; }
+.stApp [data-testid="stMain"] [data-testid="stPageLink-NavLink"] p { color: var(--pc-accent); font-weight: 600; }
+.stApp [data-testid="stMain"] [data-testid="stPageLink-NavLink"]:hover p { text-decoration: underline; }
+.pc-hero { font-family: 'Source Serif 4', Georgia, serif; font-size: 2.6rem; font-weight: 700; line-height: 1.15; max-width: 22ch;
+            margin: 0.5rem 0 1rem 0; letter-spacing: -0.01em; }
+.pc-intro { color: var(--pc-muted); font-size: 1.05rem; line-height: 1.6; max-width: 72ch; margin-bottom: 1.25rem; }
+.pc-card { background: var(--pc-surface); border: 1px solid var(--pc-border); border-radius: 10px; padding: 20px; height: 100%; }
+.pc-eyebrow { color: var(--pc-accent); font-size: 0.9rem; font-weight: 600; }
+.pc-stat { font-size: 2.4rem; font-weight: 700; line-height: 1.2; margin: 6px 0 8px 0; }
+.pc-body { color: var(--pc-muted); font-size: 1rem; line-height: 1.5; }
+.pc-metric { background: var(--pc-surface); border: 1px solid var(--pc-border); border-radius: 10px; padding: 14px 16px; height: 100%; }
+.pc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 4px 0 16px 0; }
+.pc-metric-label { color: var(--pc-muted); font-size: 0.85rem; font-weight: 600; }
+.pc-metric-value { font-size: 2rem; line-height: 1.25; margin: 4px 0; }
+.pc-metric-value.pc-long { font-size: 1.35rem; padding: 6px 0 5px 0; }
+.pc-metric-note { color: var(--pc-muted); font-size: 0.85rem; }
+.pc-name { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 1.6rem; font-weight: 600; }
+.pc-place { color: var(--pc-muted); font-size: 1rem; margin: 4px 0 12px 0; }
+.pc-state-head { display: flex; align-items: center; gap: 1rem; margin: 0 0 1rem; }
+.pc-state-head svg { flex-shrink: 0; width: auto; height: auto; max-width: 96px; max-height: 80px; }
+.pc-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; }
+.pc-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.pc-badge { display: inline-block; padding: 2px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
+.pc-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--pc-surface);
+             border: 1px solid var(--pc-border); border-radius: 10px; overflow: hidden; margin-bottom: 0.5rem; }
+.pc-table th { color: var(--pc-muted); font-size: 0.85rem; font-weight: 600; text-align: left; padding: 12px 16px; }
+.pc-table td { padding: 12px 16px; border-top: 1px solid var(--pc-border); }
+.pc-table td.pc-muted { color: var(--pc-muted); }
+.pc-table-wrap { overflow-x: auto; border-radius: 10px; margin-bottom: 0.5rem; }
+.pc-table-wrap .pc-table { margin-bottom: 0; }
+.pc-table-wrap:focus-visible { outline: 2px solid var(--pc-accent); outline-offset: 2px; }
+.pc-table th, .pc-table td { overflow-wrap: normal; word-break: normal; }
+@media (max-width: 640px) { .pc-table th, .pc-table td { padding: 10px 12px; } }
+.pc-bars { display: grid; grid-template-columns: 130px minmax(120px, 1fr) 140px; gap: 10px 12px; align-items: center; margin: 14px 0 8px 0; }
+@media (max-width: 640px) { .pc-bars { grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; }
+                             .pc-bars > div:nth-child(3n) { grid-column: 1 / -1; margin-bottom: 8px; } }
+.pc-bar { display: flex; gap: 2px; height: 22px; }
+.pc-bar span { display: block; height: 100%; border-radius: 3px; }
+.pc-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.pc-explain { border-left: 3px solid var(--pc-accent); background: var(--pc-surface); border-radius: 0 8px 8px 0; padding: 12px 16px;
+               max-width: 72ch; color: var(--pc-body); font-size: 0.98rem; line-height: 1.55; margin: 0 0 18px 0; }
+.pc-explain-title { color: var(--pc-accent); font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
+.pc-share { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 4px 0; }
+.pc-share span { color: var(--pc-muted); font-size: 0.9rem; margin-right: 4px; }
+.pc-share a { border: 1px solid var(--pc-control); border-radius: 999px; padding: 4px 12px; font-size: 0.9rem; font-weight: 600;
+              color: var(--pc-text) !important; text-decoration: none; }
+.pc-share a:hover { border-color: var(--pc-accent); }
+.pc-person { display: grid; grid-template-columns: 112px 1fr; gap: 18px; align-items: start; margin: 6px 0 14px 0; }
+.pc-person img { width: 112px; border-radius: 8px; border: 1px solid var(--pc-border); }
+.pc-facts { color: var(--pc-muted); font-size: 0.95rem; line-height: 1.7; }
+.pc-facts b { color: var(--pc-text); font-weight: 600; }
+.pc-facts a { color: var(--pc-accent); }
+@media (max-width: 640px) { .pc-person { grid-template-columns: 80px 1fr; } .pc-person img { width: 80px; }
+                             .pc-hero { font-size: 2rem; } }
+.pc-chip { border: 1px solid var(--pc-border); border-radius: 999px; padding: 3px 10px; font-size: 0.85rem; font-weight: 600; }
+/* Color beyond the data. The aisle stripe across the top of every page is the site's mark: party blue, a gap
+   for the aisle, party red. */
+.stApp::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: 5px; z-index: 1000000;
+                  background: linear-gradient(90deg, var(--pc-dem) 0 49.2%, transparent 49.2% 50.8%, var(--pc-rep) 50.8% 100%); }
+.stApp h2, .stApp h3 { color: var(--pc-head); }
+.stApp h1::after { content: ""; display: block; width: 64px; height: 5px; margin-top: 12px; border-radius: 3px;
+                    background: linear-gradient(90deg, var(--pc-dem) 0 45%, transparent 45% 55%, var(--pc-rep) 55% 100%); }
+.stApp [data-testid="stSidebar"] { background: color-mix(in srgb, var(--pc-hero) 7%, var(--pc-bg)); }
+.pc-panel { background: var(--pc-hero); color: var(--pc-hero-text); border-radius: 16px; padding: 34px 36px 0 36px;
+             margin: 0.5rem 0 1.5rem 0; overflow: hidden; }
+.pc-panel .pc-hero { color: var(--pc-hero-text); margin-top: 0; }
+.pc-panel .pc-intro { color: color-mix(in srgb, var(--pc-hero-text) 82%, var(--pc-hero)); margin-bottom: 26px; }
+.pc-aisle { display: grid; grid-template-columns: 1fr 22px 1fr; height: 10px; margin: 0 -36px; }
+.pc-aisle span:first-child { background: var(--pc-dem); }
+.pc-aisle span:last-child { background: var(--pc-rep); }
+.pc-tone1 { --pc-tone: var(--pc-tone1); }
+.pc-tone2 { --pc-tone: var(--pc-tone2); }
+.pc-tone3 { --pc-tone: var(--pc-tone3); }
+.pc-card { border-top: 4px solid var(--pc-tone, var(--pc-accent));
+            background: color-mix(in srgb, var(--pc-tone, var(--pc-accent)) 7%, var(--pc-surface)); }
+.pc-card .pc-eyebrow { color: var(--pc-tone, var(--pc-accent)); }
+.pc-grid .pc-metric { border-left: 4px solid var(--pc-tone1); }
+.pc-grid .pc-metric:nth-child(3n+2) { border-left-color: var(--pc-tone2); }
+.pc-grid .pc-metric:nth-child(3n) { border-left-color: var(--pc-tone3); }
+.pc-explain { background: color-mix(in srgb, var(--pc-tone3) 8%, var(--pc-surface)); border-left-color: var(--pc-tone3); }
+.pc-explain-title { color: var(--pc-tone3); }
+@media (max-width: 640px) { .pc-panel { padding: 24px 20px 0 20px; } .pc-aisle { margin: 0 -20px; } }
+/* Headings: h2 is the section level under each page title, sized as sections were before */
+.stApp [data-testid="stMain"] h2 { font-size: 1.75rem; }
+.stApp [data-testid="stMain"] h3 { font-size: 1.5rem; }
+/* Heading link icons are 16px targets and extra tab stops; every page has its own share link instead */
+.stApp a[aria-label="Link to heading"] { display: none; }
+/* A collapsed sidebar sits off screen; hide it so keyboard focus skips its links until it is opened */
+.stApp [data-testid="stSidebar"][data-collapsed="true"] { visibility: hidden; }
+/* Captions use the muted token so they pass 4.5:1 in both themes */
+/* Streamlit also fades captions to 60% opacity; with the muted color that stacks to under 3:1, so drop the fade */
+.stApp [data-testid="stCaptionContainer"] { opacity: 1; }
+.stApp [data-testid="stCaptionContainer"], .stApp [data-testid="stCaptionContainer"] p { color: var(--pc-muted); }
+/* Everything people tap is at least 44px */
+.stApp [data-testid="stPageLink-NavLink"], .stApp [data-testid="stSidebarNavLink"] { min-height: 44px; display: flex; align-items: center; }
+.stApp [data-testid="stButtonGroup"] button, .stApp [data-testid^="stBaseButton"] { min-height: 44px; }
+.stApp .react-aria-ComboBox [role="group"], .stApp [data-testid="stTextInputRootElement"] { min-height: 46px; }
+.stApp [data-testid="stTextInputRootElement"] input { min-height: 44px; height: 44px; }
+.stApp label:has(input[type="checkbox"]), .stApp label:has(input[type="radio"]) { min-height: 44px; align-items: center; }
+.stApp .react-aria-ComboBox [role="group"] button { min-width: 44px; }
+.stApp [data-testid="stExpandSidebarButton"], .stApp [data-testid="stMainMenuButton"],
+.stApp [data-testid="stToolbarActionButton"] button { min-width: 44px; min-height: 44px; }
+.stApp [data-testid="stTooltipHoverTarget"] button { min-width: 44px; min-height: 44px; margin: -14px; }
+.pc-share a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; }
+.pc-table td a { display: inline-block; padding: 12px 0; margin: -12px 0; }
+.pc-link-target { display: inline-flex; align-items: center; min-height: 44px; }
+/* Field outlines at 3:1, and a clear focus ring on fields and chart buttons */
+.stApp .react-aria-ComboBox [role="group"], .stApp [data-testid="stTextInputRootElement"] { border-color: var(--pc-control) !important; }
+.stApp .react-aria-ComboBox [role="group"]:focus-within, .stApp [data-testid="stTextInputRootElement"]:focus-within {
+    outline: 2px solid var(--pc-accent); outline-offset: 2px; }
+.stApp .modebar-btn:focus-visible { outline: 2px solid var(--pc-accent) !important; outline-offset: 2px; }
+.stApp label:has(input[type="checkbox"]:focus-visible), .stApp label:has(input[type="radio"]:focus-visible) {
+    outline: 2px solid var(--pc-accent); outline-offset: 2px; border-radius: 6px; }
+/* Toggle and checkbox boxes: a 3:1 outline so the off state is visible */
+.stApp label:has(input[type="checkbox"]) > div:first-of-type { box-shadow: inset 0 0 0 1px var(--pc-control); }
+/* The Home question is an h1 but keeps the hero look, without the rule other titles get */
+.stApp h1.pc-hero { padding: 0; margin: 0 0 0.75rem 0; }
+.stApp h1.pc-hero::after { content: none; }
+/* Visually hidden headings for screen readers */
+.pc-sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0 !important; margin: -1px;
+              overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+/* Shortcuts under each page's intro */
+.pc-shortcuts { display: flex; flex-wrap: wrap; align-items: center; gap: 0 10px; margin: -0.75rem 0 1rem 0;
+                font-weight: 600; }
+.pc-shortcuts a { color: var(--pc-accent); text-decoration: none; }
+.pc-shortcuts a:hover { text-decoration: underline; }
+.pc-shortcuts span { color: var(--pc-muted); }
+.pc-shortcuts-solo { margin: -0.5rem 0 0.5rem 0; }
+/* Sidebar "View more" is a 44px target */
+.stApp [data-testid="stSidebarNavViewButton"] { min-height: 44px; }
+/* Toggle labels and page links wrap instead of being cut off */
+.stApp label:has(input[type="checkbox"]) [data-testid="stWidgetLabel"],
+.stApp label:has(input[type="checkbox"]) [data-testid="stWidgetLabel"] *:not(button),
+.stApp [data-testid="stPageLink-NavLink"] span, .stApp [data-testid="stPageLink-NavLink"] span * {
+    white-space: normal !important; overflow: visible !important; text-overflow: clip !important; min-width: 0; }
+.stApp label:has(input[type="checkbox"]) { min-width: 0; }
+/* Phones: the chart download size setting is for desktop downloads */
+@media (max-width: 640px) { .stApp .st-key-pc_export { display: none; } }
+/* Phones: stacked tables show each row as a small card */
+@media (max-width: 640px) {
+  .pc-table-stack thead { display: none; }
+  .pc-table-stack, .pc-table-stack tbody, .pc-table-stack tr { display: block; width: 100%; }
+  .pc-table-stack tr { padding: 12px 16px; border-top: 1px solid var(--pc-border); }
+  .pc-table-stack tr:first-child { border-top: none; }
+  .pc-table-stack td { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+                        padding: 4px 0; border: none; text-align: right; }
+  .pc-table-stack td::before { content: attr(data-label); color: var(--pc-muted); font-size: 0.85rem; font-weight: 600;
+                                text-align: left; flex-shrink: 0; }
+  .pc-table-stack td:first-child { display: block; text-align: left; font-weight: 700; font-size: 1.05rem; padding-bottom: 6px; }
+  .pc-table-stack td:first-child::before { content: none; }
+  .pc-table-stack td { flex-wrap: wrap; }
+  .pc-table-stack td > .pc-badge { white-space: nowrap; margin-left: auto; }
+  .pc-table-stack td.pc-td-wide { display: block; text-align: left; }
+  .pc-table-stack td.pc-td-wide::before { display: block; }
+}
+/* Phones: 16px fields so iPhones don't zoom in on tap */
+@media (max-width: 767px) { .stApp input, .stApp textarea, .stApp select { font-size: 16px !important; } }
+/* Touch screens: no chart toolbar (its 24px buttons only appear on mouse hover). Phones: less space above the title */
+@media (hover: none), (max-width: 640px) { .stApp .modebar-container { display: none !important; } }
+@media (max-width: 640px) { .stApp [data-testid="stMainBlockContainer"] { padding-top: 4rem; } }

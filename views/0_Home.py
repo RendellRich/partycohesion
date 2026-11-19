@@ -16,7 +16,7 @@ from state_map import show_state_map
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import all_member_platform_votes, load_platform, party_totals
 import find_members
-from ui import STATES, card, display_name, early_congress, fmt_date, hero_panel, inject_css, section_heading
+from ui import card, display_name, early_congress, fmt_date, hero_panel, inject_css, section_heading
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -54,59 +54,20 @@ who = st.selectbox("Look up your representative or senator", list(labels), index
 if who:
     st.switch_page("views/2_Member_Explorer.py", query_params={"member": labels[who]})
 
-# Or find them by ZIP code or state, for visitors who don't know who represents them
-with st.expander("Don't know who represents you? Find your members by ZIP code or state"):
+# Or by ZIP code, for visitors who don't know who represents them. The States page lists their members.
+zip_text = st.text_input("Don't know who represents you? Enter your ZIP code", placeholder="5 digits", key="home_zip")
+if zip_text.strip():
     seats, zips = find_members.load_cached()
-    have_data = set(current["bioguide_id"].dropna())
-    z_col, s_col = st.columns(2)
-    zip_text = z_col.text_input("ZIP code", max_chars=10, placeholder="e.g. 34219", key="home_zip")
-    state_pick = s_col.selectbox("Or pick a state", sorted(STATES, key=STATES.get), index=None,
-                                 format_func=lambda a: STATES[a], placeholder="Choose a state", key="home_state")
-
-    def member_button(r, note: str = "") -> None:
-        label = f"{r.name} ({str(r.party)[:1]}), {note or r.chamber}"
-        if r.bioguide_id in have_data:
-            if st.button(label, key=f"find_{r.bioguide_id}"):
-                st.switch_page("views/2_Member_Explorer.py", query_params={"member": r.bioguide_id})
-        else:
-            st.markdown(f"{label} · not in the voting data yet")
-
-    if zip_text:
-        z = find_members.clean_zip(zip_text)
-        res = find_members.lookup_zip(z, seats, zips) if z else {"found": False}
-        if not res["found"]:
-            st.caption("That ZIP code isn't in the Census Bureau's ZIP list. Try your state instead, or the House's "
-                       f"official lookup: {find_members.OFFICIAL_LOOKUP}")
-        else:
-            st.markdown(f"**Senators for {STATES.get(res['state'], res['state'])}**")
-            for r in res["senators"].itertuples():
-                member_button(r, "Senate")
-            several = len(res["districts"]) > 1
-            st.markdown("**House**" + (" (this ZIP code crosses district lines)" if several and res["lines_current"] else ""))
-            for d in res["districts"]:
-                where = find_members.district_label(res["state"], d["district"])
-                if several and d["share"] is not None:
-                    where += f", {d['share']:.0%} of the ZIP's land"
-                if d["member"].empty:
-                    st.markdown(f"{where}: seat currently vacant")
-                for r in d["member"].itertuples():
-                    member_button(r, where)
-            if several or not res["lines_current"]:
-                st.caption("To be sure which district your address is in, use the House's official lookup: "
-                           f"{find_members.OFFICIAL_LOOKUP}")
-            if not res["lines_current"]:
-                st.caption("Some states drew new district lines for the 120th Congress, and the Census Bureau hasn't "
-                           "published ZIP codes for them yet, so this lists every House member from the state.")
-    elif state_pick:
-        sens, house = find_members.state_members(state_pick, seats)
-        st.markdown(f"**Senators for {STATES[state_pick]}**")
-        for r in sens.itertuples():
-            member_button(r, "Senate")
-        st.markdown("**House**")
-        for r in house.itertuples():
-            member_button(r, find_members.district_label(state_pick, r.district))
-    st.caption("ZIP codes to districts: U.S. Census Bureau, 2020 ZIP Code Tabulation Areas and 119th Congress "
-               "districts. Current members: unitedstates/congress-legislators.")
+    z = find_members.clean_zip(zip_text)
+    res = find_members.lookup_zip(z, seats, zips) if z else {"found": False}
+    if not z:
+        st.markdown('<p role="alert">Enter a 5-digit ZIP code, like 34219.</p>', unsafe_allow_html=True)
+    elif not res["found"]:
+        st.markdown('<p role="alert">That ZIP code isn\'t in the Census Bureau\'s ZIP list. Pick your state on the map '
+                    f'below, or use the House\'s <a href="{find_members.OFFICIAL_LOOKUP}" target="_blank" '
+                    'rel="noopener">official lookup</a>.</p>', unsafe_allow_html=True)
+    else:
+        st.switch_page("views/16_States.py", query_params={"state": res["state"], "zip": z})
 
 # Members of Congress by state: hover a state for its delegation, click it to see every member
 section_heading("Members of Congress by state")

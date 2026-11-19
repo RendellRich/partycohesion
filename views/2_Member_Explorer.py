@@ -258,6 +258,22 @@ if pick:
          + ("; delegates appear only in Congresses where they could vote" if delegate else "")),
     ])
     member_facts(bioguide)
+
+    # Their latest votes up front, since "how did they vote" is why most visitors come; the full record is below
+    side = caucus if pd.notna(caucus) else member["party"]
+    record = member_record(icpsr, rows, load_votes())
+    if not record.empty:
+        st.header("Recent votes")
+        latest = record.sort_values(["date", "rollnumber"], ascending=False).head(5)
+        html_table(["Vote", "Date", "Their vote", f"{side} majority", "Result"],
+                   [[(f"{x.bill_number}: " if isinstance(x.bill_number, str) and x.bill_number
+                      and not x.label.startswith(x.bill_number) else "") + x.label, fmt_date(x.date), x.their_vote,
+                     {"Tie": "Split evenly"}.get(x.party_position, x.party_position), x.vote_result]
+                    for x in latest.itertuples()], muted_cols=(1,), label=f"{short}'s five most recent votes",
+                   stack=True, wide_cols=(0,))
+        st.markdown('<a class="pc-link-target" href="#voting-record">Search every vote in their record</a>',
+                    unsafe_allow_html=True)
+
     share_bar(f"{display_name(member['name'])} ({member['party'][0]}-{member['state_abbrev']}): voting record on "
               "PartyCohesion", "Member_Explorer", {"member": bioguide} if bioguide else None)
     member_picker("Find a member")
@@ -487,10 +503,8 @@ if pick:
                    f"ideology_position_{short.lower().replace(' ', '_')}_{int(member['congress'])}")
     # Full voting record
     st.header("Voting record")
-    side = caucus if pd.notna(caucus) else member["party"]
     st.markdown(f"Every roll call {short} was eligible for while in office, from 2007 on. A vote is flagged when "
                 f"{short} voted against the {side} majority.")
-    record = member_record(icpsr, rows, load_votes())
     if record.empty:
         st.caption("No roll-call records found for this member.")
     else:

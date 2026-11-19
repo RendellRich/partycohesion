@@ -337,17 +337,15 @@ def test_member_page_lists_same_bill_changes():
     assert "H.R. 8404" in html(at)
 
 
-def test_home_find_members_by_zip_and_state():
+def test_home_zip_opens_your_members_on_the_state_page():
     at = open_page("views/0_Home.py")
-    at.text_input(key="home_zip").input("34219").run()  # Parrish, Florida
+    at.text_input(key="home_zip").input("00000").run()
+    assert "isn't in the Census Bureau's ZIP list" in html(at)
+    at.text_input(key="home_zip").set_value("34219").run()  # Parrish, Florida
     assert not at.exception, [e.value for e in at.exception]
-    labels = [b.label for b in at.button]
-    assert sum(", Senate" in b for b in labels) == 2 and any("FL-16" in b for b in labels)
-    at.text_input(key="home_zip").set_value("").run()
-    at.selectbox(key="home_state").select("WY").run()
-    assert any("WY at-large" in b.label for b in at.button)
-    at.text_input(key="home_zip").set_value("00000").run()
-    assert "isn't in the Census Bureau's ZIP list" in " ".join(c.value for c in at.caption)
+    assert at.title[0].value == "Florida"
+    assert "Your members for ZIP code 34219" in html(at)
+    assert "zip" not in at.query_params  # the ZIP code doesn't stay in the shareable address
 
 
 def test_position_flips_says_who_is_left_out():
@@ -423,3 +421,11 @@ def test_member_tables_stack_on_phones():
     at = open_member("C001098")
     text = html(at)
     assert text.count("pc-table-stack") >= 4 and 'role="table"' in text and 'data-label="Pattern"' in text
+
+
+def test_member_page_shows_recent_votes_first():
+    at = open_member("C001098")
+    heads = [h.value for h in at.header]
+    assert heads[0] == "Recent votes" and "Voting record" in heads
+    text = html(at)
+    assert "five most recent votes" in text and 'href="#voting-record"' in text
