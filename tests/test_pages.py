@@ -39,7 +39,7 @@ def test_members_profile():
     box.set_value(option(box, "Murkowski, Lisa")).run()
     assert not at.exception, [e.value for e in at.exception]
     text = html(at)
-    assert "Lisa Murkowski" in text and "Same question, different president" in [s.value for s in at.subheader]
+    assert "Lisa Murkowski" in text and "Same question, different president" in [s.value for s in at.header]
     assert "Position Flips" in text and "Ideology score" in text
 
 
@@ -51,7 +51,7 @@ def test_compare_pair():
     assert not at.exception, [e.value for e in at.exception]
     text = html(at)
     assert "When they served together" in text and "roll calls they both voted on" in text
-    assert "Same question, different president" in [h.value for h in at.subheader]
+    assert "Same question, different president" in [h.value for h in at.header]
     assert text.count('class="pc-badge"') >= 2  # each member has at least one Position Flips label
 
 
@@ -111,7 +111,7 @@ def test_member_voting_record():
     at = open_page("views/2_Member_Explorer.py")
     box = at.selectbox(key="me_member")
     box.set_value(option(box, "Murkowski, Lisa")).run()
-    assert "Voting record" in [s.value for s in at.subheader]
+    assert "Voting record" in [s.value for s in at.header]
     record = at.dataframe[0].value
     assert len(record) > 100 and set(record["Their vote"]) <= {"Yea", "Nay", "Did not vote"}
     at.toggle(key="me_rec_against").set_value(True).run()
@@ -127,14 +127,14 @@ def test_platform_votes_member_lookup():
     box.set_value(option(box, "Susan Collins")).run()
     assert not at.exception, [e.value for e in at.exception]
     assert "voted against the Republican platform on" in html(at)
-    headings = [m.value for m in at.markdown if m.value.startswith("#### ")]
+    headings = [m.value for m in at.markdown if m.value.startswith("### ")]
     latest = max(pd.read_csv(ROOT / "data" / "platform_topics.csv", comment="#")["congress"])
     assert at.selectbox(key="pv_cong").value == latest and 0 < len(headings) < 10  # one Congress by default
     at.selectbox(key="pv_cong").set_value(117).run()
     assert not at.exception, [e.value for e in at.exception]
-    headings = [m.value for m in at.markdown if m.value.startswith("#### ")]
-    assert "#### The PRO Act and right-to-work laws" in headings
-    assert "#### Repealing the Affordable Care Act" not in headings  # a 115th Congress topic
+    headings = [m.value for m in at.markdown if m.value.startswith("### ")]
+    assert "### The PRO Act and right-to-work laws" in headings
+    assert "### Repealing the Affordable Care Act" not in headings  # a 115th Congress topic
 
 
 def test_platform_record_on_member_and_compare_pages():
@@ -142,14 +142,14 @@ def test_platform_record_on_member_and_compare_pages():
     box = at.selectbox(key="me_member")
     box.set_value(option(box, "Collins, Susan")).run()
     assert not at.exception, [e.value for e in at.exception]
-    assert "Votes on their party's platform" in [s.value for s in at.subheader]
+    assert "Votes on their party's platform" in [s.value for s in at.header]
     assert "Against party platform" in html(at) and "Skinny repeal" in html(at)
     at = open_page("views/6_Compare.py")
     for key, name in (("cmp_a", "Collins, Susan"), ("cmp_b", "Murkowski, Lisa")):
         box = at.selectbox(key=key)
         box.set_value(option(box, name)).run()
     assert not at.exception, [e.value for e in at.exception]
-    assert "Votes on their party's platform" in [s.value for s in at.subheader]
+    assert "Votes on their party's platform" in [s.value for s in at.header]
     assert "(against platform)" in html(at)
 
 
@@ -187,7 +187,7 @@ def test_missed_votes_on_member_page():
     box = at.selectbox(key="me_member")
     box.set_value(option(box, "Sherrill, Mikie")).run()
     assert not at.exception, [e.value for e in at.exception]
-    assert "Missed votes" in [s.value for s in at.subheader]
+    assert "Missed votes" in [s.value for s in at.header]
     text = html(at)
     assert "171" in text and "303" in text  # 119th Congress: 171 of 303 roll calls held while she served
     browse = at.dataframe[-1].value
@@ -197,7 +197,7 @@ def test_missed_votes_on_member_page():
 def test_cosponsored_then_no_page():
     at = open_page("views/12_Cosponsored_Then_No.py")
     assert not at.exception, [e.value for e in at.exception]
-    assert "Bills with the most signers voting no" in [s.value for s in at.subheader]
+    assert "Bills with the most signers voting no" in [s.value for s in at.header]
     at.toggle(key="cs_unchanged").set_value(True).run()
     assert not at.exception, [e.value for e in at.exception]
     assert (at.dataframe[0].value["Text changed before vote"] == "No").all()
@@ -205,7 +205,7 @@ def test_cosponsored_then_no_page():
 
 def test_campaign_statements_page():
     at = open_page("views/13_Campaign_Statements.py")
-    assert "Votes in a different direction from the campaign statement" in [s.value for s in at.subheader]
+    assert "Votes in a different direction from the campaign statement" in [s.value for s in at.header]
     text = html(at)
     assert "Massie" in text and "Fitzpatrick" in text
     at.selectbox(key="cmp_dir").set_value("Different from the statement").run()
@@ -223,10 +223,10 @@ def test_campaign_statements_other_topics():
 
 def test_floor_statements_on_ukraine_topic():
     at = open_page("views/13_Campaign_Statements.py")
-    assert "Said on the floor of Congress" not in [s.value for s in at.subheader]
+    assert "Said on the floor of Congress" not in [s.value for s in at.header]
     at.selectbox(key="cmp_topic").set_value("Military aid to Ukraine").run()
     assert not at.exception, [e.value for e in at.exception]
-    assert "Said on the floor of Congress" in [s.value for s in at.subheader]
+    assert "Said on the floor of Congress" in [s.value for s in at.header]
     text = html(at)
     assert "Welch" in text and "Netanyahu" in text and "Rubio" in text
     floor = at.dataframe[0].value
@@ -252,7 +252,7 @@ def test_campaign_statements_on_member_page():
     box = at.selectbox(key="me_member")
     box.set_value(option(box, "Fitzpatrick, Brian")).run()
     assert not at.exception, [e.value for e in at.exception]
-    assert "Campaign statements and votes" in [s.value for s in at.subheader]
+    assert "Campaign statements and votes" in [s.value for s in at.header]
     text = html(at)
     assert "2 of 3" in text and "physical barrier" in text
 
@@ -315,7 +315,7 @@ def test_member_page_seat_map_highlights_member():
 
 def test_same_bill_different_vote_page():
     at = open_page("views/14_Same_Bill_Different_Vote.py")
-    assert "Bills where the most members changed while their party didn't" in [s.value for s in at.subheader]
+    assert "Bills where the most members changed while their party didn't" in [s.value for s in at.header]
     table = at.dataframe[0].value
     assert len(table) > 100
     assert set(table["Their party"].str.split(" then ").str[0]) <= {"Yea", "Nay"}
@@ -333,7 +333,7 @@ def test_member_page_lists_same_bill_changes():
     label = next(o for o in at.selectbox(key="me_member").options if "Gallagher" in o and "WI" in o)
     at.selectbox(key="me_member").set_value(label).run()
     assert not at.exception, [e.value for e in at.exception]
-    assert "Same bill, different vote" in [s.value for s in at.subheader]
+    assert "Same bill, different vote" in [s.value for s in at.header]
     assert "H.R. 8404" in html(at)
 
 

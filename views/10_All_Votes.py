@@ -98,7 +98,7 @@ st.caption("Party columns show Yea–Nay. Broke Ranks counts Democrats and Repub
            "majority; a party that split exactly evenly has no majority, so none of its members count. Platform Topic "
            "names the Platform Votes topic a roll call belongs to, if any.")
 
-st.subheader("Look at one vote")
+st.header("Look at one vote")
 labels = {f"{r.date} · {r.chamber} roll call {r.rollnumber} · {str(r.label)[:90]}": i for i, r in shown.iterrows()}
 pick = st.selectbox("Vote", list(labels), key="av_pick", label_visibility="collapsed")
 v = shown.loc[labels[pick]]

@@ -68,7 +68,14 @@ CSS = f"""
 .pc-table th {{ color: var(--pc-muted); font-size: 0.85rem; font-weight: 600; text-align: left; padding: 12px 16px; }}
 .pc-table td {{ padding: 12px 16px; border-top: 1px solid var(--pc-border); }}
 .pc-table td.pc-muted {{ color: var(--pc-muted); }}
+.pc-table-wrap {{ overflow-x: auto; border-radius: 10px; margin-bottom: 0.5rem; }}
+.pc-table-wrap .pc-table {{ margin-bottom: 0; }}
+.pc-table-wrap:focus-visible {{ outline: 2px solid var(--pc-accent); outline-offset: 2px; }}
+.pc-table th, .pc-table td {{ overflow-wrap: normal; word-break: normal; }}
+@media (max-width: 640px) {{ .pc-table th, .pc-table td {{ padding: 10px 12px; }} }}
 .pc-bars {{ display: grid; grid-template-columns: 130px minmax(120px, 1fr) 140px; gap: 10px 12px; align-items: center; margin: 14px 0 8px 0; }}
+@media (max-width: 640px) {{ .pc-bars {{ grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; }}
+                             .pc-bars > div:nth-child(3n) {{ grid-column: 1 / -1; margin-bottom: 8px; }} }}
 .pc-bar {{ display: flex; gap: 2px; height: 22px; }}
 .pc-bar span {{ display: block; height: 100%; border-radius: 3px; }}
 .pc-chips {{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }}
@@ -77,7 +84,7 @@ CSS = f"""
 .pc-explain-title {{ color: var(--pc-accent); font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }}
 .pc-share {{ display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 4px 0; }}
 .pc-share span {{ color: var(--pc-muted); font-size: 0.9rem; margin-right: 4px; }}
-.pc-share a {{ border: 1px solid var(--pc-border); border-radius: 999px; padding: 4px 12px; font-size: 0.9rem; font-weight: 600;
+.pc-share a {{ border: 1px solid var(--pc-control); border-radius: 999px; padding: 4px 12px; font-size: 0.9rem; font-weight: 600;
               color: var(--pc-text) !important; text-decoration: none; }}
 .pc-share a:hover {{ border-color: var(--pc-accent); }}
 .pc-person {{ display: grid; grid-template-columns: 112px 1fr; gap: 18px; align-items: start; margin: 6px 0 14px 0; }}
@@ -115,6 +122,41 @@ CSS = f"""
 .pc-explain {{ background: color-mix(in srgb, var(--pc-tone3) 8%, var(--pc-surface)); border-left-color: var(--pc-tone3); }}
 .pc-explain-title {{ color: var(--pc-tone3); }}
 @media (max-width: 640px) {{ .pc-panel {{ padding: 24px 20px 0 20px; }} .pc-aisle {{ margin: 0 -20px; }} }}
+/* Headings: h2 is the section level under each page title, sized as sections were before */
+.stApp [data-testid="stMain"] h2 {{ font-size: 1.75rem; }}
+.stApp [data-testid="stMain"] h3 {{ font-size: 1.5rem; }}
+/* Heading link icons are 16px targets and extra tab stops; every page has its own share link instead */
+.stApp a[aria-label="Link to heading"] {{ display: none; }}
+/* A collapsed sidebar sits off screen; hide it so keyboard focus skips its links until it is opened */
+.stApp [data-testid="stSidebar"][data-collapsed="true"] {{ visibility: hidden; }}
+/* Captions use the muted token so they pass 4.5:1 in both themes */
+.stApp [data-testid="stCaptionContainer"], .stApp [data-testid="stCaptionContainer"] p {{ color: var(--pc-muted); }}
+/* Everything people tap is at least 44px */
+.stApp [data-testid="stPageLink-NavLink"], .stApp [data-testid="stSidebarNavLink"] {{ min-height: 44px; display: flex; align-items: center; }}
+.stApp [data-testid="stButtonGroup"] button, .stApp [data-testid^="stBaseButton"] {{ min-height: 44px; }}
+.stApp .react-aria-ComboBox [role="group"], .stApp [data-testid="stTextInputRootElement"] {{ min-height: 46px; }}
+.stApp [data-testid="stTextInputRootElement"] input {{ min-height: 44px; height: 44px; }}
+.stApp label:has(input[type="checkbox"]), .stApp label:has(input[type="radio"]) {{ min-height: 44px; align-items: center; }}
+.stApp .react-aria-ComboBox [role="group"] button {{ min-width: 44px; }}
+.stApp [data-testid="stExpandSidebarButton"], .stApp [data-testid="stMainMenuButton"] {{ min-width: 44px; min-height: 44px; }}
+.stApp [data-testid="stTooltipHoverTarget"] button {{ min-width: 44px; min-height: 44px; margin: -14px; }}
+.pc-share a {{ display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; }}
+.pc-table td a {{ display: inline-block; padding: 12px 0; margin: -12px 0; }}
+.pc-link-target {{ display: inline-flex; align-items: center; min-height: 44px; }}
+/* Field outlines at 3:1, and a clear focus ring on fields and chart buttons */
+.stApp .react-aria-ComboBox [role="group"], .stApp [data-testid="stTextInputRootElement"] {{ border-color: var(--pc-control) !important; }}
+.stApp .react-aria-ComboBox [role="group"]:focus-within, .stApp [data-testid="stTextInputRootElement"]:focus-within {{
+    outline: 2px solid var(--pc-accent); outline-offset: 2px; }}
+.stApp .modebar-btn:focus-visible {{ outline: 2px solid var(--pc-accent) !important; outline-offset: 2px; }}
+.stApp label:has(input[type="checkbox"]:focus-visible), .stApp label:has(input[type="radio"]:focus-visible) {{
+    outline: 2px solid var(--pc-accent); outline-offset: 2px; border-radius: 6px; }}
+/* Toggle and checkbox boxes: a 3:1 outline so the off state is visible */
+.stApp label:has(input[type="checkbox"]) > div:first-of-type {{ box-shadow: inset 0 0 0 1px var(--pc-control); }}
+/* Phones: 16px fields so iPhones don't zoom in on tap */
+@media (max-width: 767px) {{ .stApp input, .stApp textarea, .stApp select {{ font-size: 16px !important; }} }}
+/* Touch screens: no chart toolbar (its 24px buttons only appear on mouse hover). Phones: less space above the title */
+@media (hover: none), (max-width: 640px) {{ .stApp .modebar-container {{ display: none !important; }} }}
+@media (max-width: 640px) {{ .stApp [data-testid="stMainBlockContainer"] {{ padding-top: 4rem; }} }}
 </style>
 """
 
@@ -125,7 +167,7 @@ def inject_css() -> None:
     names = {"bg": "bg", "surface": "surface", "border": "border", "text": "text", "body": "body", "muted": "muted",
              "accent": "accent", "dem": "dem", "rep": "rep", "ind": "ind", "yea": "yea", "nay": "nay",
              "hero": "hero", "hero_text": "hero-text", "head": "head", "tone1": "tone1", "tone2": "tone2",
-             "tone3": "tone3"}
+             "tone3": "tone3", "control": "control"}
     global _card_count
     _card_count = 0
     root = "".join(f"--pc-{css}: {t[key]}; " for key, css in names.items())
@@ -190,7 +232,8 @@ def pattern_badge(label: str) -> str:
     return f'<span class="pc-badge" style="background:{fill};color:{text_on(fill)}">{escape(label)}</span>'
 
 
-def html_table(header: list[str], rows: list[list[str]], raw_cols: tuple[int, ...] = (), muted_cols: tuple[int, ...] = ()) -> None:
+def html_table(header: list[str], rows: list[list[str]], raw_cols: tuple[int, ...] = (), muted_cols: tuple[int, ...] = (),
+               label: str = "Table") -> None:
     """Small table with design-system styling. Cells in raw_cols are trusted HTML (badges); others are escaped."""
     head = "".join(f"<th>{escape(h)}</th>" for h in header)
     body = ""
@@ -200,7 +243,10 @@ def html_table(header: list[str], rows: list[list[str]], raw_cols: tuple[int, ..
             cls = ' class="pc-muted"' if i in muted_cols else ""
             cells.append(f"<td{cls}>{c if i in raw_cols else escape(str(c))}</td>")
         body += "<tr>" + "".join(cells) + "</tr>"
-    st.markdown(f'<table class="pc-table"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>',
+    # The wrapper scrolls sideways on narrow screens instead of squeezing words; it takes keyboard focus so it can
+    # be scrolled without a mouse.
+    st.markdown(f'<div class="pc-table-wrap" role="region" tabindex="0" aria-label="{escape(label)}">'
+                f'<table class="pc-table"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>',
                 unsafe_allow_html=True)
 
 
@@ -307,7 +353,7 @@ def vote_card(v: pd.Series, broke: pd.DataFrame, link: str | None = None) -> Non
         names = [f"{last_name(r.name)} ({r.party[0]}-{r.state_abbrev})" for r in broke.sort_values(["party", "name"]).itertuples()]
         who = (f'<div style="margin-top:14px;font-weight:600">{len(broke)} member{"s" if len(broke) != 1 else ""} voted '
                f"against their party's majority</div>{chips(names)}")
-    source = (f'<div style="margin-top:14px"><a href="{escape(link)}" target="_blank" rel="noopener" '
+    source = (f'<div style="margin-top:6px"><a class="pc-link-target" href="{escape(link)}" target="_blank" rel="noopener" '
               f'style="color:var(--pc-accent)">Full record on Voteview</a></div>') if link else ""
     st.markdown(f'<div class="pc-card"><div class="pc-eyebrow">{escape(eyebrow)}</div>'
                 f'<div style="font-size:1.4rem;font-weight:600;margin:6px 0 4px 0">{escape(str(v["label"]))}</div>'

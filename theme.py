@@ -19,15 +19,18 @@ DARK = {
     # Site color beyond the data: the navy hero panel, heading color, and three card tones
     "hero": "#1F2B45", "hero_text": "#F3EEE3", "head": "#C9D3EE",
     "tone1": "#E2A94B", "tone2": "#5FBFB2", "tone3": "#A993E6",
+    "control": "#7A746C",
 }
 LIGHT = {
     "bg": "#F6F7F9", "surface": "#FFFFFF", "border": "#DADDE3", "grid": "#E3E6EA",
     "text": "#1B1D21", "body": "#2A2E35", "muted": "#555B65", "accent": "#7A5A10",
     "dem": "#2E6CAD", "rep": "#B8403F", "ind": "#6B7280",
-    "yea": "#1F6F99", "nay": "#9DB2C8",
+    "yea": "#1F6F99", "nay": "#7A8FA6",
     "consistent": "#3F2A88", "partly": "#6B4FBF", "changed": "#9A82D9", "opposite": "#7A8597",
     "hero": "#1C2A4A", "hero_text": "#F6F1E7", "head": "#1C2A4A",
-    "tone1": "#A86A12", "tone2": "#23746A", "tone3": "#5E45A8",
+    "tone1": "#94590A", "tone2": "#23746A", "tone3": "#5E45A8",
+    # Outline for controls people tap (share pills, inputs): 3:1 against the background and surface
+    "control": "#868C96",
 }
 FONT = "'Public Sans', 'Segoe UI', system-ui, sans-serif"
 

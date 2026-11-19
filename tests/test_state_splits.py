@@ -85,7 +85,7 @@ def test_member_page_shows_same_state_section():
     at.query_params["member"] = "M000355"  # Mitch McConnell
     at.run()
     assert not at.exception, [e.value for e in at.exception]
-    assert any("Same state, different vote" in h.value for h in at.subheader)
+    assert any("Same state, different vote" in h.value for h in at.header)
 
 
 def test_member_page_ranks_against_the_whole_delegation():

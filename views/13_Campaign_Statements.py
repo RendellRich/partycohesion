@@ -80,7 +80,7 @@ def floor_section(topic: str) -> None:
     cond = f[(f["stance"] == "With conditions") & (f["quote"] != "")
              & ~f["bioguide_id"].isin(pd.concat([differ, changed])["bioguide_id"])]
 
-    st.subheader("Said on the floor of Congress")
+    st.header("Said on the floor of Congress")
     st.markdown(f"Members also argue about {cfg['subject']} in floor debates, which the Congressional Record prints "
                 f"word for word. This covers both chambers, {cfg['window']}. Each member's remarks were labeled "
                 "with an AI assistant (Claude); the quotes are their own words.")
@@ -113,11 +113,11 @@ def floor_section(topic: str) -> None:
                 st.caption("Their remarks in this record don't say why their vote went the other way.")
 
     if len(differ):
-        st.markdown("##### Spoke one way, then cast a final vote the other way")
+        st.markdown("### Spoke one way, then cast a final vote the other way")
         for _, r in differ.iterrows():
             card(r)
     if len(changed):
-        st.markdown("##### Changed their vote between the two votes")
+        st.markdown("### Changed their vote between the two votes")
         for _, r in changed[changed["quote"] != ""].iterrows():
             card(r)
         others = changed[changed["quote"] == ""]
@@ -126,7 +126,7 @@ def floor_section(topic: str) -> None:
                               f"{cast(r['vote_earlier'])} then {cast(r['vote_final'])}" for _, r in others.iterrows())
             st.caption(f"Also changed, without a clear stance in their floor remarks: {names}.")
     if len(cond):
-        st.markdown("##### Tied their vote to conditions")
+        st.markdown("### Tied their vote to conditions")
         for _, r in cond.iterrows():
             card(r)
 
@@ -171,7 +171,7 @@ st.caption("A campaign statement counts only when it takes a clear side. Stateme
            "view, or that hedge, are left out. A roll call can't show a member's reasons, and the bill voted on is "
            "rarely the same as the campaign promise word for word.")
 
-st.subheader("The votes")
+st.header("The votes")
 for _, t in view.drop_duplicates(["congress", "rollnumber"]).iterrows():
     sub = view[(view["congress"] == t["congress"]) & (view["rollnumber"] == t["rollnumber"])]
     n_same = (sub["same_direction"] == "Yes").sum()
@@ -180,7 +180,7 @@ for _, t in view.drop_duplicates(["congress", "rollnumber"]).iterrows():
                 f"[Voteview]({voteview_url(t['congress'], t['chamber'], t['rollnumber'])})  \n{t['vote_note']}")
 
 if len(diff):
-    st.subheader("Votes in a different direction from the campaign statement")
+    st.header("Votes in a different direction from the campaign statement")
     for _, r in diff.iterrows():
         with st.container(border=True):
             st.markdown(f"**{member(r)}**")
@@ -191,7 +191,7 @@ if len(diff):
 if topic in FLOOR:
     floor_section(topic)
 
-st.subheader("All campaign statements")
+st.header("All campaign statements")
 c1, c2 = st.columns(2)
 with c1:
     party = st.selectbox("Party", ["All", "Democrat", "Republican"], key="cmp_party")

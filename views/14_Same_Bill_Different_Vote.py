@@ -107,7 +107,7 @@ st.dataframe(pd.DataFrame({
                    "First roll call": st.column_config.LinkColumn(display_text="Voteview"),
                    "Final roll call": st.column_config.LinkColumn(display_text="Voteview")})
 
-st.subheader("Bills where the most members changed while their party didn't")
+st.header("Bills where the most members changed while their party didn't")
 pool = view if (congress != "All" or chamber != "All" or party != "All" or query or same_title) else apart
 top = (pool[pool["apart"]].groupby(["congress", "chamber", "bill_number"]).agg(
     n=("icpsr", "size"), dem=("caucus", lambda s: (s == "Democrat").sum()),

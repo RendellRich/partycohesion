@@ -145,7 +145,7 @@ background checks for gun sales (2013, 2019 and 2021) are out because the Republ
 2014 minimum wage vote and the 2015 Keystone XL pipeline vote are out because only one 2012 platform addresses them.
 """)
 
-st.subheader("Look up a member")
+st.header("Look up a member")
 ms = member_summary(mv)
 ms["label"] = [f"{display_name(n)} ({s[0]}-{st_})" for n, s, st_ in zip(ms["name"], ms["side"], ms["state_abbrev"])]
 pick = st.selectbox("Member", ["Choose a member"] + sorted(ms["label"]), key="pv_member")
@@ -160,14 +160,14 @@ if pick != "Choose a member":
                [[fmt_date(x.date), x.topic, x.measure, x.vote, x.platform_vote, "Yes" if x.against else "No",
                  "Yes" if x.counts else "No"] for x in mine.itertuples()], muted_cols=(0, 6))
 
-st.subheader("Who voted against their platform most often")
+st.header("Who voted against their platform most often")
 st.caption("Counted votes only, each topic once. A member can only be counted on votes held while they served in "
            "that chamber.")
 top = ms[ms["against"] > 0].head(15)
 html_table(["Member", "Topics against their platform", "Topics voted on"],
            [[l, int(a), int(c)] for l, a, c in zip(top["label"], top["against"], top["cast"])], muted_cols=(2,))
 
-st.subheader("Topics by Congress")
+st.header("Topics by Congress")
 st.caption("Shows the most recent Congress first. Choose another Congress, or All, to see the rest.")
 cong_options = ["All"] + sorted(topics["congress"].unique(), reverse=True)
 # One Congress by default: drawing every topic's vote cards at once (about 100) makes the page slow to scroll
@@ -176,7 +176,7 @@ cong = st.selectbox("Congress", cong_options, index=1, key="pv_cong",
                                                                   f"{PRESIDENT.get(c, '')} years")
 shown = topics if cong == "All" else topics[topics["congress"] == cong]
 for t in shown.sort_values("congress", ascending=False).to_dict("records"):
-    st.markdown(f"#### {escape(t['topic'])}")
+    st.markdown(f"### {escape(t['topic'])}")
     st.markdown(f'<div class="pc-body">{ordinal(t["congress"])} Congress ({2 * t["congress"] + 1787} to '
                 f'{2 * t["congress"] + 1788}) · {PRESIDENT.get(t["congress"], "")} years</div>'
                 + plank_html(t, "Democrat") + plank_html(t, "Republican"), unsafe_allow_html=True)
