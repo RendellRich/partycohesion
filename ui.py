@@ -138,7 +138,8 @@ CSS = f"""
 .stApp [data-testid="stTextInputRootElement"] input {{ min-height: 44px; height: 44px; }}
 .stApp label:has(input[type="checkbox"]), .stApp label:has(input[type="radio"]) {{ min-height: 44px; align-items: center; }}
 .stApp .react-aria-ComboBox [role="group"] button {{ min-width: 44px; }}
-.stApp [data-testid="stExpandSidebarButton"], .stApp [data-testid="stMainMenuButton"] {{ min-width: 44px; min-height: 44px; }}
+.stApp [data-testid="stExpandSidebarButton"], .stApp [data-testid="stMainMenuButton"],
+.stApp [data-testid="stToolbarActionButton"] button {{ min-width: 44px; min-height: 44px; }}
 .stApp [data-testid="stTooltipHoverTarget"] button {{ min-width: 44px; min-height: 44px; margin: -14px; }}
 .pc-share a {{ display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; }}
 .pc-table td a {{ display: inline-block; padding: 12px 0; margin: -12px 0; }}
