@@ -2,8 +2,11 @@
 
 import streamlit as st
 
+from ui import shortcuts
+
 
 st.title("About PartyCohesion")
+shortcuts()
 
 st.markdown("""
 **PartyCohesion** exists to put primary congressional voting data in front of the public with as little editorial framing as possible.
