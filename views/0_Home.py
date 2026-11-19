@@ -134,7 +134,8 @@ st.write("")
 # Finding 1: Position Flips, current members
 scores = flip_scores(flip_votes).merge(current[["icpsr"]].drop_duplicates(), on="icpsr")
 scored = scores[scores["label"] != "Not enough votes"]
-pct_consistent = (scored["label"] == "Consistent").mean() * 100 if len(scored) else 0
+CHANGED = ("Partly changed", "Changed with the White House")  # a shift of 25 points or more toward their own president
+pct_changed = scored["label"].isin(CHANGED).mean() * 100 if len(scored) else 0
 
 # Finding 2: party unity, current Congress
 dr = stat_members[stat_members["party"].isin(["Democrat", "Republican"])].dropna(subset=["party_unity_pct"])
@@ -148,9 +149,10 @@ top = breaks.sort_values("broke", ascending=False).iloc[0] if len(breaks) else N
 
 c1, c2, c3 = st.columns(3, gap="medium")
 with c1:
-    card("Position flips", f"{pct_consistent:.0f}%",
-         f"of current members ({len(scored)} with enough comparable votes) cast the same vote on debt limits, "
-         "government funding, disaster aid and war powers under presidents of both parties, comparing like with like.")
+    card("Position flips", f"{pct_changed:.0f}%",
+         f"of current members ({len(scored)} with enough comparable votes) gave the president noticeably more room on "
+         "debt limits, government funding, disaster aid and war powers when he was from their own party (a shift of "
+         "25 points or more), comparing like with like.")
     st.page_link("views/7_Position_Flips.py", label="See every member")
     st.page_link("views/9_How_It_Works.py", label="How this is measured")
 with c2:

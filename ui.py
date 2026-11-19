@@ -314,10 +314,16 @@ def congress_years(first: int, last: int, newest: int) -> str:
     return f"{start} to {end}"
 
 
-def member_header(name: str, party: str, state: str, chamber: str, first: int, last: int, newest: int) -> None:
+def member_header(name: str, party: str, state: str, chamber: str, first: int, last: int, newest: int,
+                  as_title: bool = False) -> None:
+    """The member's name, party and seat. as_title makes the name the page's h1 (the Members page with a member open)."""
     from chart_utils import ordinal
     place = f"{STATES.get(state, state)}, {chamber}, {ordinal(first)} to {ordinal(last)} Congress " \
             f"({congress_years(first, last, newest)})" + ("; data starts in 2007" if int(first) == 110 else "")
+    if as_title:
+        st.title(display_name(name))
+        st.markdown(f'<div class="pc-place">{party_tag(party)} · {escape(place)}</div>', unsafe_allow_html=True)
+        return
     st.markdown(f'<div class="pc-name">{escape(display_name(name))} {party_tag(party)}</div>'
                 f'<div class="pc-place">{escape(place)}</div>', unsafe_allow_html=True)
 
