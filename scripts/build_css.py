@@ -29,6 +29,17 @@ NAMES = {"bg": "bg", "surface": "surface", "border": "border", "text": "text", "
          "control": "control"}
 
 
+# Public Sans from Google Fonts (variable weight, Latin), as Google's own stylesheet declares it
+_GSTATIC = "https://fonts.gstatic.com/s/publicsans/v21/"
+_LATIN = ("U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, "
+          "U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD")
+FONT_FACES = "".join(
+    f"@font-face {{ font-family: 'Public Sans'; font-style: {style}; font-weight: 400 700; font-display: swap; "
+    f"src: url({_GSTATIC}{file}) format('woff2'); unicode-range: {_LATIN}; }}\n"
+    for style, file in (("normal", "ijwRs572Xtc6ZYQws9YVwnNGfJ4.woff2"),
+                        ("italic", "ijwAs572Xtc6ZYQws9YVwnNDZpDyNjGolS673tpRgDcqd1s.woff2")))
+
+
 def tokens(t: dict) -> str:
     return " ".join(f"--pc-{css}: {t[key]};" for key, css in NAMES.items())
 
@@ -36,10 +47,11 @@ def tokens(t: dict) -> str:
 def build() -> str:
     body = ui.CSS.strip().removeprefix("<style>").removesuffix("</style>").strip()
     # No @import of the web fonts: a stylesheet with an @import isn't applied until the imported file loads too,
-    # which made the site styles land after the content. The fonts load from the theme's headingFont setting instead.
+    # which made the site styles land after the content. Public Sans is declared here directly instead (Source Serif 4
+    # loads from the theme's headingFont setting).
     rules = "\n".join(line for line in body.splitlines() if not line.startswith("@import"))
-    return ("/* Built by scripts/build_css.py from ui.CSS. Edit ui.py, then run the script. */\n"
-            f":root {{ {tokens(theme.LIGHT)} }}\n"
+    return ("/* Built by scripts/build_css.py from ui.CSS. Edit ui.py, then run the script. */\n" + FONT_FACES
+            + f":root {{ {tokens(theme.LIGHT)} }}\n"
             f"@media (prefers-color-scheme: dark) {{ :root {{ {tokens(theme.DARK)} }} }}\n{rules}\n")
 
 
