@@ -32,9 +32,14 @@ st.markdown("<style>footer {visibility: hidden;}</style>", unsafe_allow_html=Tru
 
 # Page scripts live in views/, not pages/: Streamlit treats a pages/ folder as its older automatic navigation, and a
 # visitor who opened a page link first after a restart got that plain page list and skipped this file entirely.
-# Grouped as in the Figma design: findings first, then exploration tools, then how it works
+# Grouped as in the Figma design: your members, then findings, exploration tools, and how it works
 pages = {
     "": [st.Page("views/0_Home.py", title="Home", icon="🏠", default=True)],
+    # The two pages most visitors come for, first so they never hide under "View more"
+    "Your members": [
+        st.Page("views/2_Member_Explorer.py", title="Members", icon="👤"),
+        st.Page("views/16_States.py", title="States", icon="🗺️"),
+    ],
     "Findings": [
         st.Page("views/7_Position_Flips.py", title="Position Flips", icon="🔄"),
         st.Page("views/11_Platform_Votes.py", title="Platform Votes", icon="📜"),
@@ -48,8 +53,6 @@ pages = {
     "Explore": [
         st.Page("views/10_All_Votes.py", title="All Votes", icon="🔎"),
         st.Page("views/15_Lobbying.py", title="Lobbying Reports", icon="💼"),
-        st.Page("views/2_Member_Explorer.py", title="Members", icon="👤"),
-        st.Page("views/16_States.py", title="States", icon="🗺️"),
         st.Page("views/6_Compare.py", title="Compare Members", icon="⚖️"),
         st.Page("views/1_Overview.py", title="Overview", icon="📊"),
     ],

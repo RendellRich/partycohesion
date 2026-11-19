@@ -64,7 +64,11 @@ st.markdown(f'<div class="pc-state-head">{outline}<div class="pc-body">{escape(r
             f'{escape(row["mix"])}.' + (f'<br><span class="pc-muted">{escape(" ".join(summary))}</span>' if summary else "")
             + "</div></div>", unsafe_allow_html=True)
 
-# Find your own members: by ZIP code (for visitors who don't know who represents them) or by name
+# Find your own members: by ZIP code (for visitors who don't know who represents them) or by name. A ZIP code
+# entered on Home arrives as ?zip=; it fills the box once and leaves the address, so a shared link carries no ZIP code.
+if "zip" in st.query_params:
+    st.session_state["st_zip"] = find_members.clean_zip(st.query_params["zip"]) or ""
+    del st.query_params["zip"]
 c1, c2 = st.columns(2)
 zip_text = c1.text_input("Your ZIP code", placeholder="5 digits",
                          key="st_zip", help="Shows only your two senators and your House member.")

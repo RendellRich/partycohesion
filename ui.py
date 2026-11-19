@@ -34,6 +34,8 @@ FONTS = ("https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0
 SERIF = "'Source Serif 4', Georgia, serif"
 SANS = "'Public Sans', 'Segoe UI', system-ui, sans-serif"
 
+# After editing CSS, run python scripts/build_css.py: it copies these styles to static/pc.css, which loads in the
+# page head so the site is styled from the first paint (tests/test_css_file.py checks the copy is current).
 CSS = f"""
 <style>
 @import url('{FONTS}');
