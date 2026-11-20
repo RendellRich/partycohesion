@@ -373,12 +373,30 @@ def display_name(name: str) -> str:
 SITE = "https://partycohesion.streamlit.app"
 
 
+SHARE = "https://rendellrich.github.io/partycohesion/s"
+
+
+def share_url(path: str = "", params: dict | None = None) -> str:
+    """The link to share: a small page on GitHub Pages (built by scripts/build_share_pages.py) that carries this view's
+    title and image for link previews and sends visitors on to the app. Streamlit Cloud's own page head shows only
+    "Streamlit" in a Facebook or LinkedIn preview. Extra query parameters are passed through to the app."""
+    from urllib.parse import urlencode
+    rest = dict(params or {})
+    if path == "States" and "state" in rest:
+        base = f"{SHARE}/state/{rest.pop('state')}/"
+    elif path == "Member_Explorer" and "member" in rest:
+        base = f"{SHARE}/member/{rest.pop('member')}/"
+    else:
+        base = f"{SHARE}/{path}/" if path else f"{SHARE}/"
+    return base + (f"?{urlencode(rest)}" if rest else "")
+
+
 def share_bar(text: str, path: str = "", params: dict | None = None) -> None:
     """Share links for LinkedIn, X, Facebook, Reddit, email and Instagram (through the share cards), plus the page
     link to copy. path is the page's URL path
     (e.g. "Members"); params are query parameters that open the same view (e.g. a member's profile)."""
-    from urllib.parse import quote, urlencode
-    url = f"{SITE}/{path}".rstrip("/") + (f"?{urlencode(params)}" if params else "")
+    from urllib.parse import quote
+    url = share_url(path, params)
     u, t = quote(url, safe=""), quote(text, safe="")
     links = [("LinkedIn", f"https://www.linkedin.com/sharing/share-offsite/?url={u}"),
              ("X", f"https://twitter.com/intent/tweet?text={t}&url={u}"),

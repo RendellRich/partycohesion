@@ -55,9 +55,10 @@ def test_share_bar_has_linkedin_and_member_link():
 
     at = AppTest.from_function(page).run()
     links = " ".join(m.value for m in at.markdown)
-    assert "linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fpartycohesion.streamlit.app%2FMember_Explorer%3Fmember%3DG000579" in links
+    assert ("linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Frendellrich.github.io%2Fpartycohesion%2Fs%2Fmember"
+            "%2FG000579%2F") in links
     assert links.index("LinkedIn") < links.index(">X<")
-    assert at.code[0].value == "https://partycohesion.streamlit.app/Member_Explorer?member=G000579"
+    assert at.code[0].value == "https://rendellrich.github.io/partycohesion/s/member/G000579/"
 
 
 def test_bill_label():
@@ -84,3 +85,18 @@ def test_in_bar_labels_meet_contrast():
         ink = label_ink(fill)
         hi, lo = sorted([_luminance(fill), _luminance(ink)], reverse=True)
         assert (hi + 0.05) / (lo + 0.05) >= 4.5, fill
+
+
+def test_share_links_point_to_preview_pages_that_exist():
+    from pathlib import Path
+    from ui import SHARE, share_url
+    root = Path(__file__).resolve().parent.parent / "docs" / "s"
+    cases = [(("States", {"state": "TX"}), "state/TX/"), (("Member_Explorer", {"member": "C001098"}), "member/C001098/"),
+             (("Position_Flips", None), "Position_Flips/"), (("", None), "")]
+    for (path, params), rel in cases:
+        url = share_url(path, params)
+        assert url == f"{SHARE}/{rel}" and (root / rel / "index.html").exists(), url
+    assert share_url("Same_State_Different_Vote", {"state": "TX"}).endswith("/Same_State_Different_Vote/?state=TX")
+    page = (root / "member" / "C001098" / "index.html").read_text()
+    assert 'og:title" content="Ted Cruz (R-TX): voting record"' in page
+    assert "Member_Explorer?member=C001098" in page
