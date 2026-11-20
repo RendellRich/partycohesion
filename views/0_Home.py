@@ -61,9 +61,9 @@ if zip_text.strip():
     z = find_members.clean_zip(zip_text)
     res = find_members.lookup_zip(z, seats, zips) if z else {"found": False}
     if not z:
-        st.markdown('<p role="alert">Enter a 5-digit ZIP code, like 34219.</p>', unsafe_allow_html=True)
+        c_zip.markdown('<p role="alert">Enter a 5-digit ZIP code, like 34219.</p>', unsafe_allow_html=True)
     elif not res["found"]:
-        st.markdown('<p role="alert">That ZIP code isn\'t in the Census Bureau\'s ZIP list. Pick your state on the map '
+        c_zip.markdown('<p role="alert">That ZIP code isn\'t in the Census Bureau\'s ZIP list. Pick your state on the map '
                     f'below, or use the House\'s <a href="{find_members.OFFICIAL_LOOKUP}" target="_blank" '
                     'rel="noopener">official lookup</a>.</p>', unsafe_allow_html=True)
     else:

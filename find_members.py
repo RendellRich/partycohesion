@@ -57,5 +57,14 @@ def state_members(state: str, seats: pd.DataFrame) -> tuple[pd.DataFrame, pd.Dat
     return s[s["chamber"] == "Senate"], s[s["chamber"] == "House"].sort_values("district")
 
 
+def vacant_districts(state: str, seats: pd.DataFrame, zips: pd.DataFrame, today: date | None = None) -> list[int]:
+    """House districts with no sitting member (a death or resignation before a special election). The ZIP file lists
+    every district under the current lines, so a district in it with no seat holder is vacant."""
+    if (today or date.today()) >= VALID_UNTIL:
+        return []
+    held = set(seats[(seats["state_abbrev"] == state) & (seats["chamber"] == "House")]["district"])
+    return sorted(int(d) for d in set(zips[zips["state_abbrev"] == state]["district"]) - held)
+
+
 def district_label(state: str, district: int) -> str:
     return f"{state} at-large" if int(district) == 0 else f"{state}-{int(district)}"
