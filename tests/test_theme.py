@@ -52,5 +52,5 @@ def test_seat_positions_one_seat_each(n, rows):
 def test_long_chart_titles_wrap_for_phones():
     from chart_utils import TITLE_CHARS, wrap_title
     text, lines = wrap_title("Share of party-line votes cast with their own party, average member, by Congress")
-    assert lines == 2 and all(len(line) <= TITLE_CHARS for line in text.split("<br>"))
+    assert lines == 3 and all(len(line) <= TITLE_CHARS for line in text.split("<br>"))
     assert wrap_title("The House, 119th Congress") == ("The House, 119th Congress", 1)

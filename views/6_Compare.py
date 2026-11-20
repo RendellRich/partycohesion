@@ -14,7 +14,7 @@ from chart_utils import PAIR_COLORS, ordinal, show_chart
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import platform_record
 from theme import to_mode
-from ui import explainer, STATES, card, display_name, fmt_date, html_table, inject_css, intro, last_name, metric_card, party_tag, pattern_badge
+from ui import notice, explainer, STATES, card, display_name, fmt_date, html_table, inject_css, intro, last_name, metric_card, party_tag, pattern_badge
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 MATRIX_DIR = DATA_DIR / "matrices"
@@ -82,7 +82,7 @@ def member_card(rows: pd.DataFrame, color: str, newest: int) -> None:
              + (" · data starts in 2007" if first_c == int(members["congress"].min()) else ""))
     scored = rows.dropna(subset=["party_unity_pct"])
     if scored.empty:
-        label, value, note = "Party unity", "None", "No party-line votes scored"
+        label, value, note = "Party unity", "Not scored", "No party-line votes yet"
     else:
         u = scored.iloc[-1]
         label = f"Party unity, {ordinal(u['congress'])} Congress"
@@ -122,7 +122,7 @@ with c2:
     b_label = st.selectbox("Second member", list(options), index=None, placeholder="Type a name…", key="cmp_b")
 
 if not a_label or not b_label:
-    st.info("Choose two members to compare. Start typing a last name to search.")
+    notice("Choose two members to compare. Start typing a last name to search.")
     st.stop()
 if a_label == b_label:
     st.warning("Pick two different members.")
@@ -165,9 +165,9 @@ for cong, cham in shared.itertuples(index=False):
                                                      tot_unity + int(u_both.sum()), tot_unity_same + u_same)
     per_congress.append({
         "Congress": ordinal(cong), "Chamber": cham, "Votes both cast": int(both.sum()),
-        "Voted the same way": f"{same / both.sum() * 100:.1f}%" if both.any() else "None",
+        "Voted the same way": f"{same / both.sum() * 100:.1f}%" if both.any() else "No shared votes",
         "Party-line votes both cast": int(u_both.sum()),
-        "Same way on party-line votes": f"{u_same / u_both.sum() * 100:.1f}%" if u_both.any() else "None",
+        "Same way on party-line votes": f"{u_same / u_both.sum() * 100:.1f}%" if u_both.any() else "No shared votes",
     })
     kv = key_votes[(key_votes["congress"] == cong) & (key_votes["chamber"] == cham)].drop_duplicates("rollnumber")
     col = {r: i for i, r in enumerate(rolls)}
@@ -190,12 +190,12 @@ if tot_both:
              f"together in {n_cong} Congress{'es' if n_cong != 1 else ''}.")
     with g2:
         metric_card("Same way on party-line votes",
-                    f"{tot_unity_same / tot_unity * 100:.1f}%" if tot_unity else "None",
+                    f"{tot_unity_same / tot_unity * 100:.1f}%" if tot_unity else "No shared votes",
                     f"{tot_unity:,} party-line votes both cast")
         st.write("")
         metric_card("Key votes where they split", str(len(splits)), "Listed below" if splits else "None in this data")
 else:
-    st.info(f"{a_name} and {b_name} never served in the same chamber during the same Congress in this data, so their "
+    notice(f"{a_name} and {b_name} never served in the same chamber during the same Congress in this data, so their "
             "individual votes can't be compared. Their party unity is shown below.")
 
 # ---------------------------------------------------------------------------
@@ -221,7 +221,7 @@ if a_cast or b_cast:
     st.markdown("On topics where the Democratic and Republican platforms take opposite positions, how often each member "
                 "voted against their own party's platform. Counted votes only, each topic once.")
     html_table(["Member", "Topics against their party's platform", "Topics voted on"],
-               [[nm, str(ag) if c else "None", str(c)] for nm, ag, c in ((a_name, a_against, a_cast),
+               [[nm, str(ag) if c else "No votes", str(c)] for nm, ag, c in ((a_name, a_against, a_cast),
                                                                           (b_name, b_against, b_cast))],
                muted_cols=(2,))
     both = a_plat[a_plat["counts"]].merge(b_plat[b_plat["counts"]], on=["congress", "chamber", "rollnumber"],

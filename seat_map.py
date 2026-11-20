@@ -55,8 +55,13 @@ def seat_map(members: pd.DataFrame, chamber: str, highlight=None, highlight_name
             marker=dict(size=size + 8, color=PARTY_COLORS.get(me["party"], MUTED), line=dict(color=ACCENT, width=3)),
             customdata=[[me["label"], unity, ""]],
             hovertemplate="<b>%{customdata[0]}</b><br>Votes with own party: %{customdata[1]}<extra></extra>"))
+        # Outward from the seat, except near either end of the arc, where outward runs off the chart's side: there
+        # the label goes up and toward the middle, anchored on its outer edge
+        c, s_ = math.cos(me["angle"]), math.sin(me["angle"])
+        edge = abs(c) > 0.6
         fig.add_annotation(x=me["x"], y=me["y"], text=f"<b>{highlight_name}</b>", showarrow=True, arrowhead=0,
-                           arrowcolor=ACCENT, arrowwidth=2, ax=60 * math.cos(me["angle"]), ay=-60 * math.sin(me["angle"]),
+                           arrowcolor=ACCENT, arrowwidth=2, ax=(10 if edge else 60) * c, ay=-60 * s_ - (45 if edge else 0),
+                           xanchor="right" if c > 0.6 else "left" if c < -0.6 else "center",
                            font=dict(size=14, color=ACCENT), bgcolor=BG, borderpad=3)
         top = 1.2
     fig.add_annotation(x=0, y=0.1, text=f"<b>{len(m)}</b>", showarrow=False, font=dict(size=38), yanchor="bottom")

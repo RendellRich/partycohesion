@@ -11,7 +11,7 @@ from theme import FONT, text_on, to_mode
 import streamlit as st
 
 from chart_utils import ACCENT, BG, PATTERN_COLORS, show_chart
-from ui import html_table, inject_css, shortcuts
+from ui import notice, html_table, inject_css, shortcuts
 from flip_utils import MIN_VOTES_EACH_SIDE, add_chamber_control, comparison_groups, flip_scores
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -90,7 +90,7 @@ else:
     icpsr = int(match["icpsr"].iloc[0]) if len(match) else None
 
 if icpsr is None:
-    st.info("Pick a member to see their numbers.")
+    notice("Pick a member to see their numbers.")
     st.stop()
 
 person = latest[latest["icpsr"] == icpsr].iloc[0]
@@ -102,7 +102,7 @@ mine = mine.merge(votes[["category", "congress", "chamber", "rollnumber", "date"
                          "label", "friendly_vote", "position_source"]],
                   on=["category", "congress", "chamber", "rollnumber"])
 if mine.empty:
-    st.info(f"{short} did not cast a Yea or Nay on any {category.lower()} vote in this data. Try another type of vote.")
+    notice(f"{short} did not cast a Yea or Nay on any {category.lower()} vote in this data. Try another type of vote.")
     st.stop()
 
 # ---------------------------------------------------------------------------
@@ -180,11 +180,11 @@ st.markdown(
 groups = comparison_groups(scored_votes).sort_values(["compared", "category", "own_chamber"], ascending=[False, True, False])
 rows = []
 for g in groups.itertuples():
-    own = f"{g.friendly_own} of {g.n_own} ({g.rate_own:.0f}%)" if g.n_own else "None"
-    other = f"{g.friendly_other} of {g.n_other} ({g.rate_other:.0f}%)" if g.n_other else "None"
+    own = f"{g.friendly_own} of {g.n_own} ({g.rate_own:.0f}%)" if g.n_own else "No votes"
+    other = f"{g.friendly_other} of {g.n_other} ({g.rate_other:.0f}%)" if g.n_other else "No votes"
     rows.append([g.category, "Yes" if g.own_chamber == 1 else "No", own, other,
                  f"{g.difference:+.0f}" if g.compared else "Not compared",
-                 f"{g.weight:.1f}" if g.compared else "None"])
+                 f"{g.weight:.1f}" if g.compared else "Not compared"])
 html_table(["Type of vote", "Their party ran the chamber", "Own party's president", "Other party's president",
             "Difference", "Weight"], rows, muted_cols=(2, 3))
 st.caption("Weight = own × other ÷ (own + other), using each side's number of votes. A group counts more when it has "

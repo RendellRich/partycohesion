@@ -8,7 +8,7 @@ import plotly.express as px
 import streamlit as st
 
 from chart_utils import PARTY_COLORS, chamber_label, ordinal, show_chart
-from ui import explainer, inject_css, intro, metric_row, vote_card
+from ui import notice, explainer, inject_css, intro, metric_row, vote_card
 from vote_index import voteview_url
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -71,7 +71,7 @@ if chamber != "Both":
 
 series_names = [s for s in SERIES_ORDER if s in set(kv["series"])] + sorted(set(kv["series"]) - set(SERIES_ORDER))
 if not series_names:
-    st.info("No key votes in this selection.")
+    notice("No key votes in this selection.")
 else:
     counts = kv["series"].value_counts()
     tabs = st.tabs([f"{n} ({counts[n]})" for n in series_names])

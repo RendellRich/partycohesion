@@ -62,7 +62,7 @@ def test_compare_never_served_together():
         box = at.selectbox(key=key)
         box.set_value(option(box, name)).run()
     assert not at.exception
-    assert any("never served" in i.value for i in at.info)
+    assert any("never served" in i.value for i in at.markdown)
 
 
 def test_key_votes_every_tab_has_a_vote_card():
@@ -105,7 +105,7 @@ def test_all_votes_search_and_card():
     text = html(at)
     assert '<div class="pc-bars">' in text and "voteview.com/rollcall/" in text
     at.text_input(key="av_q").set_value("no such words anywhere zzz").run()
-    assert any("No votes match" in i.value for i in at.info)
+    assert any("No votes match" in i.value for i in at.markdown)
 
 
 def test_member_voting_record():
@@ -167,7 +167,7 @@ def test_all_votes_platform_column():
     found = at.dataframe[0].value
     links = pd.read_csv(ROOT / "data" / "platform_votes.csv", comment="#")
     assert len(found) == len(links) and (found["Platform Topic"] != "").all()
-    assert any("On Platform Votes:" in i.value for i in at.info)  # the picked vote explains its platform link
+    assert any("On Platform Votes:" in i.value for i in at.markdown)  # the picked vote explains its platform link
     at.toggle(key="av_plat").set_value(False).run()
     at.text_input(key="av_q").set_value("H.R. 3762").run()
     found = at.dataframe[0].value
@@ -361,7 +361,7 @@ def test_position_flips_says_who_is_left_out():
 def test_lobbying_page_waits_for_data(monkeypatch, tmp_path):
     monkeypatch.setenv("LOBBYING_DATA", str(tmp_path / "missing"))
     at = open_page("views/15_Lobbying.py")
-    assert any("still being downloaded" in i.value for i in at.info)
+    assert any("still being downloaded" in i.value for i in at.markdown)
 
 
 def test_lobbying_page_with_data(monkeypatch):

@@ -17,7 +17,7 @@ from state_map import DELEGATE_PLACES
 from state_splits import MIN_SHARED, load_all, member_summary
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import platform_record
-from ui import (bill_label, page_title, party_adj, explainer, display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row,
+from ui import (notice, bill_label, page_title, party_adj, explainer, display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row,
                 party_tag, pattern_badge, share_bar, STATES)
 from vote_index import load_votes, member_record, search_votes, voteview_url
 import floor_remarks
@@ -281,7 +281,7 @@ if pick:
     # Headline metrics
     scored = rows.dropna(subset=["party_unity_pct"])
     if scored.empty:
-        unity = ("Party unity", "None", "No party-line votes scored")
+        unity = ("Party unity", "Not scored", "No party-line votes yet")
     else:
         latest_u = scored.iloc[-1]
         full = scored[scored["unity_votes_cast"] >= SMALL_SAMPLE]
@@ -322,7 +322,7 @@ if pick:
     chambers = " and ".join(sorted(rows["chamber"].unique()))
     plat_rows, plat_cast, plat_against = platform_record(icpsr)
     platform = (("Against party platform", f"{plat_against} of {plat_cast}", "Platform Votes topics")
-                if plat_cast else ("Against party platform", "None", "No counted Platform Votes"))
+                if plat_cast else ("Against party platform", "No votes", "No counted Platform Votes"))
     delegate = member["chamber"] == "House" and member["state_abbrev"] in DELEGATE_PLACES
     first_cong = int(rows["congress"].min())
     since = 2 * first_cong + 1787
@@ -332,7 +332,7 @@ if pick:
     n_cong = rows["congress"].nunique()
     metric_row([
         unity, flip, platform,
-        ("Ideology score", f"{ideo:.2f}" if pd.notna(ideo) else "None", "−1 liberal to +1 conservative"),
+        ("Ideology score", f"{ideo:.2f}" if pd.notna(ideo) else "Not scored", "−1 liberal to +1 conservative"),
         ("In this data since", str(since),
          f"{n_cong} Congress{'es' if n_cong > 1 else ''}, {chambers}"
          + (" (data starts in 2007)" if first_cong == int(df["congress"].min()) else "")
@@ -371,9 +371,9 @@ if pick:
     st.markdown("How often this member gave the president room on the same kinds of votes, under their own party's "
                 "presidents and under the other party's.")
     def flip_row(name: str, r: pd.Series, alone: bool) -> list[str]:
-        own = f"{r['rate_own']:.0f}% of {int(r['n_own'])}" if r["n_own"] else "None"
-        other = f"{r['rate_other']:.0f}% of {int(r['n_other'])}" if r["n_other"] else "None"
-        shift = f"{r['shift']:+.0f}" if pd.notna(r["shift"]) else "None"
+        own = f"{r['rate_own']:.0f}% of {int(r['n_own'])}" if r["n_own"] else "No votes"
+        other = f"{r['rate_other']:.0f}% of {int(r['n_other'])}" if r["n_other"] else "No votes"
+        shift = f"{r['shift']:+.0f}" if pd.notna(r["shift"]) else "Too few to compare"
         # One type of vote on its own often has too few matched votes even when all four together have enough
         pattern = ('<span style="color:var(--pc-muted)">Too few to tell on its own</span>'
                    if alone and r["label"] == "Not enough votes" else pattern_badge(r["label"]))
@@ -536,7 +536,7 @@ if pick:
                         color_discrete_sequence=[ACCENT, MUTED])
         names = {"party_unity_pct": short, "party_avg": f"{party_adj(compare_party)} average, same chamber"}
         fig_h.for_each_trace(lambda t: t.update(name=names.get(t.name, t.name)))
-        fig_h.update_layout(height=360, xaxis=dict(dtick=1), legend=dict(orientation="h", y=-0.25, x=0))
+        fig_h.update_layout(height=380, xaxis=dict(dtick=1), margin=dict(l=10, r=10, b=10))
         show_chart(fig_h, f"Party unity across Congresses: {display_name(member['name'])}",
                    f"party_unity_history_{short.lower().replace(' ', '_')}")
 
@@ -610,7 +610,7 @@ if pick:
             view = view[view["against_party"]]
         view = view.head(1000)
         remarks = floor_remarks.attach(view, bioguide, load_floor_remarks()) if bioguide else None
-        majority = view["party_position"].replace({"Tie": "Split evenly", "None": "None"})
+        majority = view["party_position"].replace({"Tie": "Split evenly", "None": "No majority"})
         names = [(f"{bill_label(b)}: " if isinstance(b, str) and b and not b.startswith("PN")
                   and not str(lab).startswith(b) else "") + str(lab) for b, lab in zip(view["bill_number"], view["label"])]
         if narrow():
@@ -623,7 +623,8 @@ if pick:
                 link = remarks.iloc[i] if remarks is not None and isinstance(remarks.iloc[i], str) else ""
                 rows_html.append([escape(names[i]), fmt_date(x.date), escape(str(x.their_vote)),
                                   escape(str(majority.iloc[i])), escape(str(x.vote_result)),
-                                  f'<a href="{escape(link)}" target="_blank" rel="noopener">Read</a>' if link else "None"])
+                                  f'<a href="{escape(link)}" target="_blank" rel="noopener">Read</a>' if link
+                                  else '<span class="pc-muted">None found</span>'])
             html_table(["Vote", "Date", "Their vote", f"{party_adj(side)} majority", "Result", "Their remarks"], rows_html,
                        raw_cols=(0, 2, 3, 4, 5), muted_cols=(1,), label=f"{short}'s voting record", stack=True,
                        wide_cols=(0,))
@@ -669,7 +670,7 @@ if pick:
 else:
     if "member" in st.query_params:
         del st.query_params["member"]
-    st.info("Start typing a last name to see a member's profile, or browse everyone below.")
+    notice("Start typing a last name to see a member's profile, or browse everyone below.")
     share_bar("Look up how any member of Congress votes, on PartyCohesion", "Member_Explorer")
 
 # ---------------------------------------------------------------------------
@@ -705,13 +706,15 @@ with st.expander("Browse all members in a Congress", expanded=not pick):
         filtered = filtered[filtered["camp_n"].notna()]
     st.caption(f"{len(filtered)} members")
     st.dataframe(
-        filtered[["name", "chamber", "state_abbrev", "party", "party_unity_pct", "unity_votes_cast", "missed",
+        # Sorted by last name, shown first name first like the rest of the site
+        filtered.sort_values("name").assign(name=lambda f: f["name"].map(display_name))[
+                 ["name", "chamber", "state_abbrev", "party", "party_unity_pct", "unity_votes_cast", "missed",
                   "missed_pct", "camp_n", "camp_diff", "nominate_dim1", "cohesion_proxy"]].rename(columns={
             "name": "Name", "chamber": "Chamber", "state_abbrev": "State", "party": "Party",
             "party_unity_pct": "Party Unity %", "unity_votes_cast": "Party-Line Votes Cast",
             "missed": "Missed Votes", "missed_pct": "Missed %", "camp_n": "Campaign Statements",
             "camp_diff": "Voted Differently",
-            "nominate_dim1": "Ideology Score", "cohesion_proxy": "Cohesion Proxy"}).sort_values("Name"),
+            "nominate_dim1": "Ideology Score", "cohesion_proxy": "Cohesion Proxy"}),
         width="stretch", height=420, hide_index=True,
     )
 

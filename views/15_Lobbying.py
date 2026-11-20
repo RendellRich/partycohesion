@@ -8,7 +8,7 @@ import streamlit as st
 from chart_utils import ordinal, show_chart
 from lobbying import CANT_SAY, bill_counts, bill_titles, congresses as lobbied_congresses, load, period_label, summary_line
 from theme import tokens
-from ui import bill_label, explainer, inject_css, intro, metric_row
+from ui import notice, bill_label, explainer, inject_css, intro, metric_row
 from vote_index import load_votes, voteview_url
 
 inject_css()
@@ -22,7 +22,7 @@ intro("Every quarter, lobbyists file a public report with Congress listing the i
 explainer(CANT_SAY)
 
 if not congresses:
-    st.info("The lobbying reports are still being downloaded and matched to bills. This page fills in once that's "
+    notice("The lobbying reports are still being downloaded and matched to bills. This page fills in once that's "
             "done.")
     st.stop()
 
@@ -59,7 +59,7 @@ metric_row([
 ])
 
 if counts.empty:
-    st.info("No bills match. Clear the search or turn off \"Only bills with a vote on this site\".")
+    notice("No bills match. Clear the search or turn off \"Only bills with a vote on this site\".")
     st.stop()
 
 st.dataframe(pd.DataFrame({

@@ -5,7 +5,7 @@ import plotly.express as px
 import streamlit as st
 from pathlib import Path
 from chart_utils import show_chart, ordinal, PARTY_COLORS, MUTED, ACCENT
-from ui import explainer, shortcuts
+from ui import notice, display_name, explainer, shortcuts
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 NOISE = 0.10  # per-Congress scores move this much from noise alone; smaller changes aren't flagged
@@ -94,7 +94,7 @@ if current_only:
     view = view[view["last"] == newest]
 
 if view.empty:
-    st.info("No members match these filters.")
+    notice("No members match these filters.")
     st.stop()
 
 c1, c2, c3 = st.columns(3)
@@ -118,7 +118,7 @@ st.caption("Points on the dotted line moved exactly as much as their party. Abov
 
 table = view.reindex(view["vs_party"].abs().sort_values(ascending=False).index)
 st.dataframe(pd.DataFrame({
-    "Name": table["name"], "Party-State": table["party"].str[0] + "-" + table["state"], "Chamber": table["chamber"],
+    "Name": table["name"].map(display_name), "Party-State": table["party"].str[0] + "-" + table["state"], "Chamber": table["chamber"],
     "Congresses": [f"{ordinal(a)}–{ordinal(b)}" for a, b in zip(table["first"], table["last"])],
     "Start": table["start"].round(2), "Latest": table["end"].round(2), "Own change": table["own_change"].round(2),
     "Party change": table["party_change"].round(2), "Change vs. party": table["vs_party"].round(2),
