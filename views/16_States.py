@@ -75,12 +75,18 @@ st.markdown(f'<div class="pc-state-head">{outline}<div class="pc-body">{escape(r
 
 # Find your own members: by ZIP code (for visitors who don't know who represents them) or by name. A ZIP code
 # entered on Home arrives as ?zip=; it fills the box once and leaves the address, so a shared link carries no ZIP code.
+# The ZIP code is the box's starting value under a fresh key, not a value pushed into the box's state: on phones the
+# page reruns once it learns the screen width, and a pushed value was lost from the box on that rerun (the list was
+# filtered, the box looked empty).
 if "zip" in st.query_params:
-    st.session_state["st_zip"] = find_members.clean_zip(st.query_params["zip"]) or ""
+    st.session_state["st_zip_seed"] = find_members.clean_zip(st.query_params["zip"]) or ""
+    st.session_state["st_zip_ver"] = st.session_state.get("st_zip_ver", 0) + 1
     del st.query_params["zip"]
+ver = st.session_state.get("st_zip_ver", 0)
 c1, c2 = st.columns(2)
-zip_text = c1.text_input("Your ZIP code", placeholder="5 digits",
-                         key="st_zip", help="Shows only your two senators and your House member.")
+zip_text = c1.text_input("Your ZIP code", value=st.session_state.get("st_zip_seed", "") if ver else "",
+                         placeholder="5 digits", key="st_zip" if not ver else f"st_zip_{ver}",
+                         help="Shows only your two senators and your House member.")
 query = c2.text_input("Or search by name", placeholder="e.g. Scott", key="st_query")
 
 shown = delegation
@@ -120,8 +126,8 @@ if zip_text.strip():
 if query.strip():
     shown = shown[shown["name"].str.contains(query.strip(), case=False, regex=False)]
     shown_vacant = []
-if mine_note:
-    st.markdown(f'<p role="status">{escape(mine_note)} Clear the ZIP code to see everyone from {escape(name)}.</p>',
+if mine_note:  # under the ZIP field it's about (the two fields stack on a phone)
+    c1.markdown(f'<p role="status">{escape(mine_note)} Clear the ZIP code to see everyone from {escape(name)}.</p>',
                 unsafe_allow_html=True)
 
 

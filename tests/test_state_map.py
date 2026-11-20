@@ -162,3 +162,17 @@ def test_a_vacant_seat_shows_on_the_state_page_and_for_its_zip_codes():
     at.text_input(key="st_zip").set_value(whole["zip"].iloc[0]).run()
     text = " ".join(m.value for m in at.markdown)
     assert f"Your House seat, {label}, is vacant" in text and "Seat vacant" in text
+
+
+def test_a_zip_code_from_a_link_shows_in_the_box():
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=120)
+    at.run()
+    at.switch_page("views/16_States.py")
+    at.query_params["state"] = "TX"
+    at.query_params["zip"] = "78701"
+    at.run()
+    at.session_state["pc_narrow"] = True  # the rerun a phone causes once it reports its width
+    at.run()
+    box = [t for t in at.text_input if t.label == "Your ZIP code"][0]
+    assert box.value == "78701" and "zip" not in at.query_params
+    assert any("Your members for ZIP code 78701" in m.value for m in at.columns[0].markdown)
