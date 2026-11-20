@@ -123,6 +123,17 @@ def member_cell(r) -> str:
     return f'{label} <span class="pc-muted">(not in the voting data yet)</span>'
 
 
+# What's typical, so a visitor can tell whether their member's numbers are usual: medians across every current
+# member of that chamber (delegates left out, since they vote on only some roll calls)
+nation = seats[~seats["state_abbrev"].isin(DELEGATE_PLACES)].join(records, on="bioguide_id")
+
+
+def typical(chamber: str, who: str) -> str:
+    peers = nation[nation["chamber"] == chamber]
+    unity, missed = peers["party_unity_pct"].median(), peers["missed_pct"].median()
+    return f"Typical {who}: party unity {unity:.1f}%, missed votes {missed:.1f}%."
+
+
 def member_table(group: pd.DataFrame, label: str) -> None:
     rows = [[member_cell(r), seat(r), party_tag(r.party),
              f"{r.party_unity_pct:.1f}%" if pd.notna(r.party_unity_pct) else "None",
@@ -139,16 +150,20 @@ if shown.empty:
     if zip_text.strip() or query.strip():
         st.info("No members match. Try part of a last name, or clear the search.")
 else:
+    st.markdown('<p class="pc-muted">Party unity is the share of party-line votes where a member voted with their own '
+                "party. Missed votes is the share of roll calls they didn't vote on. Position Flips shows whether their "
+                "votes on the same kinds of questions changed when the White House changed parties. Tap or click a "
+                "name for the full record.</p>", unsafe_allow_html=True)
     if len(senators):
         st.header("Senators")
+        st.caption(typical("Senate", "senator"))
         member_table(senators, f"Senators from {name}")
     if len(house):
         st.header("Delegate" if place and state != "PR" else "Resident Commissioner" if place else "House, by district")
+        st.caption(typical("House", "House member") + (" Delegates can vote only on some House roll calls, so their "
+                                                         "missed votes count only those." if place else ""))
         member_table(house, f"House members from {name}")
-    st.caption("Party unity and missed votes are from each member's latest Congress in the data. Position Flips "
-               "compares the same kinds of votes under presidents of both parties. Tap or click a name for the full "
-               "record." + (" Delegates can vote only on some House roll calls, so their missed votes count only "
-                            "those." if place else ""))
+    st.caption("Numbers are from each member's latest Congress in the data.")
 
 if not place:
     house_link = (f', and its <a href="Same_State_Different_Vote?state={state}&chamber=house" target="_self">House '

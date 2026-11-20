@@ -429,3 +429,24 @@ def test_member_page_shows_recent_votes_first():
     assert heads[0] == "Recent votes" and "Voting record" in heads
     text = html(at)
     assert "five most recent votes" in text and 'href="#voting-record"' in text
+
+
+def test_member_who_left_office_is_not_shown_as_serving_now():
+    at = open_member("G000551")  # Raúl Grijalva, left office in 2025
+    text = html(at)
+    assert "2007 to 2025" in text and "to now" not in text and "so far" not in text
+    assert "Last votes before leaving office" in [h.value for h in at.header]
+
+
+def test_numbers_come_with_typical_values():
+    at = open_member("C001098")
+    text = html(at)
+    assert "typical Republican senator" in text
+    assert "All types together" in text and "The first two columns" not in " ".join(c.value for c in at.caption)
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=120)
+    at.run()
+    at.switch_page("views/16_States.py")
+    at.query_params["state"] = "TX"
+    at.run()
+    caps = " ".join(c.value for c in at.caption)
+    assert "Typical senator: party unity" in caps and "Typical House member: party unity" in caps

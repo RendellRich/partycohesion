@@ -203,9 +203,16 @@ if pick:
     bioguide = bioguide_of.get(icpsr, "")
     if bioguide:
         st.query_params["member"] = bioguide
+    # A member who left office partway through the newest Congress (death, resignation, a new office) is not "now"
+    details = load_details()
+    left = None
+    if int(rows["congress"].max()) == newest and bioguide in details.index:
+        d = details.loc[bioguide]
+        if not d["in_office"] and str(d["last_year"]).isdigit():
+            left = int(d["last_year"])
     # The member's name is the page title, so a shared link opens straight onto them
     member_header(member["name"], member["party"], member["state_abbrev"], member["chamber"],
-                  rows["congress"].min(), rows["congress"].max(), newest, as_title=True)
+                  rows["congress"].min(), rows["congress"].max(), newest, as_title=True, left=left)
     caucus = member.get("caucus")
     if member["party"] not in ("Democrat", "Republican") and pd.notna(caucus):
         st.caption(f"Caucuses with the {caucus}s, so party unity and Position Flips compare them with {caucus}s.")
@@ -219,13 +226,19 @@ if pick:
         cast_n = int(u["unity_votes_cast"])
         if cast_n < SMALL_SAMPLE:
             # A handful of votes can't carry a decimal place, and the reader should know the record is short
-            so_far = " so far" if int(u["congress"]) == newest else ""
+            so_far = " so far" if int(u["congress"]) == newest and not left else ""
             unity = (f"Party unity, {ordinal(u['congress'])}", f"{u['party_unity_pct']:.0f}%",
                      f"Small sample: {int(u['votes_with_party']):,} of {cast_n:,} party-line vote"
                      f"{'' if cast_n == 1 else 's'}{so_far}")
         else:
+            # Next to what's typical for their party in their chamber, so a high number reads as normal or not
+            grp = member["caucus"] if pd.notna(member.get("caucus")) else member["party"]
+            peers = df[(df["congress"] == u["congress"]) & (df["chamber"] == u["chamber"])
+                       & (df["caucus"].fillna(df["party"]) == grp)]["party_unity_pct"]
+            who = {"Senate": "senator", "House": "House member"}.get(u["chamber"], "member")
             unity = (f"Party unity, {ordinal(u['congress'])}", f"{u['party_unity_pct']:.1f}%",
-                     f"{int(u['votes_with_party']):,} of {cast_n:,} party-line votes")
+                     f"{int(u['votes_with_party']):,} of {cast_n:,} party-line votes; typical {grp} {who} "
+                     f"{peers.median():.1f}%")
     overall = flip_scores(flips[flips["icpsr"] == icpsr])
     if overall.empty:
         flip = ("Position Flips", "No votes", "No votes in these categories")
@@ -244,7 +257,6 @@ if pick:
     delegate = member["chamber"] == "House" and member["state_abbrev"] in DELEGATE_PLACES
     first_cong = int(rows["congress"].min())
     since = 2 * first_cong + 1787
-    details = load_details()
     joined = details.loc[bioguide, "first_year"] if bioguide in details.index else ""
     if str(joined).isdigit() and since < int(joined) <= since + 1:  # joined in the second year of that Congress
         since = int(joined)
@@ -263,13 +275,13 @@ if pick:
     side = caucus if pd.notna(caucus) else member["party"]
     record = member_record(icpsr, rows, load_votes())
     if not record.empty:
-        st.header("Recent votes")
+        st.header("Last votes before leaving office" if left else "Recent votes")
         latest = record.sort_values(["date", "rollnumber"], ascending=False).head(5)
         html_table(["Vote", "Date", "Their vote", f"{side} majority", "Result"],
                    [[(f"{x.bill_number}: " if isinstance(x.bill_number, str) and x.bill_number
                       and not x.label.startswith(x.bill_number) else "") + x.label, fmt_date(x.date), x.their_vote,
                      {"Tie": "Split evenly"}.get(x.party_position, x.party_position), x.vote_result]
-                    for x in latest.itertuples()], muted_cols=(1,), label=f"{short}'s five most recent votes",
+                    for x in latest.itertuples()], muted_cols=(1,), label=f"{short}'s {'last five' if left else 'five most recent'} votes",
                    stack=True, wide_cols=(0,))
         st.markdown('<a class="pc-link-target" href="#voting-record">Search every vote in their record</a>',
                     unsafe_allow_html=True)
@@ -303,21 +315,29 @@ if pick:
     st.header("Same question, different president")
     st.markdown("How often this member gave the president room on the same kinds of votes, under their own party's "
                 "presidents and under the other party's.")
-    table_rows = []
-    for cat in CATEGORIES:
-        s = flip_scores(flips[(flips["icpsr"] == icpsr) & (flips["category"] == cat)])
-        if s.empty:
-            continue
-        r = s.iloc[0]
+    def flip_row(name: str, r: pd.Series, alone: bool) -> list[str]:
         own = f"{r['rate_own']:.0f}% of {int(r['n_own'])}" if r["n_own"] else "None"
         other = f"{r['rate_other']:.0f}% of {int(r['n_other'])}" if r["n_other"] else "None"
         shift = f"{r['shift']:+.0f}" if pd.notna(r["shift"]) else "None"
-        table_rows.append([cat, own, other, shift, pattern_badge(r["label"])])
+        # One type of vote on its own often has too few matched votes even when all four together have enough
+        pattern = ('<span style="color:var(--pc-muted)">Too few to tell on its own</span>'
+                   if alone and r["label"] == "Not enough votes" else pattern_badge(r["label"]))
+        return [name, own, other, shift, pattern]
+
+    table_rows = []
+    for cat in CATEGORIES:
+        s = flip_scores(flips[(flips["icpsr"] == icpsr) & (flips["category"] == cat)])
+        if not s.empty:
+            table_rows.append(flip_row(cat, s.iloc[0], alone=True))
+    if len(table_rows) > 1 and not overall.empty:
+        table_rows.insert(0, flip_row("All types together", overall.iloc[0], alone=False))
     if table_rows:
         html_table(["Type of vote", "Own party's president", "Other party's president", "Shift", "Pattern"], table_rows,
                    raw_cols=(4,), muted_cols=(1, 2), label="Same question, different president", stack=True)
-        st.caption("The first two columns count every vote. The shift compares only matched votes: the same type of "
-                   "vote, cast when the member's party was in the same position in the chamber.")
+        st.caption("The own-party and other-party shares count every vote. The shift compares only matched votes: the "
+                   "same type of vote, cast when the member's party was in the same position in the chamber. The "
+                   "Position Flips result at the top of the page pools all the types together, so it can show a "
+                   "pattern even when each type alone has too few matched votes.")
         st.page_link("views/9_How_It_Works.py", label="How this is measured")
     else:
         st.caption("This member cast no Yea or Nay votes on debt limit, funding, disaster aid or war powers bills in this data.")
@@ -416,7 +436,7 @@ if pick:
                    f"other senator when they shared at least {MIN_SHARED['Senate']} votes. A split is a fact about "
                    "the record, not a judgment.")
         state_now = member["state_abbrev"]
-        st.markdown(f'<a href="Same_State_Different_Vote?state={state_now}&chamber={member["chamber"].lower()}" '
+        st.markdown(f'<a class="pc-link-target" href="Same_State_Different_Vote?state={state_now}&chamber={member["chamber"].lower()}" '
                     f'target="_self">See every split vote for {STATES.get(state_now, state_now)}</a>',
                     unsafe_allow_html=True)
 

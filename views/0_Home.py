@@ -40,22 +40,21 @@ stat_congress = latest - 1 if early_congress(members) else latest
 stat_members = members[members["congress"] == stat_congress]
 
 hero_panel("Do members of Congress vote the same way no matter who is president?",
-           "PartyCohesion uses the official roll-call record, every vote since 2007, to show how often each member "
-           "sides with their party, and whether their position on the same question changes when the White House "
-           "changes hands. No scorecards, no opinions: the votes and the method.")
+           "Every roll-call vote since 2007: how often each member sides with their party, and whether their "
+           "position on the same question changes when the White House changes hands. No scorecards, no opinions.")
 
-# Look up a member: the most common reason someone opens the site
+# Find your own members, the most common reason someone opens the site: by ZIP code first (most visitors don't know
+# who represents them), or by name. Side by side on wide screens, ZIP code on top on phones.
 pick_list = current.sort_values("congress").drop_duplicates("icpsr", keep="last").sort_values("name")
 pick_list = pick_list[pick_list["bioguide_id"].notna()]
 labels = {f"{display_name(r.name)} ({r.party[0]}-{r.state_abbrev}, {r.chamber})": r.bioguide_id
           for r in pick_list.itertuples()}
-who = st.selectbox("Look up your representative or senator", list(labels), index=None,
-                   placeholder="Type a name, e.g. Ocasio-Cortez or Cruz", key="home_lookup")
+c_zip, c_name = st.columns(2)
+zip_text = c_zip.text_input("Find your members by ZIP code", placeholder="5 digits", key="home_zip")
+who = c_name.selectbox("Or look up a member by name", list(labels), index=None,
+                       placeholder="e.g. Ocasio-Cortez or Cruz", key="home_lookup")
 if who:
     st.switch_page("views/2_Member_Explorer.py", query_params={"member": labels[who]})
-
-# Or by ZIP code, for visitors who don't know who represents them. The States page lists their members.
-zip_text = st.text_input("Don't know who represents you? Enter your ZIP code", placeholder="5 digits", key="home_zip")
 if zip_text.strip():
     seats, zips = find_members.load_cached()
     z = find_members.clean_zip(zip_text)

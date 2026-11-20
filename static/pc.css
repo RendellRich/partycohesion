@@ -172,3 +172,13 @@
 /* Touch screens: no chart toolbar (its 24px buttons only appear on mouse hover). Phones: less space above the title */
 @media (hover: none), (max-width: 640px) { .stApp .modebar-container { display: none !important; } }
 @media (max-width: 640px) { .stApp [data-testid="stMainBlockContainer"] { padding-top: 4rem; } }
+/* Elements with nothing to show (the style blocks and the theme listener) still took a 16px gap each, which pushed
+   every page down about 64px. Their styles still apply while hidden. */
+.stApp [data-testid="stElementContainer"]:has([data-testid="stMarkdownContainer"] > style):not(:has([data-testid="stMarkdownContainer"] > :not(style))),
+.stApp .st-key-pc_theme { display: none; }
+/* Phones: a smaller opening so the ZIP and name lookups are on the first screen */
+@media (max-width: 640px) {
+  .pc-panel { padding: 22px 20px 0 20px; border-radius: 12px; }
+  .stApp h1.pc-hero { font-size: 1.6rem; line-height: 1.2; }
+  .pc-panel .pc-intro { font-size: 0.95rem; line-height: 1.5; margin-bottom: 18px; }
+}
