@@ -428,6 +428,16 @@ def last_name(name: str) -> str:
     return str(name).split(",")[0].strip()
 
 
+PARTY_ADJ = {"Democrat": "Democratic"}
+
+
+def party_adj(party: str) -> str:
+    """The party as an adjective: "Democratic platform", "Republican majority". "Democrat" stays the noun for a member
+    ("a Democrat", the party tag); used before another noun it reads as the other side's usage, which a neutral record
+    can't have."""
+    return PARTY_ADJ.get(str(party), str(party))
+
+
 def page_title(text: str = "") -> None:
     """The browser tab title, which screen readers announce on each page change: "Ted Cruz · PartyCohesion"."""
     st.set_page_config(page_title=f"{text} · PartyCohesion" if text else "PartyCohesion")

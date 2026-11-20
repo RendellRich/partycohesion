@@ -481,3 +481,10 @@ def test_home_state_list_opens_the_state():
     at.selectbox(key="home_state").set_value("TX").run()
     assert not at.exception, [e.value for e in at.exception]
     assert at.title[0].value == "Texas"
+
+
+def test_democratic_as_the_adjective():
+    at = open_member("G000551")  # a Democrat
+    text = html(at) + " ".join(c.value for c in at.caption)
+    assert "Democratic platform" in text and "typical Democratic House member" in text
+    assert "Democrat platform" not in text and "Democrat majority" not in text and "typical Democrat " not in text
