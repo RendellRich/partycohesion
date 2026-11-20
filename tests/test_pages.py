@@ -285,7 +285,7 @@ def test_member_deep_link_details_and_share():
     assert not at.exception, [e.value for e in at.exception]
     assert at.selectbox(key="me_member").value.startswith("Brian Fitzpatrick")
     text = html(at)
-    assert "pc-person" in text and "fitzpatrick.house.gov" in text and "Committees:" in text
+    assert "pc-who" in text and "Official photo of" in text and "fitzpatrick.house.gov" in text and "Committees:" in text
     assert "campaign-money.streamlit.app/?member=F000466" in text  # funding link, a separate site
     assert any("/s/member/F000466/" in c.value for c in at.code)
 
@@ -554,3 +554,13 @@ def test_recent_votes_use_short_titles_and_skip_procedural_resolutions():
     assert "Protect College Sports Act of 2026" in recent and "S. 4668, " in recent
     delegate = open_member("R000600")
     assert any("Delegates and the Resident Commissioner" in c.value for c in delegate.caption)
+
+
+def test_member_page_top_is_short():
+    at = open_member("C001098")
+    text = html(at)
+    # The photo sits beside the party and seat line; the start year isn't repeated in a card or the facts
+    assert text.index('class="pc-who"') < text.index('class="pc-lately"')
+    assert "In this data since" not in text and "Served in Congress" not in text
+    headline = text.split('class="pc-grid')[1]  # the first card row, up to the next one
+    assert headline.count('class="pc-metric"') == 4
