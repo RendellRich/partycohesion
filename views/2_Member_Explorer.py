@@ -337,7 +337,8 @@ if pick:
         # Each title opens the roll call on Voteview: the full title, the result and every member's vote
         items = "".join(f'<li>{chip(x.their_vote)}<div><p class="pc-lately-title"><a href="'
                         f'{escape(voteview_url(x.congress, x.chamber, x.rollnumber))}" target="_blank" rel="noopener">'
-                        f'{escape(vote_name(x))}</a></p>'
+                        f'{escape(vote_name(x))}<span class="pc-sr-only"> (roll call on Voteview, opens in a new tab)'
+                        f'</span></a></p>'
                         f'<p class="pc-lately-meta">{escape(vote_meta(x))}</p></div></li>'
                         for x in shown_votes.itertuples())
         which = "last" if left else "most recent"
