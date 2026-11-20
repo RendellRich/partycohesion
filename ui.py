@@ -89,6 +89,23 @@ CSS = f"""
 .pc-table th {{ color: var(--pc-muted); font-size: 0.85rem; font-weight: 600; text-align: left; padding: 12px 16px; }}
 .pc-table td {{ padding: 12px 16px; border-top: 1px solid var(--pc-border); }}
 .pc-muted, .pc-table td.pc-muted {{ color: var(--pc-muted); }}
+/* How they voted lately: a short list with the vote word in a chip. Yea is filled, Nay is outlined, a missed vote is
+   dashed, so the mark reads without color as well as with it. */
+.pc-lately {{ list-style: none; margin: 0 0 0.5rem; padding: 0; background: var(--pc-surface);
+             border: 1px solid var(--pc-border); border-radius: 10px; }}
+.pc-lately li {{ display: flex; gap: 12px; align-items: flex-start; padding: 12px 16px; margin: 0;
+                border-top: 1px solid var(--pc-border); }}
+.pc-lately li:first-child {{ border-top: 0; }}
+.pc-vote {{ flex: 0 0 5.5rem; box-sizing: border-box; text-align: center; font-size: 0.85rem; font-weight: 700;
+           line-height: 1.3; padding: 3px 6px; border-radius: 6px; border: 2px solid var(--pc-nay); color: var(--pc-text); }}
+.pc-vote-yea {{ background: var(--pc-yea); border-color: var(--pc-yea); color: var(--pc-bg); }}
+.pc-vote-other {{ border-style: dashed; border-color: var(--pc-control); color: var(--pc-muted); font-weight: 600; }}
+.pc-lately-title {{ margin: 0; color: var(--pc-text); font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }}
+.pc-lately-meta {{ margin: 2px 0 0; font-size: 0.9rem; color: var(--pc-muted); }}
+@media (max-width: 480px) {{
+  .pc-lately li {{ flex-direction: column; gap: 6px; }}
+  .pc-vote {{ flex: none; min-width: 4.5rem; }}
+}}
 .pc-table-wrap {{ overflow-x: auto; border-radius: 10px; margin-bottom: 0.5rem; }}
 .pc-table-wrap .pc-table {{ margin-bottom: 0; }}
 .pc-table-wrap:focus-visible {{ outline: 2px solid var(--pc-accent); outline-offset: 2px; }}
@@ -327,15 +344,15 @@ def pattern_badge(label: str) -> str:
 
 def html_table(header: list[str], rows: list[list[str]], raw_cols: tuple[int, ...] = (), muted_cols: tuple[int, ...] = (),
                label: str = "Table", stack: bool = False, wide_cols: tuple[int, ...] = (),
-               nowrap_cols: tuple[int, ...] = (), limit: int | None = None) -> None:
+               nowrap_cols: tuple[int, ...] = (), limit: int | None = None, more: str | None = None) -> None:
     """Small table with design-system styling. Cells in raw_cols are trusted HTML (badges); others are escaped.
     stack shows each row as a small card on phones (first column as its title, the others as label and value pairs)
     instead of a table that scrolls sideways. In a stacked card, wide_cols (long text) sit under their label instead
-    of beside it. With limit, only the first rows show and the rest open under "Show all"."""
-    if limit and len(rows) > limit + 2:  # hiding one or two rows behind a click isn't worth it
+    of beside it. With limit, only the first rows show and the rest open under "Show N more" (or the more label)."""
+    if limit and len(rows) > limit:
         kw = dict(raw_cols=raw_cols, muted_cols=muted_cols, stack=stack, wide_cols=wide_cols, nowrap_cols=nowrap_cols)
         html_table(header, rows[:limit], label=label, **kw)
-        with st.expander(f"Show all {len(rows)}"):
+        with st.expander(more or f"Show {len(rows) - limit} more"):
             html_table(header, rows[limit:], label=f"{label}, the rest", **kw)
         return
     # Stacked cards change the table's display on phones, which can drop its table meaning for screen readers, so
