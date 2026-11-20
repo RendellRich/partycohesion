@@ -162,8 +162,11 @@ else:
                  category_orders={"label": LABEL_ORDER, "party": ["Democrat", "Republican"]},
                  color_discrete_map=LABEL_COLORS, labels={"party": "", "Share": "Share of members (%)", "label": ""},
                  hover_data={"Members": True, "Share": ":.0f"})
+    # Labels stay level and inside their segment; a segment too thin for one hides it (the hover still has it)
+    fig.update_traces(textangle=0, textposition="inside", insidetextanchor="middle")
     fig.update_layout(height=280, barmode="stack", xaxis=dict(range=[0, 100], title=None, ticksuffix="%"),
-                      legend=dict(orientation="h", y=-0.22, x=0), margin=dict(b=70))
+                      legend=dict(orientation="h", y=-0.22, x=0), margin=dict(b=70),
+                      uniformtext=dict(minsize=11, mode="hide"))
     show_chart(fig, f"Position consistency, {category.lower()}", f"position_flips_{category.lower().replace(' ', '_')}")
 
     st.caption("Read this chart as a summary of members, not a verdict on either party: votes are not spread evenly "

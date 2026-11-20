@@ -89,7 +89,7 @@ def _recolor(obj) -> None:
             _recolor(child)
 
 
-TITLE_CHARS = 34  # about what fits across a 320px-wide phone chart at the title size
+TITLE_CHARS = 32  # about what fits across a 320px-wide phone chart at the phone title size (15px)
 
 
 def wrap_title(title: str, width: int = TITLE_CHARS) -> tuple[str, int]:
@@ -112,7 +112,13 @@ def show_chart(fig, title: str, filename: str, key: str | None = None, on_select
                 _recolor(item)
     _label_ink(fig)
     from theme import narrow
-    text, lines = wrap_title(title, TITLE_CHARS if narrow() else 90)
+    phone = narrow()
+    text, lines = wrap_title(title, TITLE_CHARS if phone else 90)
+    if phone:
+        # Plotly's default 80px side margins leave a phone chart a third of the screen; the axes size themselves
+        # (automargin), so a chart that didn't set its own sides gets 10px
+        m = fig.layout.margin
+        fig.update_layout(margin=dict(l=10 if m.l is None else m.l, r=10 if m.r is None else m.r))
     top = max(fig.layout.margin.t or 0, 80) + 21 * (lines - 1)
     # Legends sit in a row of their own above the plot (beside it squeezes phone-width charts), unless a page
     # already placed one below the plot.
@@ -128,7 +134,7 @@ def show_chart(fig, title: str, filename: str, key: str | None = None, on_select
                                       y=1 + (24 / plot_h if facet_labels else 0), entrywidth=0))
     fig.update_layout(
         title=dict(text=text, x=0.01, xanchor="left", yref="container", y=1, yanchor="top", pad=dict(t=14),
-                   font=dict(size=16, color=t["text"])),
+                   font=dict(size=15 if phone else 16, color=t["text"])),
         paper_bgcolor=t["bg"],
         plot_bgcolor=t["bg"],
         font=dict(color=t["text"], family=FONT),

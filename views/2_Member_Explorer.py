@@ -625,6 +625,11 @@ if pick:
         avg = (df[df["caucus"] == compare_party].groupby(["congress", "chamber"])["party_unity_pct"].mean()
                .reset_index().rename(columns={"party_unity_pct": "party_avg"}))
         hist = scored.merge(avg, on=["congress", "chamber"], how="left")
+        # A Congress with no scored votes (a delegate in a Congress whose rules shut them out) is a gap in the line,
+        # not a straight segment that reads as a trend across it
+        hist = (hist.drop_duplicates("congress", keep="last").set_index("congress")
+                .reindex(range(int(hist["congress"].min()), int(hist["congress"].max()) + 1)).rename_axis("congress")
+                .reset_index())
         fig_h = px.line(hist, x="congress", y=["party_unity_pct", "party_avg"], markers=True,
                         labels={"congress": "Congress", "value": "Party Unity %", "variable": ""},
                         color_discrete_sequence=[ACCENT, MUTED])
