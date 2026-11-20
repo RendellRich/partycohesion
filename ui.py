@@ -103,11 +103,11 @@ CSS = f"""
 .pc-explain {{ border-left: 3px solid var(--pc-accent); background: var(--pc-surface); border-radius: 0 8px 8px 0; padding: 12px 16px;
                max-width: 72ch; color: var(--pc-body); font-size: 0.98rem; line-height: 1.55; margin: 0 0 18px 0; }}
 .pc-explain-title {{ color: var(--pc-accent); font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }}
-.pc-share {{ display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 4px 0; }}
-.pc-share span {{ color: var(--pc-muted); font-size: 0.9rem; margin-right: 4px; }}
-.pc-share a {{ border: 1px solid var(--pc-control); border-radius: 999px; padding: 4px 12px; font-size: 0.9rem; font-weight: 600;
+.pc-share, .pc-jumps {{ display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 4px 0; }}
+.pc-share span, .pc-jumps span {{ color: var(--pc-muted); font-size: 0.9rem; margin-right: 4px; }}
+.pc-share a, .pc-jumps a {{ border: 1px solid var(--pc-control); border-radius: 999px; padding: 4px 12px; font-size: 0.9rem; font-weight: 600;
               color: var(--pc-text) !important; text-decoration: none; }}
-.pc-share a:hover {{ border-color: var(--pc-accent); }}
+.pc-share a:hover, .pc-jumps a:hover {{ border-color: var(--pc-accent); }}
 .pc-person {{ display: grid; grid-template-columns: 112px 1fr; gap: 18px; align-items: start; margin: 6px 0 14px 0; }}
 .pc-person img {{ width: 112px; border-radius: 8px; border: 1px solid var(--pc-border); }}
 .pc-facts {{ color: var(--pc-muted); font-size: 0.95rem; line-height: 1.7; }}
@@ -164,7 +164,7 @@ CSS = f"""
 .stApp [data-testid="stExpandSidebarButton"], .stApp [data-testid="stMainMenuButton"],
 .stApp [data-testid="stToolbarActionButton"] button {{ min-width: 44px; min-height: 44px; }}
 .stApp [data-testid="stTooltipHoverTarget"] button {{ min-width: 44px; min-height: 44px; margin: -14px; }}
-.pc-share a {{ display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; }}
+.pc-share a, .pc-jumps a {{ display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; }}
 .pc-table td a {{ display: inline-block; padding: 12px 0; margin: -12px 0; }}
 .pc-link-target {{ display: inline-flex; align-items: center; min-height: 44px; }}
 /* Field outlines at 3:1, and a clear focus ring on fields and chart buttons */
@@ -327,11 +327,17 @@ def pattern_badge(label: str) -> str:
 
 def html_table(header: list[str], rows: list[list[str]], raw_cols: tuple[int, ...] = (), muted_cols: tuple[int, ...] = (),
                label: str = "Table", stack: bool = False, wide_cols: tuple[int, ...] = (),
-               nowrap_cols: tuple[int, ...] = ()) -> None:
+               nowrap_cols: tuple[int, ...] = (), limit: int | None = None) -> None:
     """Small table with design-system styling. Cells in raw_cols are trusted HTML (badges); others are escaped.
     stack shows each row as a small card on phones (first column as its title, the others as label and value pairs)
     instead of a table that scrolls sideways. In a stacked card, wide_cols (long text) sit under their label instead
-    of beside it."""
+    of beside it. With limit, only the first rows show and the rest open under "Show all"."""
+    if limit and len(rows) > limit + 2:  # hiding one or two rows behind a click isn't worth it
+        kw = dict(raw_cols=raw_cols, muted_cols=muted_cols, stack=stack, wide_cols=wide_cols, nowrap_cols=nowrap_cols)
+        html_table(header, rows[:limit], label=label, **kw)
+        with st.expander(f"Show all {len(rows)}"):
+            html_table(header, rows[limit:], label=f"{label}, the rest", **kw)
+        return
     # Stacked cards change the table's display on phones, which can drop its table meaning for screen readers, so
     # the roles are spelled out.
     role = (lambda r: f' role="{r}"') if stack else (lambda r: "")
