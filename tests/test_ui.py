@@ -13,6 +13,7 @@ def test_display_name():
 def test_congress_years():
     assert congress_years(110, 119, 119) == "2007 to now"
     assert congress_years(110, 112, 119) == "2007 to 2012"
+    assert congress_years(110, 119, 119, left=2025) == "2007 to 2025"
 
 
 def test_fmt_date_has_no_leading_zero():

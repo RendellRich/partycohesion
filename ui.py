@@ -208,6 +208,16 @@ CSS = f"""
 /* Touch screens: no chart toolbar (its 24px buttons only appear on mouse hover). Phones: less space above the title */
 @media (hover: none), (max-width: 640px) {{ .stApp .modebar-container {{ display: none !important; }} }}
 @media (max-width: 640px) {{ .stApp [data-testid="stMainBlockContainer"] {{ padding-top: 4rem; }} }}
+/* Elements with nothing to show (the style blocks and the theme listener) still took a 16px gap each, which pushed
+   every page down about 64px. Their styles still apply while hidden. */
+.stApp [data-testid="stElementContainer"]:has([data-testid="stMarkdownContainer"] > style):not(:has([data-testid="stMarkdownContainer"] > :not(style))),
+.stApp .st-key-pc_theme {{ display: none; }}
+/* Phones: a smaller opening so the ZIP and name lookups are on the first screen */
+@media (max-width: 640px) {{
+  .pc-panel {{ padding: 22px 20px 0 20px; border-radius: 12px; }}
+  .stApp h1.pc-hero {{ font-size: 1.6rem; line-height: 1.2; }}
+  .pc-panel .pc-intro {{ font-size: 0.95rem; line-height: 1.5; margin-bottom: 18px; }}
+}}
 </style>
 """
 
@@ -384,19 +394,20 @@ def last_name(name: str) -> str:
     return str(name).split(",")[0].strip()
 
 
-def congress_years(first: int, last: int, newest: int) -> str:
+def congress_years(first: int, last: int, newest: int, left: int | None = None) -> str:
+    """left is the year a member left office partway through the newest Congress, so they aren't shown as serving now."""
     start = 2 * int(first) + 1787
-    end = "now" if int(last) == int(newest) else str(2 * int(last) + 1788)
+    end = str(left) if left else "now" if int(last) == int(newest) else str(2 * int(last) + 1788)
     return f"{start} to {end}"
 
 
 def member_header(name: str, party: str, state: str, chamber: str, first: int, last: int, newest: int,
-                  as_title: bool = False) -> None:
+                  as_title: bool = False, left: int | None = None) -> None:
     """The member's name, party and seat. as_title makes the name the page's h1 (the Members page with a member open)."""
     from chart_utils import ordinal
     span = f"{ordinal(first)} Congress" if int(first) == int(last) else f"{ordinal(first)} to {ordinal(last)} Congress"
     place = f"{STATES.get(state, state)}, {chamber}, {span} " \
-            f"({congress_years(first, last, newest)})" + ("; data starts in 2007" if int(first) == 110 else "")
+            f"({congress_years(first, last, newest, left)})" + ("; data starts in 2007" if int(first) == 110 else "")
     if as_title:
         st.title(display_name(name))
         st.markdown(f'<div class="pc-place">{party_tag(party)} · {escape(place)}</div>', unsafe_allow_html=True)
