@@ -262,8 +262,16 @@ if pick:
                   rows["congress"].min(), rows["congress"].max(), newest, as_title=True, left=left,
                   photo=member_photo(bioguide))
 
+    # Someone no longer in office says so in words, not only through the years in the line above
+    if bioguide and bioguide not in set(find_members.load_cached()[0]["bioguide_id"]):
+        until = left or (int(details.loc[bioguide, "last_year"]) if bioguide in details.index
+                         and str(details.loc[bioguide, "last_year"]).isdigit() else 2 * int(rows["congress"].max()) + 1788)
+        st.markdown(f'<p class="pc-status"><b>No longer in office.</b> Served until {until}.</p>',
+                    unsafe_allow_html=True)
+
     def look_up_another() -> None:
-        st.session_state.pop("me_member", None)
+        # Set to empty rather than removed, so the picker's own state is cleared too and it opens blank
+        st.session_state["me_member"] = None
         st.query_params.pop("member", None)
 
     # One tap back to the lookup; on a phone the picker at the end of the page is many screens down
@@ -287,8 +295,11 @@ if pick:
         nomination = (final["vote_question"].fillna("").str.contains("Nomination")
                       | final["bill_number"].fillna("").str.startswith("PN"))
         bills = final[~nomination].head(5)
-        # A delegate may have no final votes (they vote only on amendments); then their latest roll calls
-        shown_votes = pd.concat([bills, final[nomination].head(5 - len(bills))]) if len(final) else newest_first.head(5)
+        # A delegate may have no final votes (they vote only on amendments); then the latest roll calls they voted
+        # on, since a list of misses says nothing about how they vote (the missed count is in the note below)
+        cast_votes = newest_first[newest_first["their_vote"].isin(["Yea", "Nay"])]
+        fallback = cast_votes.head(5) if len(cast_votes) else newest_first.head(5)
+        shown_votes = pd.concat([bills, final[nomination].head(5 - len(bills))]) if len(final) else fallback
         st.header("How they voted last" if left else "How they voted lately", anchor="recent-votes")
 
         short_titles = load_short_titles()
@@ -299,7 +310,13 @@ if pick:
             # Only for a vote on the bill itself: an amendment vote keeps its own description
             on_bill = bool(re.search(FINAL_VOTES, str(x.vote_question)))
             text = short_titles.get((int(x.congress), bill), x.label) if bill and on_bill else x.label
-            return text if len(text) <= 120 else text[:117].rsplit(" ", 1)[0] + "…"
+            if len(text) <= 120:
+                return text
+            # Keep the start and the end: long official titles often differ only at the end ("...from
+            # hostilities with Iran" against "...in Venezuela")
+            head = text[:60].rsplit(" ", 1)[0]
+            tail = text[-55:].split(" ", 1)[-1]
+            return f"{head} … {tail}"
 
         def vote_meta(x) -> str:
             bill = x.bill_number if isinstance(x.bill_number, str) else ""
@@ -317,14 +334,23 @@ if pick:
             word = "Didn't vote" if v == "Did not vote" else v
             return f'<span class="{cls}">{escape(word)}</span>'
 
-        items = "".join(f'<li>{chip(x.their_vote)}<div><p class="pc-lately-title">{escape(vote_name(x))}</p>'
+        # Each title opens the roll call on Voteview: the full title, the result and every member's vote
+        items = "".join(f'<li>{chip(x.their_vote)}<div><p class="pc-lately-title"><a href="'
+                        f'{escape(voteview_url(x.congress, x.chamber, x.rollnumber))}" target="_blank" rel="noopener">'
+                        f'{escape(vote_name(x))}</a></p>'
                         f'<p class="pc-lately-meta">{escape(vote_meta(x))}</p></div></li>'
                         for x in shown_votes.itertuples())
         which = "last" if left else "most recent"
         st.markdown(f'<ul class="pc-lately" aria-label="{escape(short)}&#39;s {which} votes">{items}</ul>',
                     unsafe_allow_html=True)
         if delegate:
-            st.caption(DELEGATE_NOTE)
+            if not len(final) and len(cast_votes):
+                recent = newest_first.head(20)
+                n_out = int((~recent["their_vote"].isin(["Yea", "Nay"])).sum())
+                st.caption(f"The latest roll calls {short} voted on. Of the 20 most recent roll calls open to "
+                           f"delegates, {short} missed {n_out}. " + DELEGATE_NOTE)
+            else:
+                st.caption(DELEGATE_NOTE)
         st.markdown(f'<p class="pc-muted">{"Final votes on bills and resolutions, then nominations, newest first. " if len(final) else ""}'
                     '<a class="pc-link-target" href="#voting-record">Search every vote in their record</a></p>',
                     unsafe_allow_html=True)
@@ -656,6 +682,10 @@ if pick:
         st.caption("No roll-call records found for this member.")
     else:
         cast = record["their_vote"].isin(["Yea", "Nay"])
+        own_missed = load_missed()
+        own_missed = own_missed[own_missed["icpsr"] == icpsr]
+        n_missed, n_held = ((int(own_missed["missed"].sum()), int(own_missed["eligible"].sum())) if len(own_missed)
+                            else (int((~cast).sum()), len(record)))
         sided = record["with_party"] | record["against_party"]
         against = int(record["against_party"].sum())
         metric_row([
@@ -663,7 +693,9 @@ if pick:
             (f"Against the {party_adj(side)} majority", f"{against:,}",
              f"{against / sided.sum() * 100:.1f}% of {int(sided.sum()):,} votes where the party took a side" if sided.any()
              else "No votes where the party took a side"),
-            ("Missed votes", f"{int((~cast).sum()):,}", f"{(~cast).mean() * 100:.1f}% of roll calls"),
+            # The same count as the Missed votes section above (a "Present" vote isn't a miss there), so the page
+            # never shows two numbers for one thing
+            ("Missed votes", f"{n_missed:,}", f"{n_missed / n_held * 100:.1f}% of roll calls"),
         ])
         r1, r2, r3 = st.columns([2, 1, 1])
         with r1:
