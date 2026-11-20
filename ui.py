@@ -127,13 +127,21 @@ CSS = f"""
 .pc-share a, .pc-jumps a {{ border: 1px solid var(--pc-control); border-radius: 999px; padding: 4px 12px; font-size: 0.9rem; font-weight: 600;
               color: var(--pc-text) !important; text-decoration: none; }}
 .pc-share a:hover, .pc-jumps a:hover {{ border-color: var(--pc-accent); }}
-.pc-person {{ display: grid; grid-template-columns: 112px 1fr; gap: 18px; align-items: start; margin: 6px 0 14px 0; }}
-.pc-person img {{ width: 112px; border-radius: 8px; border: 1px solid var(--pc-border); }}
+.pc-person {{ margin: 6px 0 14px 0; }}
+.pc-who {{ display: flex; align-items: center; gap: 14px; margin: 4px 0 12px 0; }}
+.pc-who img {{ flex: none; width: 72px; border-radius: 8px; border: 1px solid var(--pc-border); }}
+.pc-who .pc-place {{ margin: 0; }}
 .pc-facts {{ color: var(--pc-muted); font-size: 0.95rem; line-height: 1.7; }}
 .pc-facts b {{ color: var(--pc-text); font-weight: 600; }}
 .pc-facts a {{ color: var(--pc-accent); }}
-@media (max-width: 640px) {{ .pc-person {{ grid-template-columns: 80px 1fr; }} .pc-person img {{ width: 80px; }}
-                             .pc-hero {{ font-size: 2rem; }} }}
+@media (max-width: 640px) {{ .pc-who img {{ width: 56px; }} .pc-hero {{ font-size: 2rem; }}
+  /* Number cards two to a row on phones (one per row ran about 700px), an odd last card across both */
+  .pc-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }}
+  .pc-grid > :last-child:nth-child(odd) {{ grid-column: span 2; }}
+  .pc-grid .pc-metric {{ padding: 12px; }}
+  .pc-metric-value {{ font-size: 1.5rem; }}
+  .pc-metric-value.pc-long, .pc-metric-value.pc-word {{ font-size: 1.1rem; padding: 4px 0; }}
+}}
 .pc-chip {{ border: 1px solid var(--pc-border); border-radius: 999px; padding: 3px 10px; font-size: 0.85rem; font-weight: 600; }}
 /* Color beyond the data. The aisle stripe across the top of every page is the site's mark: party blue, a gap
    for the aisle, party red. */
@@ -323,7 +331,9 @@ def card(eyebrow: str, stat: str, body: str) -> None:
 
 
 def metric_html(label: str, value: str, note: str = "") -> str:
-    long = " pc-long" if len(value) > 11 else ""
+    # Words ("Consistent", "Not scored") get the smaller size too on phones, where a half-width card would break
+    # them mid-word at the number size
+    long = " pc-long" if len(value) > 11 else "" if any(c.isdigit() for c in value) else " pc-word"
     return (f'<div class="pc-metric"><div class="pc-metric-label">{escape(label)}</div>'
             f'<div class="pc-metric-value{long}">{escape(value)}</div>'
             f'<div class="pc-metric-note">{escape(note)}</div></div>')
@@ -490,7 +500,7 @@ def congress_years(first: int, last: int, newest: int, left: int | None = None) 
 
 
 def member_header(name: str, party: str, state: str, chamber: str, first: int, last: int, newest: int,
-                  as_title: bool = False, left: int | None = None) -> None:
+                  as_title: bool = False, left: int | None = None, photo: str = "") -> None:
     """The member's name, party and seat. as_title makes the name the page's h1 (the Members page with a member open)."""
     from chart_utils import ordinal
     span = f"{ordinal(first)} Congress" if int(first) == int(last) else f"{ordinal(first)} to {ordinal(last)} Congress"
@@ -498,7 +508,9 @@ def member_header(name: str, party: str, state: str, chamber: str, first: int, l
             f"({congress_years(first, last, newest, left)})" + ("; data starts in 2007" if int(first) == 110 else "")
     if as_title:
         st.title(display_name(name))
-        st.markdown(f'<div class="pc-place">{party_tag(party)} · {escape(place)}</div>', unsafe_allow_html=True)
+        line = f'<div class="pc-place">{party_tag(party)} · {escape(place)}</div>'
+        # The official photo sits beside the party and seat line, so the page starts with who this is in one glance
+        st.markdown(f'<div class="pc-who">{photo}{line}</div>' if photo else line, unsafe_allow_html=True)
         return
     st.markdown(f'<div class="pc-name">{escape(display_name(name))} {party_tag(party)}</div>'
                 f'<div class="pc-place">{escape(place)}</div>', unsafe_allow_html=True)

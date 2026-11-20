@@ -61,15 +61,25 @@ def load_details() -> pd.DataFrame:
 CAMPAIGN_MONEY = "https://campaign-money.streamlit.app/"
 
 
-def member_facts(bioguide: str) -> None:
+def member_photo(bioguide: str) -> str:
     details = load_details()
+    if bioguide not in details.index or not details.loc[bioguide, "photo_url"]:
+        return ""
+    d = details.loc[bioguide]
+    return f'<img src="{escape(d["photo_url"])}" alt="Official photo of {escape(d["full_name"])}">'
+
+
+def member_facts(bioguide: str, since: int, chambers: str) -> None:
+    details = load_details()
+    lines = [f"<b>Served in the {escape(chambers)}</b> in this data"] if " and " in chambers else []
     if bioguide not in details.index:
+        if lines:
+            st.markdown(f'<div class="pc-person"><div class="pc-facts">{lines[0]}</div></div>', unsafe_allow_html=True)
         return
     d = details.loc[bioguide]
-    photo = (f'<img src="{escape(d["photo_url"])}" alt="Official photo of {escape(d["full_name"])}" loading="lazy">'
-             if d["photo_url"] else "<div></div>")
-    served = f"Served in Congress {d['first_year']} to " + ("now" if d["in_office"] else str(d["last_year"]))
-    lines = [f"<b>{escape(served)}</b>"]
+    # The years in this data are in the header; earlier service is worth a line only when there was some
+    if str(d["first_year"]).isdigit() and int(d["first_year"]) < since:
+        lines.append(f"<b>In Congress since {escape(str(d['first_year']))}</b> (this site's data starts in 2007)")
     if d["website"]:
         lines.append(f'Official website: <a href="{escape(d["website"])}" target="_blank" rel="noopener">'
                      f'{escape(d["website"].split("//")[-1].rstrip("/"))}</a>')
@@ -88,8 +98,9 @@ def member_facts(bioguide: str) -> None:
         # A separate site on purpose: campaign money is never shown next to votes here.
         lines.append(f'Campaign money: <a href="{CAMPAIGN_MONEY}?member={escape(bioguide)}" target="_blank" '
                      'rel="noopener">individual donations by industry</a> on Campaign Money by Industry, a separate site')
-    st.markdown(f'<div class="pc-person">{photo}<div class="pc-facts">{"<br>".join(lines)}</div></div>',
-                unsafe_allow_html=True)
+    if lines:
+        st.markdown(f'<div class="pc-person"><div class="pc-facts">{"<br>".join(lines)}</div></div>',
+                    unsafe_allow_html=True)
 
 
 @st.cache_data
@@ -243,7 +254,8 @@ if pick:
             left = int(d["last_year"])
     # The member's name is the page title, so a shared link opens straight onto them
     member_header(member["name"], member["party"], member["state_abbrev"], member["chamber"],
-                  rows["congress"].min(), rows["congress"].max(), newest, as_title=True, left=left)
+                  rows["congress"].min(), rows["congress"].max(), newest, as_title=True, left=left,
+                  photo=member_photo(bioguide))
 
     def look_up_another() -> None:
         st.session_state.pop("me_member", None)
@@ -375,12 +387,8 @@ if pick:
     metric_row([
         unity, flip, platform,
         ("Ideology score", f"{ideo:.2f}" if pd.notna(ideo) else "Not scored", "−1 liberal to +1 conservative"),
-        ("In this data since", str(since),
-         f"{n_cong} Congress{'es' if n_cong > 1 else ''}, {chambers}"
-         + (" (data starts in 2007)" if first_cong == int(df["congress"].min()) else "")
-         + ("; delegates appear only in Congresses where they could vote" if delegate else "")),
     ])
-    member_facts(bioguide)
+    member_facts(bioguide, since, chambers)
 
     def section(title: str, anchor: str, jump: str | None = None) -> None:
         st.header(title, anchor=anchor)
