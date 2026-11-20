@@ -638,21 +638,35 @@ def share_links(url: str, text: str) -> list[tuple[str, str]]:
             ("X", f"https://twitter.com/intent/tweet?text={t}&url={u}")]
 
 
+from theme import DARK, LIGHT  # noqa: E402  the app's own tokens, so the share pages match the app
+
+# The share pages use the app's colors, type and corners (DESIGN.md), and follow the visitor's light or dark setting.
+# The card images keep their own palette, set above.
+PAGE_FONT = "'Public Sans', 'Segoe UI', system-ui, sans-serif"
 PAGE_CSS = f"""
-body {{ margin: 0; background: {C['bg']}; color: {C['text']}; font: 18px/1.5 'Public Sans', system-ui, sans-serif; }}
+:root {{ --bg: {LIGHT['bg']}; --surface: {LIGHT['surface']}; --border: {LIGHT['border']}; --text: {LIGHT['text']};
+  --body: {LIGHT['body']}; --muted: {LIGHT['muted']}; --accent: {LIGHT['accent']}; --control: #868C96; }}
+@media (prefers-color-scheme: dark) {{ :root {{ --bg: {DARK['bg']}; --surface: {DARK['surface']}; --border: {DARK['border']};
+  --text: {DARK['text']}; --body: {DARK['body']}; --muted: {DARK['muted']}; --accent: {DARK['accent']}; --control: #7A746C; }} }}
+body {{ margin: 0; background: var(--bg); color: var(--text); font-family: {PAGE_FONT}; font-size: 1rem; line-height: 1.5; }}
 main {{ max-width: 760px; margin: 0 auto; padding: 32px 20px 48px; text-align: center; }}
-img {{ width: 100%; height: auto; border-radius: 10px; border: 1px solid {C['border']}; }}
-p {{ color: {C['body']}; }}
-a.button, button {{ display: inline-block; margin: 6px 4px 0; padding: 10px 18px; border-radius: 8px; font: 600 16px/1.2
-  'Public Sans', system-ui, sans-serif; text-decoration: none; cursor: pointer; border: 1px solid {C['border']};
-  background: transparent; color: {C['text']}; }}
-a.primary {{ background: {C['accent']}; border-color: {C['accent']}; color: {C['bg']}; font-weight: 700; }}
-a.button:focus-visible, button:focus-visible {{ outline: 3px solid {C['text']}; outline-offset: 3px; }}
-.share {{ margin-top: 28px; padding-top: 20px; border-top: 1px solid {C['border']}; }}
-.share h2 {{ font-size: 16px; font-weight: 600; color: {C['muted']}; margin: 0 0 6px; }}
-.hint {{ font-size: 14px; color: {C['muted']}; margin-top: 10px; }}
+h1 {{ font-family: 'Source Serif 4', Georgia, serif; font-size: 2.6rem; line-height: 1.15; margin: 8px 0 4px; }}
+@media (max-width: 640px) {{ h1 {{ font-size: 1.75rem; }} }}
+img {{ width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--border); }}
+p {{ color: var(--body); }}
+a.button, button {{ display: inline-block; box-sizing: border-box; min-height: 44px; margin: 6px 4px 0; padding: 12px 18px;
+  border-radius: 6px; font-family: {PAGE_FONT}; font-size: 0.9rem; font-weight: 600; line-height: 1.2;
+  text-decoration: none; cursor: pointer;
+  border: 1px solid var(--control); background: transparent; color: var(--text); }}
+a.primary {{ background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 700; }}
+a.button:focus-visible, button:focus-visible {{ outline: 2px solid var(--accent); outline-offset: 2px; }}
+.share {{ margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); }}
+.share h2 {{ font-size: 0.9rem; font-weight: 600; color: var(--muted); margin: 0 0 6px; }}
+.hint {{ font-size: 0.85rem; color: var(--muted); margin-top: 10px; }}
 [hidden] {{ display: none !important; }}
 """
+PAGE_HEAD = (f'<meta name="color-scheme" content="light dark">\n<link rel="stylesheet" href="{FONTS}">\n'
+             f"<style>{PAGE_CSS}</style>")
 
 SHARE_JS = """<script>
 document.querySelectorAll('[data-share-image]').forEach(function (btn) {
@@ -719,7 +733,7 @@ def share_page(slug: str, title: str, description: str, app_path: str, caption: 
 <meta name="twitter:title" content="{t}">
 <meta name="twitter:description" content="{d}">
 <meta name="twitter:image" content="{image}">
-<style>{PAGE_CSS}</style></head>
+{PAGE_HEAD}</head>
 <body><main>
 <img src="{image}" alt="{d}" width="1200" height="627">
 <p>{d}</p>
@@ -750,9 +764,9 @@ def gallery_page(caps: dict[str, str]) -> str:
 <meta property="og:url" content="{url}">
 <meta property="og:image" content="{image}">
 <meta name="twitter:card" content="summary_large_image">
-<style>{PAGE_CSS}</style></head>
+{PAGE_HEAD}</head>
 <body><main>
-<h1 style="font-family:Georgia,serif;font-size:36px;margin:8px 0 4px">Share PartyCohesion</h1>
+<h1>Share PartyCohesion</h1>
 <p>Each card is built from the official roll-call record and updates when the data does. Post any of them, with the
 caption or your own words.</p>
 <a class="button primary" href="{SITE}">Open PartyCohesion</a>
@@ -761,7 +775,22 @@ caption or your own words.</p>
 """
 
 
+def write_pages(f: dict | None = None) -> None:
+    """Only the HTML share pages (docs/index.html, docs/<card>/ and docs/cards/), without redrawing the images."""
+    caps = captions(f or facts())
+    for slug, (_, title, desc, path) in CARDS.items():
+        folder = PAGES if slug == "partycohesion" else PAGES / slug
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / "index.html").write_text(share_page(slug, title, desc, path, caps[slug]))
+    (PAGES / "cards").mkdir(parents=True, exist_ok=True)
+    (PAGES / "cards" / "index.html").write_text(gallery_page(caps))
+
+
 def main() -> None:
+    if "--pages-only" in sys.argv:
+        write_pages()
+        print("Wrote the share pages")
+        return
     from playwright.sync_api import sync_playwright
 
     f = facts()

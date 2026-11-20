@@ -67,3 +67,10 @@ def test_final_card_numbers_match_members_file(f):
     cap = cards.final_caption(f)  # captions() needs raw vote files that CI skips
     assert f"The {cards.ordinal(c)} Congress" in cap and "—" not in cap
     assert cards.change_text(1.24, 117) == "up 1.2 points from the 117th" and cards.change_text(0, 117) == "same as the 117th"
+
+
+def test_share_pages_use_the_app_tokens():
+    from theme import DARK, LIGHT
+    css = cards.PAGE_CSS
+    assert LIGHT["accent"] in css and DARK["accent"] in css and "prefers-color-scheme: dark" in css
+    assert "border-radius: 6px" in css and "min-height: 44px" in css
