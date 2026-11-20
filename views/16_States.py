@@ -78,10 +78,12 @@ st.markdown(f'<div class="pc-state-head">{outline}<div class="pc-body">{escape(r
 # The ZIP code is the box's starting value under a fresh key, not a value pushed into the box's state: on phones the
 # page reruns once it learns the screen width, and a pushed value was lost from the box on that rerun (the list was
 # filtered, the box looked empty).
-if "zip" in st.query_params:
-    st.session_state["st_zip_seed"] = find_members.clean_zip(st.query_params["zip"]) or ""
+# The ZIP code stays in the address while it's in the box, so Back from a member returns to the same short list. The
+# share button still shares the state alone (share_bar gets only ?state=).
+url_zip = find_members.clean_zip(st.query_params.get("zip", "")) or ""
+if url_zip and url_zip != st.session_state.get("st_zip_seed"):
+    st.session_state["st_zip_seed"] = url_zip
     st.session_state["st_zip_ver"] = st.session_state.get("st_zip_ver", 0) + 1
-    del st.query_params["zip"]
 ver = st.session_state.get("st_zip_ver", 0)
 c1, c2 = st.columns(2)
 zip_text = c1.text_input("Your ZIP code", value=st.session_state.get("st_zip_seed", "") if ver else "",
@@ -107,6 +109,9 @@ if zip_text.strip():
                     f'<a href="States?state={res["state"]}" target="_self">See {escape(other)}\'s members</a></p>',
                     unsafe_allow_html=True)
     else:
+        if st.query_params.get("zip") != z:
+            st.session_state["st_zip_seed"] = z  # typed here: the address follows the box, without re-seeding it
+            st.query_params["zip"] = z
         ids = set(res["senators"]["bioguide_id"])
         for d in res["districts"]:
             ids |= set(d["member"]["bioguide_id"])
@@ -123,6 +128,8 @@ if zip_text.strip():
                         f" {', '.join(empty)} {'is' if len(empty) == 1 else 'are'} vacant right now." if empty else "")
                      + ("" if res["lines_current"] else " New district lines aren't matched to ZIP codes yet, so every "
                         "House member from the state is listed."))
+if not mine_note and "zip" in st.query_params:  # cleared, or a ZIP from another state: drop it from the address
+    del st.query_params["zip"]
 if query.strip():
     shown = shown[shown["name"].str.contains(query.strip(), case=False, regex=False)]
     shown_vacant = []

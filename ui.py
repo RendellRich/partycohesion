@@ -103,6 +103,10 @@ CSS = f"""
 .pc-vote-yea {{ background: var(--pc-yea); border-color: var(--pc-yea); color: var(--pc-bg); }}
 .pc-vote-other {{ border-style: dashed; border-color: var(--pc-control); color: var(--pc-muted); font-weight: 600; }}
 .pc-lately-title {{ margin: 0; color: var(--pc-text); font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }}
+.pc-lately-title a {{ color: var(--pc-text); text-decoration: underline; text-decoration-color: var(--pc-control);
+                      text-underline-offset: 3px; }}
+.pc-lately-title a:hover {{ text-decoration-color: var(--pc-accent); }}
+.pc-status {{ color: var(--pc-body); margin: -4px 0 4px 0; }}
 .pc-lately-meta {{ margin: 2px 0 0; font-size: 0.9rem; color: var(--pc-muted); }}
 @media (max-width: 480px) {{
   .pc-lately li {{ flex-direction: column; gap: 6px; }}

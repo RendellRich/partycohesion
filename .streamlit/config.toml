@@ -2,7 +2,7 @@
 # The font setting names the site's own stylesheet (static/pc.css, built by scripts/build_css.py), which puts
 # the site styles in the page head before any content appears.
 [theme]
-font = "'Public Sans':https://partycohesion.streamlit.app/~/+/app/static/pc.css?v=c1697067ce"
+font = "'Public Sans':https://partycohesion.streamlit.app/~/+/app/static/pc.css?v=563a69ad05"
 headingFont = "'Source Serif 4':https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap, serif"
 baseRadius = "medium"
 

@@ -7,7 +7,10 @@ import streamlit as st
 from pathlib import Path
 from chart_utils import show_chart, ordinal, PATTERN_COLORS, ACCENT, MUTED
 from flip_utils import add_chamber_control, flip_scores, MIN_VOTES_EACH_SIDE
-from ui import notice, display_name, last_name, explainer, metric_row, shortcuts
+from html import escape
+
+from theme import narrow
+from ui import notice, display_name, html_table, last_name, explainer, metric_row, pattern_badge, shortcuts
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 CATEGORIES = ["All categories", "Debt limit", "Stopgap funding", "Full-year funding", "Disaster aid", "War powers limits"]
@@ -170,23 +173,33 @@ else:
                "difference = the same comparison using every vote, with no matching.")
     # Ties are broken by how many votes back the result, so better-supported patterns come first
     table = scored.assign(total=scored["n_own"] + scored["n_other"]).sort_values(["shift", "total", "name"], ascending=[False, False, True])
-    st.dataframe(
-        pd.DataFrame({
-            "Name": table["name"].map(display_name),
-            "Party-State": table["party"].str[0] + "-" + table["state_abbrev"],
-            "Chamber": table["chamber"],
-            "Own party's president": [f"{f:.0f} of {n:.0f} ({r:.0f}%)" for f, n, r in
-                                      zip(table["friendly_own"], table["n_own"], table["rate_own"])],
-            "Other party's president": [f"{f:.0f} of {n:.0f} ({r:.0f}%)" for f, n, r in
-                                        zip(table["friendly_other"], table["n_other"], table["rate_other"])],
-            "Simple difference": table["raw_shift"].astype(int),
-            "Shift": table["shift"].astype(int),
-            "Pattern": table["label"],
-            "Votes compared": (table["matched_own"] + table["matched_other"]).astype(int),
-            "All votes": table["total"].astype(int),
-        }),
-        width="stretch", hide_index=True, height=420,
-    )
+    if narrow():
+        # Phones: a card per member with the shift and pattern in view, instead of a grid whose key columns sit off
+        # screen to the right
+        cards = [[escape(display_name(r.name)), f"{r.party[0]}-{r.state_abbrev}, {r.chamber}", f"{int(r.shift):+d}",
+                  pattern_badge(r.label), f"{int(r.matched_own + r.matched_other)} of {int(r.total)}"]
+                 for r in table.itertuples()]
+        html_table(["Member", "Seat", "Shift", "Pattern", "Votes compared"], cards, raw_cols=(0, 3),
+                   label="Members by Position Flips shift", stack=True, limit=10,
+                   more=f"Show the other {len(cards) - 10:,} members")
+    else:
+        st.dataframe(
+            pd.DataFrame({
+                "Name": table["name"].map(display_name),
+                "Party-State": table["party"].str[0] + "-" + table["state_abbrev"],
+                "Chamber": table["chamber"],
+                "Own party's president": [f"{f:.0f} of {n:.0f} ({r:.0f}%)" for f, n, r in
+                                          zip(table["friendly_own"], table["n_own"], table["rate_own"])],
+                "Other party's president": [f"{f:.0f} of {n:.0f} ({r:.0f}%)" for f, n, r in
+                                            zip(table["friendly_other"], table["n_other"], table["rate_other"])],
+                "Simple difference": table["raw_shift"].astype(int),
+                "Shift": table["shift"].astype(int),
+                "Pattern": table["label"],
+                "Votes compared": (table["matched_own"] + table["matched_other"]).astype(int),
+                "All votes": table["total"].astype(int),
+            }),
+            width="stretch", hide_index=True, height=420,
+        )
 
 # ---------------------------------------------------------------------------
 # One member in detail

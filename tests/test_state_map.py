@@ -174,5 +174,11 @@ def test_a_zip_code_from_a_link_shows_in_the_box():
     at.session_state["pc_narrow"] = True  # the rerun a phone causes once it reports its width
     at.run()
     box = [t for t in at.text_input if t.label == "Your ZIP code"][0]
-    assert box.value == "78701" and "zip" not in at.query_params
+    assert box.value == "78701" and at.query_params.get("zip") == "78701"
     assert any("Your members for ZIP code 78701" in m.value for m in at.columns[0].markdown)
+    # Clearing the box takes the ZIP code out of the address; a new one typed in goes in
+    box.set_value("").run()
+    assert "zip" not in at.query_params
+    [t for t in at.text_input if t.label == "Your ZIP code"][0].set_value("78840").run()
+    assert at.query_params.get("zip") == "78840"
+    assert any("Your members for ZIP code 78840" in m.value for m in at.columns[0].markdown)

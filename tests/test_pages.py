@@ -348,7 +348,10 @@ def test_home_zip_opens_your_members_on_the_state_page():
     assert not at.exception, [e.value for e in at.exception]
     assert at.title[0].value == "Florida"
     assert "Your members for ZIP code 34219" in html(at)
-    assert "zip" not in at.query_params  # the ZIP code doesn't stay in the shareable address
+    # The ZIP code stays in the address so Back from a member returns to this list, but the share link leaves it out
+    assert at.query_params.get("zip") == "34219"
+    links = [c.value for c in at.code]
+    assert any(v.endswith("/s/state/FL/") for v in links) and not any("zip" in v for v in links)
 
 
 def test_position_flips_says_who_is_left_out():
@@ -579,3 +582,33 @@ def test_phone_member_page_folds_long_parts():
     assert any(l.startswith("See where Cruz sits") for l in labels)
     record = html(at).split("Cruz&#x27;s voting record")[1].split("</table>")[0]
     assert record.count("<tr") == 4  # the header and three votes; "Show 10 more" adds the rest
+
+
+def test_delegate_page_counts_and_recent_votes_agree():
+    at = open_member("R000600")
+    text = html(at)
+    missed = re.search(r"missed \*\*([\d,]+) of ([\d,]+)\*\*", " ".join(m.value for m in at.markdown))
+    assert missed, "Missed votes section sentence"
+    assert f">{missed.group(1)}<" in text  # the Voting record card shows the same count
+    recent = text.split('class="pc-lately"')[1].split("</ul>")[0]
+    assert "Didn&#x27;t vote" not in recent and "voteview.com/rollcall/" in recent  # votes she cast, each linked
+    assert any("The latest roll calls Radewagen voted on" in c.value for c in at.caption)
+
+
+def test_member_who_left_says_so_and_long_titles_keep_their_end():
+    at = open_member("G000551")
+    assert "No longer in office.</b> Served until 2025." in html(at)
+    cruz = html(open_member("C001098")).split('class="pc-lately"')[1].split("</ul>")[0]
+    assert "hostilities with Iran" in cruz  # two war powers votes differ only at the end of their titles
+
+
+def test_position_flips_cards_on_phones():
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=120)
+    at.session_state["pc_narrow"] = True
+    at.run()
+    at.switch_page("views/7_Position_Flips.py")
+    at.run()
+    assert not at.exception, [e.value for e in at.exception]
+    text = html(at)
+    assert 'aria-label="Members by Position Flips shift"' in text or "Members by Position Flips shift" in text
+    assert any(e.label.startswith("Show the other ") for e in at.expander)
