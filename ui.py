@@ -45,6 +45,12 @@ CSS = f"""
 .stApp h2, .stApp h3 {{ font-family: {SANS}; font-weight: 700; }}
 .stApp [data-testid="stMetricValue"], .pc-stat, .pc-metric-value {{ font-variant-numeric: tabular-nums; }}
 .stApp a:focus-visible, .stApp button:focus-visible {{ outline: 2px solid var(--pc-accent); outline-offset: 2px; }}
+/* Streamlit's "Skip to main content" link (the first Tab stop): 44px tall and in the site's colors. It moves focus to
+   the main area, which then shows a ring so keyboard users can see where they landed. */
+.stApp [data-testid="stSkipToContent"]:focus {{ min-height: 44px; display: inline-flex; align-items: center;
+    padding: 0 16px; background: var(--pc-surface); color: var(--pc-accent); border: 1px solid var(--pc-border);
+    border-radius: 8px; font-weight: 600; outline: 2px solid var(--pc-accent); outline-offset: 2px; }}
+.stApp [data-testid="stMain"]:focus-visible {{ outline: 2px solid var(--pc-accent); outline-offset: -4px; }}
 /* Expander headers: 44px to tap, and the same solid focus ring as links (Streamlit's own is a faint glow) */
 .stApp [data-testid="stExpander"] summary {{ min-height: 44px; display: flex; align-items: center; }}
 .stApp [data-testid="stExpander"] summary:focus-visible, .stApp a:focus-visible {{ outline: 2px solid var(--pc-accent);

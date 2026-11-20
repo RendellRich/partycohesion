@@ -12,6 +12,7 @@ import streamlit as st
 
 from chart_utils import ACCENT, MUTED, PARTY_COLORS, ordinal, show_chart
 from seat_map import seat_map
+from theme import narrow
 from state_map import DELEGATE_PLACES
 from state_splits import MIN_SHARED, load_all, member_summary
 from flip_utils import add_chamber_control, flip_scores
@@ -301,10 +302,12 @@ if pick:
         seat_event = show_chart(seat_map(room, member["chamber"], highlight=icpsr, highlight_name=short),
                                 f"{display_name(member['name'])} in the {member['chamber']}, {ordinal(member['congress'])} Congress",
                                 f"seat_map_{short.lower().replace(' ', '_')}",
-                                key=f"me_seat_{icpsr}_{st.session_state.get('me_seat_clicks', 0)}", on_select="rerun")
+                                key=f"me_seat_{icpsr}_{st.session_state.get('me_seat_clicks', 0)}",
+                                on_select=None if narrow() else "rerun")  # phones: a tap shows who, it doesn't navigate
         st.caption(f"Every member who served in the {member['chamber']} in {when}, one dot each, placed left to right "
-                   f"by Voteview ideology score. {short}'s seat is ringed. Click or tap any other dot to open that member.")
-        clicked = (seat_event or {}).get("selection", {}).get("points", []) if seat_event else []
+                   f"by Voteview ideology score. {short}'s seat is ringed. "
+                   + ("Tap any other dot to see who it is." if narrow() else "Click any other dot to open that member."))
+        clicked = seat_event.get("selection", {}).get("points", []) if seat_event and not narrow() else []
         target = clicked[0].get("customdata", [None, None, ""])[2] if clicked else ""
         if target and target != bioguide and target in label_of:
             st.session_state["me_pending"] = label_of[target]
