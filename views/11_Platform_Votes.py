@@ -11,7 +11,7 @@ from pathlib import Path
 
 from chart_utils import ordinal
 from platform_utils import load_platform, member_platform_votes, member_summary, member_topics, party_totals
-from ui import explainer, chips, display_name, fmt_date, html_table, inject_css, intro, metric_row, party_tag
+from ui import party_adj, explainer, chips, display_name, fmt_date, html_table, inject_css, intro, metric_row, party_tag
 from vote_index import voteview_url
 
 PRESIDENT = {110: "Bush", 111: "Obama", 112: "Obama", 113: "Obama", 114: "Obama", 115: "Trump", 116: "Trump", 117: "Biden", 118: "Biden", 119: "Trump", 120: "Trump"}
@@ -154,7 +154,7 @@ if pick != "Choose a member":
     mine = mv[mv["icpsr"] == row["icpsr"]].merge(links[["congress", "chamber", "rollnumber", "measure", "date"]],
                                                  on=["congress", "chamber", "rollnumber"])
     mine = mine.merge(topics[["topic_id", "topic"]], on="topic_id").sort_values("date")
-    st.markdown(f"**{escape(pick)}** voted against the {row['side']} platform on **{int(row['against'])} of "
+    st.markdown(f"**{escape(pick)}** voted against the {party_adj(row['side'])} platform on **{int(row['against'])} of "
                 f"{int(row['cast'])}** topics they cast a counted vote on. Every vote is listed below.")
     html_table(["Date", "Topic", "Vote", "Their vote", "Platform vote", "Against platform", "Counted"],
                [[fmt_date(x.date), x.topic, x.measure, x.vote, x.platform_vote, "Yes" if x.against else "No",

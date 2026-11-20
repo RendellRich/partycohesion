@@ -17,7 +17,7 @@ from state_map import DELEGATE_PLACES
 from state_splits import MIN_SHARED, load_all, member_summary
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import platform_record
-from ui import (bill_label, page_title, explainer, display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row,
+from ui import (bill_label, page_title, party_adj, explainer, display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row,
                 party_tag, pattern_badge, share_bar, STATES)
 from vote_index import load_votes, member_record, search_votes, voteview_url
 import floor_remarks
@@ -249,7 +249,7 @@ if pick:
             peers = df[(df["congress"] == u["congress"]) & (df["chamber"] == u["chamber"])
                        & (df["caucus"].fillna(df["party"]) == grp)]["party_unity_pct"]
             who = {"Senate": "senator", "House": "House member"}.get(u["chamber"], "member")
-            note = (f"{int(u['votes_with_party']):,} of {cast_n:,} party-line votes; typical {grp} {who} "
+            note = (f"{int(u['votes_with_party']):,} of {cast_n:,} party-line votes; typical {party_adj(grp)} {who} "
                     f"{peers.median():.1f}%")
             if u is not latest_u:
                 n_last = int(latest_u["unity_votes_cast"])
@@ -308,7 +308,7 @@ if pick:
                 return f"{bill_label(bill)}: {text}"
             return text
 
-        html_table(["Vote", "Date", "Their vote", f"{side} majority", "Result"],
+        html_table(["Vote", "Date", "Their vote", f"{party_adj(side)} majority", "Result"],
                    [[vote_name(x), fmt_date(x.date), x.their_vote,
                      {"Tie": "Split evenly"}.get(x.party_position, x.party_position), x.vote_result]
                     for x in shown_votes.itertuples()], muted_cols=(1,),
@@ -385,7 +385,7 @@ if pick:
     else:
         side = plat_rows["side"].iloc[-1]
         st.markdown(f"On topics where the two parties' platforms take opposite positions, {short} voted against the "
-                    f"{side} platform on **{plat_against} of {plat_cast}** topics they cast a counted vote on.")
+                    f"{party_adj(side)} platform on **{plat_against} of {plat_cast}** topics they cast a counted vote on.")
         show_all = st.toggle("Include procedural and related votes (not counted)", key="me_plat_all")
         shown = plat_rows if show_all else plat_rows[plat_rows["counts"]]
         html_table(["Vote", "Date", "Their vote", "Matches their platform"] + (["Counted"] if show_all else []),
@@ -511,7 +511,7 @@ if pick:
         fig_h = px.line(hist, x="congress", y=["party_unity_pct", "party_avg"], markers=True,
                         labels={"congress": "Congress", "value": "Party Unity %", "variable": ""},
                         color_discrete_sequence=[ACCENT, MUTED])
-        names = {"party_unity_pct": short, "party_avg": f"{compare_party} average, same chamber"}
+        names = {"party_unity_pct": short, "party_avg": f"{party_adj(compare_party)} average, same chamber"}
         fig_h.for_each_trace(lambda t: t.update(name=names.get(t.name, t.name)))
         fig_h.update_layout(height=360, xaxis=dict(dtick=1), legend=dict(orientation="h", y=-0.25, x=0))
         show_chart(fig_h, f"Party unity across Congresses: {display_name(member['name'])}",
@@ -541,7 +541,7 @@ if pick:
                     "positions this member sided with. It is **not** a consistency score: agreeing more with one "
                     "party's presidents can simply reflect a member's views.")
         metric_row([(f"{r.president} ({r.president_party[0]})", f"{r.agreed / r.votes * 100:.0f}%",
-                     f"{r.agreed} of {r.votes} votes · {caucus or member['party']} average "
+                     f"{r.agreed} of {r.votes} votes · {party_adj(caucus or member['party'])} average "
                      f"{r.peer_agreed / r.peer_votes * 100:.0f}%" if r.peer_votes else f"{r.agreed} of {r.votes} votes")
                     for r in sup.itertuples()])
 
@@ -559,7 +559,7 @@ if pick:
     # Full voting record
     st.header("Voting record")
     st.markdown(f"Every roll call {short} was eligible for while in office, from 2007 on. A vote is flagged when "
-                f"{short} voted against the {side} majority.")
+                f"{short} voted against the {party_adj(side)} majority.")
     if record.empty:
         st.caption("No roll-call records found for this member.")
     else:
@@ -568,7 +568,7 @@ if pick:
         against = int(record["against_party"].sum())
         metric_row([
             ("Votes cast", f"{int(cast.sum()):,}", f"of {len(record):,} roll calls while in office"),
-            (f"Against the {side} majority", f"{against:,}",
+            (f"Against the {party_adj(side)} majority", f"{against:,}",
              f"{against / sided.sum() * 100:.1f}% of {int(sided.sum()):,} votes where the party took a side" if sided.any()
              else "No votes where the party took a side"),
             ("Missed votes", f"{int((~cast).sum()):,}", f"{(~cast).mean() * 100:.1f}% of roll calls"),
@@ -593,7 +593,7 @@ if pick:
             "Bill": view["bill_number"].fillna(""),
             "Vote": view["label"],
             "Their vote": view["their_vote"],
-            f"{side} majority": view["party_position"].replace({"Tie": "Split evenly", "None": "None"}),
+            f"{party_adj(side)} majority": view["party_position"].replace({"Tie": "Split evenly", "None": "None"}),
             "Against party": view["against_party"].map({True: "Yes", False: ""}),
             "Result": view["vote_result"],
             "Their remarks": remarks if remarks is not None else None,
