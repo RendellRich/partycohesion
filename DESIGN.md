@@ -63,6 +63,19 @@ typography:
     fontFamily: "'Public Sans', 'Segoe UI', system-ui, sans-serif"
     fontSize: "0.85rem"
     fontWeight: 600
+  label-large:
+    fontFamily: "'Public Sans', 'Segoe UI', system-ui, sans-serif"
+    fontSize: "0.9rem"
+    fontWeight: 600
+  stat-metric:
+    fontFamily: "'Public Sans', 'Segoe UI', system-ui, sans-serif"
+    fontSize: "2rem"
+    fontWeight: 700
+    fontFeature: "tnum"
+  stat-long:
+    fontFamily: "'Public Sans', 'Segoe UI', system-ui, sans-serif"
+    fontSize: "1.35rem"
+    fontWeight: 700
 rounded:
   chip: "6px"
   card: "10px"
@@ -150,7 +163,7 @@ A quiet neutral base with two equal party colors, one gold accent for links and 
 **Character:** The serif gives page titles and the big Home question the weight of a public document; Public Sans, the U.S. Web Design System's typeface, keeps data plain and readable.
 
 ### Hierarchy
-- **Display** (700, 2.6rem, 2rem under 640px, 1.15): the Home hero question only, max 22ch.
+- **Display** (700, 2.6rem, 1.75rem under 640px, 1.15): the Home hero question only, max 22ch.
 - **Headline** (700, Streamlit h1 size): page titles, followed by the two-color rule.
 - **Title** (700, 1.75rem, heading color): h2 section headings, the level right under each page title.
 - **Subtitle** (700, 1.5rem): h3 headings inside a section.
@@ -160,17 +173,17 @@ A quiet neutral base with two equal party colors, one gold accent for links and 
 
 ## Layout
 
-Single centered column in Streamlit's wide layout, with a sidebar for navigation that collapses on phones. Metric cards use an auto-fit grid (minimum 190px per card, 12px gaps). Cards and tables stack full width. Below 640px the hero panel padding drops from 36px to 20px, the hero question drops to 2rem, and member photos shrink from 112px to 80px. Every page must work at 320px wide.
+Single centered column in Streamlit's wide layout, with a sidebar for navigation that collapses on phones. Metric cards use an auto-fit grid (minimum 190px per card, 12px gaps), two to a row below 640px with an odd last card across both. Cards and tables stack full width. Below 640px the hero panel padding drops from 36px to 20px, the hero question drops to 1.75rem, and the member photo beside the name line shrinks from 72px to 56px. On phones, a member page's seat map and ideology chart open from a tap, and long tables show their first rows. Every page must work at 320px wide.
 
 ## Elevation & Depth
 
-Flat. Depth comes from tonal layering only: the surface color on the background, a 1px border, and the colored top or left edge on cards. No shadows anywhere.
+Flat. Depth comes from tonal layering only: the surface color on the background, a 1px border, and the colored top edge on Home's cards. No shadows anywhere.
 
 **The Flat Record Rule.** If something needs to stand out, give it a border, tone or position, never a shadow.
 
 ## Shapes
 
-Gently rounded throughout: 6px on badges, 8px on photos and explainer corners, 10px on cards, metrics and tables, 16px on the hero panel, fully round pills for share buttons and chips. Explainers have a square left edge with a 3px violet bar.
+Gently rounded on one scale (6, 10, 16px and fully round): 6px on badges, photos and chart bars, 10px on cards, metrics, explainers and tables (and the hero panel on phones), 16px on the hero panel, fully round pills for share buttons and chips. No colored side stripes on cards, explainers or notices.
 
 ## Components
 
@@ -182,7 +195,7 @@ Gently rounded throughout: 6px on badges, 8px on photos and explainer corners, 1
 - **Internal Padding:** 20px.
 
 ### Metric cards
-- 10px corners, surface background, 1px border, 4px left edge rotating amber, teal, violet. Label (muted 0.85rem), value (2rem tabular, 1.35rem when longer than 12 characters), note (muted 0.85rem).
+- 10px corners, surface background, 1px border. Label (muted 0.85rem), value (2rem tabular, 1.35rem when longer than 11 characters; on phones 1.5rem, and 1rem for words or long values), note (muted 0.85rem).
 
 ### Hero panel (Home)
 - Record Navy background, Record Paper text, 16px corners, serif question, intro at 82 percent paper, and a full-width blue and red aisle bar along the bottom edge.
