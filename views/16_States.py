@@ -9,7 +9,7 @@ import streamlit as st
 
 import find_members
 from state_map import DELEGATE_PLACES, load_records, outline_svg, show_state_map, state_summary
-from ui import STATES, html_table, inject_css, intro, party_tag, pattern_badge, share_bar
+from ui import STATES, html_table, page_title, inject_css, intro, party_tag, pattern_badge, share_bar
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 INTRO = ("Every current member of Congress from one state, with how often they vote with their party, whether their "
@@ -43,6 +43,7 @@ if not state:
     st.stop()
 
 name = STATES.get(state, state)
+page_title(f"{name} members of Congress")
 place = state in DELEGATE_PLACES
 row = state_summary(seats).set_index("state").loc[state]
 records = load_records()

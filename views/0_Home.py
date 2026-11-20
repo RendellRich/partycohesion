@@ -17,7 +17,7 @@ from flip_utils import add_chamber_control, flip_scores
 from platform_utils import all_member_platform_votes, load_platform, party_totals
 import find_members
 from theme import narrow
-from ui import card, display_name, early_congress, fmt_date, hero_panel, inject_css, section_heading
+from ui import STATES, card, display_name, early_congress, fmt_date, hero_panel, inject_css, section_heading
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -71,6 +71,12 @@ if zip_text.strip():
 
 # Members of Congress by state: hover a state for its delegation, click it to see every member
 section_heading("Members of Congress by state")
+# The map can't be reached by keyboard or read by a screen reader, so the same choice is offered as a list
+codes = sorted(find_members.load_cached()[0]["state_abbrev"].unique(), key=lambda a: STATES.get(a, a))
+state_pick = st.selectbox("Or pick a state", codes, index=None, format_func=lambda a: STATES.get(a, a),
+                          placeholder="Choose a state or territory", key="home_state")
+if state_pick:
+    st.switch_page("views/16_States.py", query_params={"state": state_pick})
 show_state_map("home_state_map")
 st.write("")
 

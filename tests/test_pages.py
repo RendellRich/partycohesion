@@ -36,7 +36,7 @@ def test_page_loads(page):
 def test_members_profile():
     at = open_page("views/2_Member_Explorer.py")
     box = at.selectbox(key="me_member")
-    box.set_value(option(box, "Murkowski, Lisa")).run()
+    box.set_value(option(box, "Lisa Murkowski")).run()
     assert not at.exception, [e.value for e in at.exception]
     text = html(at)
     assert "Lisa Murkowski" in text and "Same question, different president" in [s.value for s in at.header]
@@ -110,7 +110,7 @@ def test_all_votes_search_and_card():
 def test_member_voting_record():
     at = open_page("views/2_Member_Explorer.py")
     box = at.selectbox(key="me_member")
-    box.set_value(option(box, "Murkowski, Lisa")).run()
+    box.set_value(option(box, "Lisa Murkowski")).run()
     assert "Voting record" in [s.value for s in at.header]
     record = at.dataframe[0].value
     assert len(record) > 100 and set(record["Their vote"]) <= {"Yea", "Nay", "Did not vote"}
@@ -140,7 +140,7 @@ def test_platform_votes_member_lookup():
 def test_platform_record_on_member_and_compare_pages():
     at = open_page("views/2_Member_Explorer.py")
     box = at.selectbox(key="me_member")
-    box.set_value(option(box, "Collins, Susan")).run()
+    box.set_value(option(box, "Susan Collins")).run()
     assert not at.exception, [e.value for e in at.exception]
     assert "Votes on their party's platform" in [s.value for s in at.header]
     assert "Against party platform" in html(at) and "Skinny repeal" in html(at)
@@ -185,7 +185,7 @@ def test_home_platform_votes_cards():
 def test_missed_votes_on_member_page():
     at = open_page("views/2_Member_Explorer.py")
     box = at.selectbox(key="me_member")
-    box.set_value(option(box, "Sherrill, Mikie")).run()
+    box.set_value(option(box, "Mikie Sherrill")).run()
     assert not at.exception, [e.value for e in at.exception]
     assert "Missed votes" in [s.value for s in at.header]
     text = html(at)
@@ -250,7 +250,7 @@ def test_floor_statement_quotes_are_sourced():
 def test_campaign_statements_on_member_page():
     at = open_page("views/2_Member_Explorer.py")
     box = at.selectbox(key="me_member")
-    box.set_value(option(box, "Fitzpatrick, Brian")).run()
+    box.set_value(option(box, "Brian Fitzpatrick")).run()
     assert not at.exception, [e.value for e in at.exception]
     assert "Campaign statements and votes" in [s.value for s in at.header]
     text = html(at)
@@ -282,7 +282,7 @@ def test_member_deep_link_details_and_share():
     at.query_params["member"] = "F000466"
     at.run()
     assert not at.exception, [e.value for e in at.exception]
-    assert at.selectbox(key="me_member").value.startswith("Fitzpatrick, Brian")
+    assert at.selectbox(key="me_member").value.startswith("Brian Fitzpatrick")
     text = html(at)
     assert "pc-person" in text and "fitzpatrick.house.gov" in text and "Committees:" in text
     assert "campaign-money.streamlit.app/?member=F000466" in text  # funding link, a separate site
@@ -426,16 +426,20 @@ def test_member_tables_stack_on_phones():
 def test_member_page_shows_recent_votes_first():
     at = open_member("C001098")
     heads = [h.value for h in at.header]
-    assert heads[0] == "Recent votes" and "Voting record" in heads
+    assert heads[0] == "Recent final votes" and "Voting record" in heads
     text = html(at)
-    assert "five most recent votes" in text and 'href="#voting-record"' in text
+    assert "most recent final votes" in text and 'href="#voting-record"' in text
+    recent = text.split("most recent final votes")[1].split("Search every vote")[0]
+    assert "Cloture" not in recent and "In the nature of a substitute" not in recent
 
 
 def test_member_who_left_office_is_not_shown_as_serving_now():
     at = open_member("G000551")  # Raúl Grijalva, left office in 2025
     text = html(at)
     assert "2007 to 2025" in text and "to now" not in text and "so far" not in text
-    assert "Last votes before leaving office" in [h.value for h in at.header]
+    # One vote in the 119th doesn't make the headline; his last full Congress does
+    assert "Party unity, 118th" in text and "119th: only 1 party-line vote" in text
+    assert "Last final votes before leaving office" in [h.value for h in at.header]
 
 
 def test_numbers_come_with_typical_values():
@@ -463,3 +467,17 @@ def test_phone_seat_maps_show_who_without_navigating():
         at.run()
         assert not at.exception, [e.value for e in at.exception]
         assert any("Tap " in c.value and "dot" in c.value for c in at.caption)
+
+
+def test_members_picker_finds_names_as_people_say_them():
+    at = open_page("views/2_Member_Explorer.py")
+    opts = at.selectbox(key="me_member").options
+    assert "Ted Cruz (R-TX, Senate)" in opts
+    assert not any(o.startswith("Cruz, ") for o in opts)
+
+
+def test_home_state_list_opens_the_state():
+    at = open_page("views/0_Home.py")
+    at.selectbox(key="home_state").set_value("TX").run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert at.title[0].value == "Texas"

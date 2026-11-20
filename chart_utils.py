@@ -44,6 +44,29 @@ def chamber_label(chamber: str) -> str:
     return {"Both": "House and Senate", "All": "House and Senate"}.get(chamber, chamber)
 
 
+def _luminance(hex_color: str) -> float:
+    rgb = [int(hex_color.lstrip("#")[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+    lin = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb]
+    return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+
+
+def label_ink(fill: str) -> str:
+    """Near-black or white, whichever reads better on a bar of this fill (Plotly's automatic pick can fall below
+    4.5:1 on mid-tone violets)."""
+    lum = _luminance(fill)
+    dark, light = (lum + 0.05) / (_luminance("#161616") + 0.05), 1.05 / (lum + 0.05)
+    return "#161616" if dark >= light else "#FFFFFF"
+
+
+def _label_ink(fig) -> None:
+    """Set the text color inside each bar from its own fill, so in-bar labels meet 4.5:1 in both themes."""
+    for trace in fig.data:
+        color = getattr(getattr(trace, "marker", None), "color", None)
+        if trace.type == "bar" and trace.text is not None and isinstance(color, str) and len(color) == 7 \
+                and color.startswith("#"):
+            trace.insidetextfont = dict(color=label_ink(color))
+
+
 def _recolor(obj) -> None:
     """Swap dark-token colors for their light partners in a Plotly object, wherever a color can sit."""
     from theme import to_mode
@@ -87,6 +110,7 @@ def show_chart(fig, title: str, filename: str, key: str | None = None, on_select
         for item in list(fig.layout.annotations or []) + list(fig.layout.shapes or []):
             if not (item.name or "").startswith("fixed"):  # "fixed..." items already picked their light color
                 _recolor(item)
+    _label_ink(fig)
     from theme import narrow
     text, lines = wrap_title(title, TITLE_CHARS if narrow() else 90)
     top = max(fig.layout.margin.t or 0, 80) + 21 * (lines - 1)
@@ -126,6 +150,8 @@ def show_chart(fig, title: str, filename: str, key: str | None = None, on_select
     width, height = EXPORT_SIZES[st.session_state.get("export_size", DEFAULT_EXPORT)]
     config = {
         "displaylogo": False,
+        # Only the download button: zoom and pan buttons added six keyboard Tab stops per chart and little for readers
+        "modeBarButtons": [["toImage"]],
         "toImageButtonOptions": {"format": "png", "filename": filename, "width": width, "height": height, "scale": 2},
     }
     if on_select is None:

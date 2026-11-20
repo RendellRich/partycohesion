@@ -76,3 +76,11 @@ def test_served_on_keeps_only_listed_runs():
     runs = pd.DataFrame({"first_roll": [2, 5], "last_roll": [3, 5]})
     assert served_on(rolls, runs).tolist() == [False, True, True, False, True, False]
     assert served_on(rolls, runs.iloc[0:0]).all()
+
+
+def test_in_bar_labels_meet_contrast():
+    from chart_utils import PATTERN_COLORS, _luminance, label_ink
+    for fill in list(PATTERN_COLORS.values()) + ["#9A82D9"]:
+        ink = label_ink(fill)
+        hi, lo = sorted([_luminance(fill), _luminance(ink)], reverse=True)
+        assert (hi + 0.05) / (lo + 0.05) >= 4.5, fill

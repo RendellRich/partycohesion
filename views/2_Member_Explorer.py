@@ -17,7 +17,7 @@ from state_map import DELEGATE_PLACES
 from state_splits import MIN_SHARED, load_all, member_summary
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import platform_record
-from ui import (bill_label, explainer, display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row,
+from ui import (bill_label, page_title, explainer, display_name, fmt_date, html_table, inject_css, intro, last_name, member_header, metric_row,
                 party_tag, pattern_badge, share_bar, STATES)
 from vote_index import load_votes, member_record, search_votes, voteview_url
 import floor_remarks
@@ -101,6 +101,10 @@ def load_vote_changes():
 DELEGATE_NOTE = ("Delegates and the Resident Commissioner can vote only on some House roll calls, mostly amendments, "
                  "and only in Congresses whose rules allow it. Their counts here include only those roll calls, and "
                  "they appear in this data only in those Congresses.")
+# Roll calls that decide something (passage, a resolution, a nomination, a conference report, a veto override),
+# as opposed to amendments and procedural steps like cloture
+FINAL_VOTES = (r"On Passage|Suspend the Rules and (?:Pass|Agree)|On the Nomination|On Agreeing to the Resolution|"
+               r"On the (?:Joint |Concurrent )?Resolution|Conference Report|Overrid|On the Bill")
 SMALL_SAMPLE = 50  # below this many party-line votes, a party unity rate is shown as a small sample
 
 MISSED_NOTE = ("A missed vote is a roll call held while the member served on which they cast no vote. The record "
@@ -158,13 +162,16 @@ df = load_members()
 flips = load_flips()
 newest = int(df["congress"].max())
 
-# One entry per person, labeled with their most recent party, state and chamber
+# One entry per person, labeled the way people say the name ("Ted Cruz (R-TX, Senate)", the same as the Home lookup,
+# so "Ted Cruz" or "Cruz" both find him), listed by last name
 latest = df.sort_values("congress").groupby("icpsr").tail(1)
-latest = latest.assign(label=latest["name"] + " (" + latest["party"].str[0] + "-" + latest["state_abbrev"] + ", "
-                       + latest["chamber"] + ")")
+latest = latest.assign(label=[f"{display_name(n)} ({p[0]}-{s}, {c})" for n, p, s, c in
+                              zip(latest["name"], latest["party"], latest["state_abbrev"], latest["chamber"])],
+                       sort_key=[last_name(n).lower() + " " + display_name(n).lower() for n in latest["name"]])
 dupes = latest["label"].duplicated(keep=False)
 latest.loc[dupes, "label"] = latest.loc[dupes, "label"] + " #" + latest.loc[dupes, "icpsr"].astype(str)
-options = dict(zip(latest.sort_values("label")["label"], latest.sort_values("label")["icpsr"]))
+ordered = latest.sort_values("sort_key")
+options = dict(zip(ordered["label"], ordered["icpsr"]))
 
 # A shared link opens a member directly: ?member=<Bioguide ID>
 bioguide_of = dict(zip(latest["icpsr"], latest["bioguide_id"]))
@@ -204,6 +211,7 @@ if pick:
     bioguide = bioguide_of.get(icpsr, "")
     if bioguide:
         st.query_params["member"] = bioguide
+    page_title(display_name(member["name"]))
     # A member who left office partway through the newest Congress (death, resignation, a new office) is not "now"
     details = load_details()
     left = None
@@ -223,7 +231,11 @@ if pick:
     if scored.empty:
         unity = ("Party unity", "None", "No party-line votes scored")
     else:
-        u = scored.iloc[-1]
+        latest_u = scored.iloc[-1]
+        full = scored[scored["unity_votes_cast"] >= SMALL_SAMPLE]
+        # A short latest Congress (a new member, or one who left early) doesn't make the headline when an earlier,
+        # full Congress exists; it goes in the note instead, so one vote never stands for a whole career
+        u = full.iloc[-1] if int(latest_u["unity_votes_cast"]) < SMALL_SAMPLE and len(full) else latest_u
         cast_n = int(u["unity_votes_cast"])
         if cast_n < SMALL_SAMPLE:
             # A handful of votes can't carry a decimal place, and the reader should know the record is short
@@ -237,9 +249,13 @@ if pick:
             peers = df[(df["congress"] == u["congress"]) & (df["chamber"] == u["chamber"])
                        & (df["caucus"].fillna(df["party"]) == grp)]["party_unity_pct"]
             who = {"Senate": "senator", "House": "House member"}.get(u["chamber"], "member")
-            unity = (f"Party unity, {ordinal(u['congress'])}", f"{u['party_unity_pct']:.1f}%",
-                     f"{int(u['votes_with_party']):,} of {cast_n:,} party-line votes; typical {grp} {who} "
-                     f"{peers.median():.1f}%")
+            note = (f"{int(u['votes_with_party']):,} of {cast_n:,} party-line votes; typical {grp} {who} "
+                    f"{peers.median():.1f}%")
+            if u is not latest_u:
+                n_last = int(latest_u["unity_votes_cast"])
+                note += (f". {ordinal(latest_u['congress'])}: only {n_last} party-line vote{'' if n_last == 1 else 's'}"
+                         + (" so far" if int(latest_u["congress"]) == newest and not left else ""))
+            unity = (f"Party unity, {ordinal(u['congress'])}", f"{u['party_unity_pct']:.1f}%", note)
     overall = flip_scores(flips[flips["icpsr"] == icpsr])
     if overall.empty:
         flip = ("Position Flips", "No votes", "No votes in these categories")
@@ -272,18 +288,34 @@ if pick:
     ])
     member_facts(bioguide)
 
-    # Their latest votes up front, since "how did they vote" is why most visitors come; the full record is below
+    # Their latest votes up front, since "how did they vote" is why most visitors come; the full record is below.
+    # Final votes (passage, resolutions, nominations) answer that question; cloture, amendments and other procedural
+    # roll calls stay in the full record. One row per bill, its latest final vote.
     side = caucus if pd.notna(caucus) else member["party"]
     record = member_record(icpsr, rows, load_votes())
     if not record.empty:
-        st.header("Last votes before leaving office" if left else "Recent votes")
-        latest = record.sort_values(["date", "rollnumber"], ascending=False).head(5)
+        newest_first = record.sort_values(["date", "rollnumber"], ascending=False)
+        final = newest_first[newest_first["vote_question"].fillna("").str.contains(FINAL_VOTES, regex=True)]
+        final = final[~final["bill_number"].fillna("").duplicated() | final["bill_number"].isna()]
+        shown_votes = final.head(5) if len(final) else newest_first.head(5)  # delegates may have no final votes
+        kind = "final votes" if len(final) else "votes"
+        st.header(f"Last {kind} before leaving office" if left else f"Recent {kind}")
+
+        def vote_name(x) -> str:
+            text = x.label if len(x.label) <= 160 else x.label[:157].rsplit(" ", 1)[0] + "…"
+            bill = x.bill_number if isinstance(x.bill_number, str) else ""
+            if bill and not bill.startswith("PN") and not text.startswith(bill):  # nomination numbers mean little
+                return f"{bill_label(bill)}: {text}"
+            return text
+
         html_table(["Vote", "Date", "Their vote", f"{side} majority", "Result"],
-                   [[(f"{x.bill_number}: " if isinstance(x.bill_number, str) and x.bill_number
-                      and not x.label.startswith(x.bill_number) else "") + x.label, fmt_date(x.date), x.their_vote,
+                   [[vote_name(x), fmt_date(x.date), x.their_vote,
                      {"Tie": "Split evenly"}.get(x.party_position, x.party_position), x.vote_result]
-                    for x in latest.itertuples()], muted_cols=(1,), label=f"{short}'s {'last five' if left else 'five most recent'} votes",
-                   stack=True, wide_cols=(0,))
+                    for x in shown_votes.itertuples()], muted_cols=(1,),
+                   label=f"{short}'s {'last' if left else 'most recent'} {kind}", stack=True, wide_cols=(0,))
+        if len(final):
+            st.caption("Final votes on bills, resolutions and nominations, newest first. Amendments and procedural "
+                       "votes, like cloture, are in the full record.")
         st.markdown('<a class="pc-link-target" href="#voting-record">Search every vote in their record</a>',
                     unsafe_allow_html=True)
 

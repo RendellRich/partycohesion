@@ -64,6 +64,9 @@ pages = {
 }
 
 nav = st.navigation(pages)
+# Each page's own name in the browser tab (member and state pages set theirs again with the name)
+from ui import page_title  # noqa: E402
+page_title("" if nav.title == "Home" else nav.title)
 theme.sync()  # keeps the site's colors in step with the light/dark setting
 inject_css()  # site styles for every page, including pages that don't load them themselves
 
