@@ -68,20 +68,20 @@ top = ranked.iloc[0] if len(ranked) else None
 if chamber == "Senate":
     mixed = now[~now["same_side"]]
     cards = [
-        ("Same-party senators", f"{same['split_pct'].median():.1f}%" if len(same) else "None",
+        ("Same-party senators", f"{same['split_pct'].median():.1f}%" if len(same) else "No pairs",
          f"median share of votes both cast where they split, across {len(same)} pairs"),
-        ("Different-party senators", f"{mixed['split_pct'].median():.1f}%" if len(mixed) else "None",
+        ("Different-party senators", f"{mixed['split_pct'].median():.1f}%" if len(mixed) else "No pairs",
          f"median, across {len(mixed)} pairs" + (f" ({', '.join(sorted(mixed['state'].unique()))})" if len(mixed) else "")),
     ]
 else:
     cards = [
         ("Same-party House pairs", f"{len(same):,}", f"two members of one party from one state, in the "
                                                      f"{ordinal(congress)} Congress"),
-        ("Typical pair", f"{same['split_pct'].median():.1f}%" if len(same) else "None",
+        ("Typical pair", f"{same['split_pct'].median():.1f}%" if len(same) else "No pairs",
          "median share of votes both cast where they split"),
     ]
 cards += [
-    ("Most split same-party pair", f"{top['split_pct']:.1f}%" if top is not None else "None",
+    ("Most split same-party pair", f"{top['split_pct']:.1f}%" if top is not None else "No pairs",
      f"{short(top['name_a'])} and {short(top['name_b'])} ({top['state']})" if top is not None else ""),
     ("Same-party splits", f"{int(same['splits'].sum()):,}", f"times two same-party members from one state split, "
                                                            f"{ordinal(congress)} Congress"),

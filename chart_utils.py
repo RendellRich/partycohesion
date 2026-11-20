@@ -89,7 +89,7 @@ def _recolor(obj) -> None:
             _recolor(child)
 
 
-TITLE_CHARS = 42  # about what fits across a phone-width chart at the title size
+TITLE_CHARS = 34  # about what fits across a 320px-wide phone chart at the title size
 
 
 def wrap_title(title: str, width: int = TITLE_CHARS) -> tuple[str, int]:

@@ -177,10 +177,6 @@ if shown.empty and not shown_vacant:
         st.markdown('<p role="status">No members match. Try part of a last name, or clear the search.</p>',
                     unsafe_allow_html=True)
 else:
-    st.markdown('<p class="pc-muted">Party unity is the share of party-line votes where a member voted with their own '
-                "party. Missed votes is the share of roll calls they didn't vote on. Position Flips shows whether their "
-                "votes on the same kinds of questions changed when the White House changed parties. Tap or click a "
-                "name for the full record.</p>", unsafe_allow_html=True)
     if len(senators):
         st.header("Senators")
         st.caption(typical("Senate", "senator"))
@@ -200,7 +196,11 @@ else:
                 house = house[[find_members.district_label(state, d) == pick for d in house["district"]]]
                 empty_seats = [d for d in empty_seats if find_members.district_label(state, d) == pick]
         member_table(house, f"House members from {name}", empty_seats)
-    st.caption("Numbers are from each member's latest Congress in the data.")
+    # What the columns mean, after the members rather than before them, so the names come first
+    st.caption("Party unity is the share of party-line votes where a member voted with their own party. Missed votes "
+               "is the share of roll calls they didn't vote on. Position Flips shows whether their votes on the same "
+               "kinds of questions changed when the White House changed parties. Numbers are from each member's "
+               "latest Congress in the data. Tap or click a name for the full record.")
 
 if not place:
     house_link = (f', and its <a href="Same_State_Different_Vote?state={state}&chamber=house" target="_self">House '

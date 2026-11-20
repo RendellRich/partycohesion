@@ -7,7 +7,7 @@ import streamlit as st
 from pathlib import Path
 from chart_utils import show_chart, ordinal, PATTERN_COLORS, ACCENT, MUTED
 from flip_utils import add_chamber_control, flip_scores, MIN_VOTES_EACH_SIDE
-from ui import explainer, shortcuts
+from ui import notice, display_name, last_name, explainer, metric_row, shortcuts
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 CATEGORIES = ["All categories", "Debt limit", "Stopgap funding", "Full-year funding", "Disaster aid", "War powers limits"]
@@ -131,13 +131,15 @@ scored = view[view["label"] != "Not enough votes"]
 # ---------------------------------------------------------------------------
 st.header("How consistent are members?")
 if scored.empty:
-    st.info("No members in this selection have enough votes under both parties' presidents.")
+    notice("No members in this selection have enough votes under both parties' presidents.")
 else:
-    m1, m2, m3 = st.columns(3)
-    m1.metric("Members scored", f"{len(scored):,}", help=f"{len(view) - len(scored):,} more in this selection lack "
-              f"{MIN_VOTES_EACH_SIDE}+ votes under each party's president")
-    m2.metric("Consistent", f"{(scored['label'] == 'Consistent').mean() * 100:.0f}%")
-    m3.metric("Changed with the White House", f"{(scored['label'] == 'Changed with the White House').mean() * 100:.0f}%")
+    n_cons = int((scored["label"] == "Consistent").sum())
+    n_changed = int((scored["label"] == "Changed with the White House").sum())
+    metric_row([("Members scored", f"{len(scored):,}", f"{len(view) - len(scored):,} more lack {MIN_VOTES_EACH_SIDE}+ "
+                 "votes under each party's president"),
+                ("Consistent", f"{n_cons / len(scored) * 100:.0f}%", f"{n_cons:,} of {len(scored):,} scored"),
+                ("Changed with the White House", f"{n_changed / len(scored) * 100:.0f}%",
+                 f"{n_changed:,} of {len(scored):,} scored")])
     left_out = view[view["label"] == "Not enough votes"]
     if not left_out.empty:
         first = members.groupby("icpsr")["congress"].min()
@@ -167,7 +169,7 @@ else:
     table = scored.assign(total=scored["n_own"] + scored["n_other"]).sort_values(["shift", "total", "name"], ascending=[False, False, True])
     st.dataframe(
         pd.DataFrame({
-            "Name": table["name"],
+            "Name": table["name"].map(display_name),
             "Party-State": table["party"].str[0] + "-" + table["state_abbrev"],
             "Chamber": table["chamber"],
             "Own party's president": [f"{f:.0f} of {n:.0f} ({r:.0f}%)" for f, n, r in
@@ -189,7 +191,9 @@ else:
 st.markdown("---")
 st.header("One member's votes")
 pool = scores if not current_only else scores[scores["congress"] == newest]
-labels = {f"{r.name} ({r.party[0]}-{r.state_abbrev}, {r.chamber})": r.icpsr for r in pool.sort_values("name").itertuples()}
+labels = {f"{display_name(r.name)} ({r.party[0]}-{r.state_abbrev}, {r.chamber})": r.icpsr
+          for r in pool.sort_values("name").itertuples()}  # sorted by last name, shown first name first
+surname = {r.icpsr: last_name(r.name) for r in pool.itertuples()}
 pick = st.selectbox("Member", list(labels), index=None, placeholder="Type a name…", key="fl_member")
 if pick:
     icpsr = labels[pick]
@@ -209,11 +213,11 @@ if pick:
         fig2 = px.bar(long, x="Type of vote", y="Gave the president room (%)", color="White House", barmode="group",
                       color_discrete_sequence=[ACCENT, MUTED], range_y=[0, 105])
         fig2.update_layout(height=340, legend_title_text="")
-        name = pick.split(",")[0]
+        name = surname[icpsr]
         show_chart(fig2, f"{name}: votes under each party's president", f"position_flips_{name.lower().replace(' ', '_')}")
         st.dataframe(detail.assign(**{
-            "Own party's president": [f"{v:.0f}% of {n}" if n else "—" for v, n in zip(detail["Own party's president"], detail["n_own"])],
-            "Other party's president": [f"{v:.0f}% of {n}" if n else "—" for v, n in zip(detail["Other party's president"], detail["n_other"])],
+            "Own party's president": [f"{v:.0f}% of {n}" if n else "No votes" for v, n in zip(detail["Own party's president"], detail["n_own"])],
+            "Other party's president": [f"{v:.0f}% of {n}" if n else "No votes" for v, n in zip(detail["Other party's president"], detail["n_other"])],
         }).drop(columns=["n_own", "n_other"]), width="stretch", hide_index=True)
 
     mine = member_votes[member_votes["icpsr"] == icpsr].merge(

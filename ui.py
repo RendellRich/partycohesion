@@ -89,6 +89,8 @@ CSS = f"""
 .pc-table th {{ color: var(--pc-muted); font-size: 0.85rem; font-weight: 600; text-align: left; padding: 12px 16px; }}
 .pc-table td {{ padding: 12px 16px; border-top: 1px solid var(--pc-border); }}
 .pc-muted, .pc-table td.pc-muted {{ color: var(--pc-muted); }}
+.pc-notice {{ color: var(--pc-body); border-left: 3px solid var(--pc-control); padding: 2px 0 2px 12px;
+             margin: 0.25rem 0 1rem; max-width: 72ch; }}
 /* How they voted lately: a short list with the vote word in a chip. Yea is filled, Nay is outlined, a missed vote is
    dashed, so the mark reads without color as well as with it. */
 .pc-lately {{ list-style: none; margin: 0 0 0.5rem; padding: 0; background: var(--pc-surface);
@@ -322,6 +324,13 @@ def metric_html(label: str, value: str, note: str = "") -> str:
 
 def metric_card(label: str, value: str, note: str = "") -> None:
     st.markdown(metric_html(label, value, note), unsafe_allow_html=True)
+
+
+def notice(text: str) -> None:
+    """A plain status line for empty results and short notes, in the site's own type instead of Streamlit's blue
+    info box. **bold** in the text is kept."""
+    body = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", escape(text))
+    st.markdown(f'<p class="pc-notice" role="status">{body}</p>', unsafe_allow_html=True)
 
 
 def metric_row(items: list[tuple[str, str, str]]) -> None:

@@ -9,7 +9,7 @@ import streamlit as st
 from chart_utils import chamber_label, ordinal
 from lobbying import load as load_lobbying, summary_line
 from platform_utils import platform_roll_calls
-from ui import explainer, inject_css, intro, metric_row, vote_card
+from ui import notice, explainer, inject_css, intro, metric_row, vote_card
 from vote_index import load_votes, members_who_broke_ranks, search_votes, voteview_url
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -72,7 +72,7 @@ metric_row([
 ])
 
 if found.empty:
-    st.info("No votes match. Try fewer words, or set Congress to All.")
+    notice("No votes match. Try fewer words, or set Congress to All.")
     st.stop()
 
 shown = found.head(SHOW_AT_MOST)
@@ -105,7 +105,7 @@ v = shown.loc[labels[pick]]
 vote_card(v, members_who_broke_ranks(v, members),
           link=voteview_url(v["congress"], v["chamber"], v["rollnumber"]))
 if pd.notna(v["topic"]):
-    st.info(f"**On Platform Votes: {v['topic']}** ({v['status'].lower()}). A {v['dem_platform_vote']} vote matched the "
+    notice(f"**On Platform Votes: {v['topic']}** ({v['status'].lower()}). A {v['dem_platform_vote']} vote matched the "
             f"Democratic platform and a {v['rep_platform_vote']} vote matched the Republican platform.")
     st.page_link("views/11_Platform_Votes.py", label="See who voted against their party's platform")
 if isinstance(v["bill_number"], str) and v["bill_number"]:

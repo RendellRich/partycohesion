@@ -6,7 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
 from chart_utils import BG, PARTY_COLORS, chamber_label, ordinal, show_chart
-from ui import early_congress, early_congress_note, explainer, intro, metric_row
+from ui import notice, early_congress, early_congress_note, explainer, intro, metric_row
 
 ORDER = {"party": ["Democrat", "Republican"], "chamber": ["House", "Senate"]}
 
@@ -26,7 +26,7 @@ explainer("Pick a Congress and a chamber. The first chart shows how far apart th
           "ideology scale. The next ones show how often members side with their own party when the parties split.")
 
 if early_congress_note(df):
-    st.info(early_congress_note(df))
+    notice(early_congress_note(df))
 
 # Filters
 col_f1, col_f2 = st.columns(2)
@@ -84,7 +84,7 @@ if not plot_df.empty:
     )
     show_chart(fig, f"Members by ideology score, {ordinal(congress)} Congress, {chamber_label(chamber)}", f"ideology_{congress}_{chamber.lower()}")
 else:
-    st.info("No data for the selected filters.")
+    notice("No data for the selected filters.")
 
 # Party unity distribution
 st.header("How often members vote with their party")

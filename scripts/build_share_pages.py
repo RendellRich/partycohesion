@@ -129,7 +129,18 @@ def main() -> None:
 
     # Members: everyone in the data since 2007, under their latest party, state and chamber
     members = pd.read_csv(ROOT / "data" / "members_processed.csv")
-    members = members[members["bioguide_id"].notna()].sort_values("congress").groupby("bioguide_id").tail(1)
+    members = members[members["bioguide_id"].notna()]
+    # The year their record here starts, as the member page says it: the first year of their first Congress in the
+    # data, or the year they joined when that came in the Congress's second year
+    since = 2 * members.groupby("bioguide_id")["congress"].min() + 1787
+    details = ROOT / "data" / "member_details.csv"
+    if details.exists():
+        joined = pd.read_csv(details).set_index("bioguide_id")["first_year"]
+        for b, y in since.items():
+            j = joined.get(b)
+            if str(j).isdigit() and y < int(j) <= y + 1:
+                since[b] = int(j)
+    members = members.sort_values("congress").groupby("bioguide_id").tail(1)
     cards = ROOT / "docs" / "social" / "members"
     for m in members.itertuples():
         who = f"{display_name(m.name)} ({str(m.party)[0]}-{m.state_abbrev})"
@@ -138,7 +149,7 @@ def main() -> None:
         write(f"member/{m.bioguide_id}", page(
             f"{who}: voting record",
             f"How often {display_name(m.name)} votes with their party, whether their votes change with the White "
-            f"House, and every roll call since 2007. {SOURCE}",
+            f"House, and every roll call since {int(since[m.bioguide_id])}. {SOURCE}",
             f"{SHARE}/member/{m.bioguide_id}/", f"{APP}/Member_Explorer?member={m.bioguide_id}", image))
         n += 1
     print(f"Wrote {n:,} share pages to {OUT.relative_to(ROOT)}")
