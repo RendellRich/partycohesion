@@ -222,6 +222,54 @@ if pick:
     # The member's name is the page title, so a shared link opens straight onto them
     member_header(member["name"], member["party"], member["state_abbrev"], member["chamber"],
                   rows["congress"].min(), rows["congress"].max(), newest, as_title=True, left=left)
+    # How they voted lately, right under the name: "how did they vote" is why most visitors come. Final votes
+    # (passage, resolutions, nominations) answer that; cloture, amendments and procedural roll calls stay in the full
+    # record. One row per bill, its latest final vote. Bills come first, since a run of nominations says less about
+    # what a member stands for; nominations fill in when there are fewer than five bills.
+    caucus = member.get("caucus")
+    side = caucus if pd.notna(caucus) else member["party"]
+    record = member_record(icpsr, rows, load_votes())
+    if not record.empty:
+        newest_first = record.sort_values(["date", "rollnumber"], ascending=False)
+        final = newest_first[newest_first["vote_question"].fillna("").str.contains(FINAL_VOTES, regex=True)]
+        final = final[~final["bill_number"].fillna("").duplicated() | final["bill_number"].isna()]
+        nomination = (final["vote_question"].fillna("").str.contains("Nomination")
+                      | final["bill_number"].fillna("").str.startswith("PN"))
+        bills = final[~nomination].head(5)
+        # A delegate may have no final votes (they vote only on amendments); then their latest roll calls
+        shown_votes = pd.concat([bills, final[nomination].head(5 - len(bills))]) if len(final) else newest_first.head(5)
+        st.header("How they voted last" if left else "How they voted lately", anchor="recent-votes")
+
+        def vote_name(x) -> str:
+            text = x.label if len(x.label) <= 120 else x.label[:117].rsplit(" ", 1)[0] + "…"
+            bill = x.bill_number if isinstance(x.bill_number, str) else ""
+            if bill and not bill.startswith("PN") and not text.startswith(bill):  # nomination numbers mean little
+                return f"{bill_label(bill)}: {text}"
+            return text
+
+        def vote_meta(x) -> str:
+            parts = [fmt_date(x.date), f"{x.vote_result}." if isinstance(x.vote_result, str) else ""]
+            if x.their_vote in ("Yea", "Nay") and x.party_position in ("Yea", "Nay"):
+                parts.append(f"Voted {'with' if x.their_vote == x.party_position else 'against'} most {side}s.")
+            elif x.party_position == "Tie":
+                parts.append(f"{side}s split evenly.")
+            return f"{parts[0]}. " + " ".join(p for p in parts[1:] if p)
+
+        def chip(v: str) -> str:
+            cls = {"Yea": "pc-vote pc-vote-yea", "Nay": "pc-vote"}.get(v, "pc-vote pc-vote-other")
+            word = "Didn't vote" if v == "Did not vote" else v
+            return f'<span class="{cls}">{escape(word)}</span>'
+
+        items = "".join(f'<li>{chip(x.their_vote)}<div><p class="pc-lately-title">{escape(vote_name(x))}</p>'
+                        f'<p class="pc-lately-meta">{escape(vote_meta(x))}</p></div></li>'
+                        for x in shown_votes.itertuples())
+        which = "last" if left else "most recent"
+        st.markdown(f'<ul class="pc-lately" aria-label="{escape(short)}&#39;s {which} votes">{items}</ul>',
+                    unsafe_allow_html=True)
+        st.markdown(f'<p class="pc-muted">{"Final votes on bills and resolutions, then nominations, newest first. " if len(final) else ""}'
+                    '<a class="pc-link-target" href="#voting-record">Search every vote in their record</a></p>',
+                    unsafe_allow_html=True)
+
     # "On this page" links right under the name, filled in at the end once we know which sections this member has.
     # A member page runs to many phone screens, so the parts people look for are one tap away.
     jumps = st.empty()
@@ -296,37 +344,6 @@ if pick:
         st.header(title, anchor=anchor)
         if jump:
             toc.append((jump, anchor))
-
-    # Their latest votes up front, since "how did they vote" is why most visitors come; the full record is below.
-    # Final votes (passage, resolutions, nominations) answer that question; cloture, amendments and other procedural
-    # roll calls stay in the full record. One row per bill, its latest final vote.
-    side = caucus if pd.notna(caucus) else member["party"]
-    record = member_record(icpsr, rows, load_votes())
-    if not record.empty:
-        newest_first = record.sort_values(["date", "rollnumber"], ascending=False)
-        final = newest_first[newest_first["vote_question"].fillna("").str.contains(FINAL_VOTES, regex=True)]
-        final = final[~final["bill_number"].fillna("").duplicated() | final["bill_number"].isna()]
-        shown_votes = final.head(5) if len(final) else newest_first.head(5)  # delegates may have no final votes
-        kind = "final votes" if len(final) else "votes"
-        section(f"Last {kind} before leaving office" if left else f"Recent {kind}", "recent-votes", "Recent votes")
-
-        def vote_name(x) -> str:
-            text = x.label if len(x.label) <= 160 else x.label[:157].rsplit(" ", 1)[0] + "…"
-            bill = x.bill_number if isinstance(x.bill_number, str) else ""
-            if bill and not bill.startswith("PN") and not text.startswith(bill):  # nomination numbers mean little
-                return f"{bill_label(bill)}: {text}"
-            return text
-
-        html_table(["Vote", "Date", "Their vote", f"{party_adj(side)} majority", "Result"],
-                   [[vote_name(x), fmt_date(x.date), x.their_vote,
-                     {"Tie": "Split evenly"}.get(x.party_position, x.party_position), x.vote_result]
-                    for x in shown_votes.itertuples()], muted_cols=(1,),
-                   label=f"{short}'s {'last' if left else 'most recent'} {kind}", stack=True, wide_cols=(0,))
-        if len(final):
-            st.caption("Final votes on bills, resolutions and nominations, newest first. Amendments and procedural "
-                       "votes, like cloture, are in the full record.")
-        st.markdown('<a class="pc-link-target" href="#voting-record">Search every vote in their record</a>',
-                    unsafe_allow_html=True)
 
     # Their seat in the chamber, in their most recent Congress
     room = (df[(df["congress"] == member["congress"]) & (df["chamber"] == member["chamber"])]
@@ -458,7 +475,8 @@ if pick:
                                 f"{r.splits:,} of {r.both_voted:,}", f"{r.split_pct:.1f}%",
                                 f"{typical.get(r.congress, float('nan')):.1f}%"])
             html_table(["Congress", "Other senator", "Party", "Split on", "Share", "Typical same-party pair"],
-                       rows_sp, raw_cols=(2,), muted_cols=(5,), label="Splits with the other senator", stack=True, limit=5)
+                       rows_sp, raw_cols=(2,), muted_cols=(5,), label="Splits with the other senator", stack=True, limit=1,
+                       more=f"Show {len(rows_sp) - 1} earlier Congress{'es' if len(rows_sp) > 2 else ''}")
         if len(house_rows):
             typical_h = all_house[all_house["colleagues"] >= 2].groupby("congress")["avg_split"].median()
             html_table(["Congress", "Average split with their state's party", "Colleagues compared",
@@ -468,7 +486,8 @@ if pick:
                          f"{display_name(r.most_split_with)} ({r.most_split_pct:.1f}%)",
                          f"{typical_h.get(r.congress, float('nan')):.1f}%"]
                         for r in house_rows.sort_values("congress", ascending=False).itertuples()],
-                       muted_cols=(5,), label="Splits with House members of the same party", stack=True, limit=5)
+                       muted_cols=(5,), label="Splits with House members of the same party", stack=True, limit=1,
+                       more=f"Show {len(house_rows) - 1} earlier Congress{'es' if len(house_rows) > 2 else ''}")
         st.caption("Only Yea and Nay count. House comparisons are with members of the same party from the same "
                    f"state who shared at least {MIN_SHARED['House']} votes; senators are compared with their state's "
                    f"other senator when they shared at least {MIN_SHARED['Senate']} votes. A split is a fact about "
@@ -491,17 +510,18 @@ if pick:
             medians = peers_m.groupby(["congress", "chamber"])["missed_pct"].median()
             held, typical = "Roll calls open to delegates", "Delegate median"
             st.markdown(f"{short} missed **{tot_missed:,} of {tot_held:,}** roll calls open to delegates while they "
-                        f"served ({100 * tot_missed / tot_held:.1f}%) since 2007.")
+                        f"served ({100 * tot_missed / tot_held:.1f}%) since {since}.")
         else:
             medians = missed_all.groupby(["congress", "chamber"])["missed_pct"].median()
             held, typical = "Roll calls held while serving", "Chamber median"
             st.markdown(f"{short} missed **{tot_missed:,} of {tot_held:,}** roll calls held while they served "
-                        f"({100 * tot_missed / tot_held:.1f}%) since 2007.")
+                        f"({100 * tot_missed / tot_held:.1f}%) since {since}.")
         html_table(["Congress", "Chamber", "Missed", held, "Share", typical],
                    [[ordinal(int(x.congress)), x.chamber, f"{int(x.missed):,}", f"{int(x.eligible):,}",
                      f"{x.missed_pct:.1f}%", f"{medians.loc[(x.congress, x.chamber)]:.1f}%"]
                     for x in mine_missed.itertuples()], muted_cols=(3, 5), label="Missed votes by Congress",
-                   stack=True, limit=5)
+                   stack=True, limit=1,
+                   more=f"Show {len(mine_missed) - 1} earlier Congress{'es' if len(mine_missed) > 2 else ''}")
         st.caption((DELEGATE_NOTE + " " if delegate else "") + MISSED_NOTE)
 
     # Party unity over time
@@ -561,7 +581,7 @@ if pick:
                    f"ideology_position_{short.lower().replace(' ', '_')}_{int(member['congress'])}")
     # Full voting record
     section("Voting record", "voting-record", "Every vote")
-    st.markdown(f"Every roll call {short} was eligible for while in office, from 2007 on. A vote is flagged when "
+    st.markdown(f"Every roll call {short} was eligible for while in office, from {since} on. A vote is flagged when "
                 f"{short} voted against the {party_adj(side)} majority.")
     if record.empty:
         st.caption("No roll-call records found for this member.")

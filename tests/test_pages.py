@@ -1,3 +1,4 @@
+import re
 """Every page loads without an error, and the main interactions work. Uses Streamlit's built-in test runner."""
 from pathlib import Path
 
@@ -428,11 +429,20 @@ def test_member_tables_stack_on_phones():
 def test_member_page_shows_recent_votes_first():
     at = open_member("C001098")
     heads = [h.value for h in at.header]
-    assert heads[0] == "Recent final votes" and "Voting record" in heads
+    assert heads[0] == "How they voted lately" and "Voting record" in heads
     text = html(at)
-    assert "most recent final votes" in text and 'href="#voting-record"' in text
-    recent = text.split("most recent final votes")[1].split("Search every vote")[0]
+    # The list comes before the headline numbers, right under the name
+    assert text.index('class="pc-lately"') < text.index('class="pc-metric')
+    assert "most recent votes" in text and 'href="#voting-record"' in text
+    recent = text.split('class="pc-lately"')[1].split("</ul>")[0]
     assert "Cloture" not in recent and "In the nature of a substitute" not in recent
+    # Each vote's word is in its chip, not only its color, and bills come before nominations
+    items = recent.split("<li>")[1:]
+    assert len(items) == 5 and all(re.search(r'class="pc-vote[^"]*">(Yea|Nay|Didn.t vote)<', i) for i in items)
+    kinds = ["nomination" if ("PN" in i or "Nomination" in i or " of " in i.split("</p>")[0] and "to be " in i)
+             else "bill" for i in items]
+    assert kinds == sorted(kinds)  # "bill" sorts before "nomination"
+    assert "Voted with most Republicans" in recent or "Voted against most Republicans" in recent
 
 
 def test_member_who_left_office_is_not_shown_as_serving_now():
@@ -441,7 +451,7 @@ def test_member_who_left_office_is_not_shown_as_serving_now():
     assert "2007 to 2025" in text and "to now" not in text and "so far" not in text
     # One vote in the 119th doesn't make the headline; his last full Congress does
     assert "Party unity, 118th" in text and "119th: only 1 party-line vote" in text
-    assert "Last final votes before leaving office" in [h.value for h in at.header]
+    assert "How they voted last" in [h.value for h in at.header]
 
 
 def test_numbers_come_with_typical_values():
@@ -496,7 +506,10 @@ def test_member_page_jump_links_and_long_tables():
     at = open_member("G000551")  # 37 platform votes
     text = html(at)
     assert 'class="pc-jumps"' in text and 'href="#voting-record"' in text and 'href="#platform"' in text
-    assert any(e.label.startswith("Show all ") for e in at.expander)
+    assert any(e.label.startswith("Show ") and e.label.endswith(" more") for e in at.expander)
+    # One row per Congress tables open on the latest Congress only
+    assert any(e.label.startswith("Show ") and "earlier Congress" in e.label for e in at.expander)
+    assert "since 2007" not in text or "2007 to 2025" in text
     # Sharing and the member lookup come after the record
     heads = [h.value for h in at.header]
     assert heads[-1] == "Voting record"
