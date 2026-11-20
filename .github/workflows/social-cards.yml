@@ -2,7 +2,9 @@ name: Update social cards
 
 # Once a week, after the Monday data refresh, rebuilds the share images in docs/social/ from the current data.
 # If what the cards say changed (new numbers, a new "through" date), it opens a pull request with the new images,
-# or updates the one already open. If nothing changed, it does nothing. Can also be started by hand.
+# or updates the one already open, and merges it when the test suite passes, so the link previews never go stale.
+# If a test fails, the pull request stays open for a person to look at. If nothing changed, it does nothing.
+# Can also be started by hand.
 # Needs Settings > Actions > General > "Allow GitHub Actions to create and approve pull requests" turned on.
 on:
   schedule:
@@ -30,7 +32,7 @@ jobs:
 
       - name: Install dependencies and a headless browser
         run: |
-          pip install -r requirements.txt playwright
+          pip install -r requirements.txt -r requirements-dev.txt playwright
           python -m playwright install --with-deps chromium
 
       # The Respect for Marriage Act card counts votes from the raw 117th House file, which isn't committed.
@@ -41,6 +43,11 @@ jobs:
 
       - name: Build the cards
         run: python scripts/make_social_cards.py
+
+      - name: Run the tests on the new cards
+        id: tests
+        continue-on-error: true
+        run: python -m pytest -q
 
       - name: Open or update a pull request if the cards changed
         env:
@@ -62,4 +69,10 @@ jobs:
               --body "Rebuilt the share images in \`docs/social/\` from the latest data. Look over the images, then merge to update the link previews."
           else
             echo "Updated the open social cards pull request."
+          fi
+          if [ "${{ steps.tests.outcome }}" = "success" ]; then
+            gh pr merge auto/social-cards --squash --delete-branch
+            echo "Tests passed, so the cards were merged."
+          else
+            gh pr comment auto/social-cards --body "Tests failed on these cards, so this pull request was left open. See the workflow run for the failing test."
           fi
