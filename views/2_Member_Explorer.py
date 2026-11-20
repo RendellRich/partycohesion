@@ -2,6 +2,7 @@
 position, ideology), plus a browsable table of every member. Layout follows the "Members" mockup in
 the PartyCohesion Figma design system."""
 
+import re
 from html import escape
 from pathlib import Path
 
@@ -10,6 +11,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+import find_members
 from chart_utils import ACCENT, MUTED, PARTY_COLORS, ordinal, show_chart
 from seat_map import seat_map
 from theme import narrow
@@ -38,6 +40,16 @@ def load_missed():
     m = pd.read_csv(DATA_DIR / "missed_votes.csv")
     m["missed_pct"] = (100 * m["missed"] / m["eligible"]).round(1)
     return m
+
+
+@st.cache_data
+def load_short_titles() -> dict:
+    """(congress, bill) -> the bill's short title from GovInfo, e.g. "Protect College Sports Act of 2026"."""
+    path = DATA_DIR / "lobbying_bill_titles.csv.gz"
+    if not path.exists():
+        return {}
+    t = pd.read_csv(path).dropna(subset=["title"])
+    return dict(zip(zip(t["congress"].astype(int), t["bill_number"]), t["title"]))
 
 
 @st.cache_data
@@ -98,6 +110,7 @@ def load_vote_changes():
     return pd.read_csv(path) if path.exists() else pd.DataFrame(columns=["icpsr"])
 
 
+PROCEDURAL = r"en bloc consideration|providing for (?:the )?consideration|waiving a requirement of clause"
 DELEGATE_NOTE = ("Delegates and the Resident Commissioner can vote only on some House roll calls, mostly amendments, "
                  "and only in Congresses whose rules allow it. Their counts here include only those roll calls, and "
                  "they appear in this data only in those Congresses.")
@@ -178,8 +191,17 @@ bioguide_of = dict(zip(latest["icpsr"], latest["bioguide_id"]))
 label_of = {bioguide_of[i]: lab for lab, i in options.items() if pd.notna(bioguide_of.get(i))}
 linked = label_of.get(st.query_params.get("member", ""))
 labels = list(options)
+just_picked = st.session_state.pop("me_just_picked", False)
 if "me_pending" in st.session_state:  # a seat clicked on the map below opens that member
     st.session_state["me_member"] = st.session_state.pop("me_pending")
+    just_picked = True
+# Arriving with no member in the address (the Members link in the sidebar, or "Look up another member") opens the
+# lookup, not whoever was open last. A member picked a moment ago doesn't have their address yet, so they stay; so does a
+# member with no Bioguide ID, whose page never gets one.
+open_now = st.session_state.get("me_member")
+if (open_now and not just_picked and "member" not in st.query_params
+        and pd.notna(bioguide_of.get(options.get(open_now)))):
+    del st.session_state["me_member"]
 # Which member is open, worked out before the picker is drawn so a member's page can lead with their name. The picker
 # itself sits under the member's numbers; without a member it sits under the page intro as before.
 pick = st.session_state["me_member"] if "me_member" in st.session_state else linked
@@ -194,7 +216,7 @@ PAGE_EXPLAINER = ("A member's record shows how often they side with their party,
 def member_picker(label: str) -> str | None:
     # Same label and key in both places, so switching layouts keeps the widget's state
     return st.selectbox(label, labels, index=labels.index(linked) if linked else None, placeholder="Type a name…",
-                        key="me_member")
+                        key="me_member", on_change=lambda: st.session_state.update(me_just_picked=True))
 
 
 if not pick:
@@ -222,17 +244,29 @@ if pick:
     # The member's name is the page title, so a shared link opens straight onto them
     member_header(member["name"], member["party"], member["state_abbrev"], member["chamber"],
                   rows["congress"].min(), rows["congress"].max(), newest, as_title=True, left=left)
+
+    def look_up_another() -> None:
+        st.session_state.pop("me_member", None)
+        st.query_params.pop("member", None)
+
+    # One tap back to the lookup; on a phone the picker at the end of the page is many screens down
+    st.button("Look up another member", key="me_another", type="tertiary", icon=":material/search:",
+              on_click=look_up_another)
     # How they voted lately, right under the name: "how did they vote" is why most visitors come. Final votes
     # (passage, resolutions, nominations) answer that; cloture, amendments and procedural roll calls stay in the full
     # record. One row per bill, its latest final vote. Bills come first, since a run of nominations says less about
     # what a member stands for; nominations fill in when there are fewer than five bills.
     caucus = member.get("caucus")
     side = caucus if pd.notna(caucus) else member["party"]
+    delegate = member["chamber"] == "House" and member["state_abbrev"] in DELEGATE_PLACES
     record = member_record(icpsr, rows, load_votes())
     if not record.empty:
         newest_first = record.sort_values(["date", "rollnumber"], ascending=False)
         final = newest_first[newest_first["vote_question"].fillna("").str.contains(FINAL_VOTES, regex=True)]
         final = final[~final["bill_number"].fillna("").duplicated() | final["bill_number"].isna()]
+        # Resolutions that only schedule other business (a House rule, a Senate en bloc order) aren't what anyone means
+        # by how a member voted; they stay in the full record
+        final = final[~final["label"].str.contains(PROCEDURAL, case=False, regex=True, na=False)]
         nomination = (final["vote_question"].fillna("").str.contains("Nomination")
                       | final["bill_number"].fillna("").str.startswith("PN"))
         bills = final[~nomination].head(5)
@@ -240,15 +274,21 @@ if pick:
         shown_votes = pd.concat([bills, final[nomination].head(5 - len(bills))]) if len(final) else newest_first.head(5)
         st.header("How they voted last" if left else "How they voted lately", anchor="recent-votes")
 
+        short_titles = load_short_titles()
+
         def vote_name(x) -> str:
-            text = x.label if len(x.label) <= 120 else x.label[:117].rsplit(" ", 1)[0] + "…"
+            # The bill's short title ("Protect College Sports Act of 2026") reads better than the official long one
             bill = x.bill_number if isinstance(x.bill_number, str) else ""
-            if bill and not bill.startswith("PN") and not text.startswith(bill):  # nomination numbers mean little
-                return f"{bill_label(bill)}: {text}"
-            return text
+            # Only for a vote on the bill itself: an amendment vote keeps its own description
+            on_bill = bool(re.search(FINAL_VOTES, str(x.vote_question)))
+            text = short_titles.get((int(x.congress), bill), x.label) if bill and on_bill else x.label
+            return text if len(text) <= 120 else text[:117].rsplit(" ", 1)[0] + "…"
 
         def vote_meta(x) -> str:
+            bill = x.bill_number if isinstance(x.bill_number, str) else ""
             parts = [fmt_date(x.date), f"{x.vote_result}." if isinstance(x.vote_result, str) else ""]
+            if bill and not bill.startswith("PN"):  # nomination numbers mean little
+                parts[0] = f"{bill_label(bill)}, {parts[0]}"
             if x.their_vote in ("Yea", "Nay") and x.party_position in ("Yea", "Nay"):
                 parts.append(f"Voted {'with' if x.their_vote == x.party_position else 'against'} most {side}s.")
             elif x.party_position == "Tie":
@@ -266,6 +306,8 @@ if pick:
         which = "last" if left else "most recent"
         st.markdown(f'<ul class="pc-lately" aria-label="{escape(short)}&#39;s {which} votes">{items}</ul>',
                     unsafe_allow_html=True)
+        if delegate:
+            st.caption(DELEGATE_NOTE)
         st.markdown(f'<p class="pc-muted">{"Final votes on bills and resolutions, then nominations, newest first. " if len(final) else ""}'
                     '<a class="pc-link-target" href="#voting-record">Search every vote in their record</a></p>',
                     unsafe_allow_html=True)
@@ -348,15 +390,24 @@ if pick:
     # Their seat in the chamber, in their most recent Congress
     room = (df[(df["congress"] == member["congress"]) & (df["chamber"] == member["chamber"])]
             .drop_duplicates("icpsr", keep="last").copy())
+    # A member serving now is shown among the members serving now, the same count as Home; anyone else among
+    # everyone who served in that Congress
+    serving = set(find_members.load_cached()[0]["bioguide_id"])
+    now = int(member["congress"]) == newest and not left and bioguide in serving
+    if now:
+        room = room[room["bioguide_id"].isin(serving) | (room["icpsr"] == icpsr)]
     room["label"] = [f"{display_name(r.name)} ({r.party[0]}-{r.state_abbrev})" for r in room.itertuples()]
     if pd.notna(ideo) and room["nominate_dim1"].notna().all():
         when = "this Congress" if int(member["congress"]) == newest else f"the {ordinal(member['congress'])} Congress"
-        seat_event = show_chart(seat_map(room, member["chamber"], highlight=icpsr, highlight_name=short, label=not narrow()),
+        seat_event = show_chart(seat_map(room, member["chamber"], highlight=icpsr, highlight_name=short, label=not narrow(),
+                                         count_label="serving now" if now else "members"),
                                 f"{display_name(member['name'])} in the {member['chamber']}, {ordinal(member['congress'])} Congress",
                                 f"seat_map_{short.lower().replace(' ', '_')}",
                                 key=f"me_seat_{icpsr}_{st.session_state.get('me_seat_clicks', 0)}",
                                 on_select=None if narrow() else "rerun")  # phones: a tap shows who, it doesn't navigate
-        st.caption(f"Every member who served in the {member['chamber']} in {when}, one dot each, placed left to right "
+        who = (f"Every member serving in the {member['chamber']} now" if now
+               else f"Every member who served in the {member['chamber']} in {when}")
+        st.caption(f"{who}, one dot each, placed left to right "
                    f"by Voteview ideology score. {short}'s seat is ringed. "
                    + ("Tap any other dot to see who it is." if narrow() else "Click any other dot to open that member."))
         clicked = seat_event.get("selection", {}).get("points", []) if seat_event and not narrow() else []

@@ -25,7 +25,7 @@ def seat_positions(n: int, rows: int, inner: float = 0.45) -> pd.DataFrame:
 
 
 def seat_map(members: pd.DataFrame, chamber: str, highlight=None, highlight_name: str = "",
-             label: bool = True) -> go.Figure:
+             label: bool = True, count_label: str = "members") -> go.Figure:
     """members: one row per member with icpsr, name, party, state_abbrev, nominate_dim1, party_unity_pct, bioguide_id
     and label. With highlight (an icpsr), that member's seat is enlarged and ringed, the rest are dimmed, and
     highlight_name labels the seat."""
@@ -68,7 +68,7 @@ def seat_map(members: pd.DataFrame, chamber: str, highlight=None, highlight_name
                                font=dict(size=14, color=ACCENT), bgcolor=BG, borderpad=3)
         top = 1.2 if label else top
     fig.add_annotation(x=0, y=0.1, text=f"<b>{len(m)}</b>", showarrow=False, font=dict(size=38), yanchor="bottom")
-    fig.add_annotation(x=0, y=0.08, text="members", showarrow=False, font=dict(size=14, color=MUTED), yanchor="top")
+    fig.add_annotation(x=0, y=0.08, text=count_label, showarrow=False, font=dict(size=14, color=MUTED), yanchor="top")
     fig.update_layout(height=430 if chamber == "House" else 380, margin=dict(l=10, r=10, t=80, b=60),
                       legend=dict(orientation="h", x=0.5, xanchor="center", y=-0.02, yanchor="top"),
                       clickmode="event+select", dragmode=False, hoverdistance=8)
