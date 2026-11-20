@@ -564,3 +564,18 @@ def test_member_page_top_is_short():
     assert "In this data since" not in text and "Served in Congress" not in text
     headline = text.split('class="pc-grid')[1]  # the first card row, up to the next one
     assert headline.count('class="pc-metric"') == 4
+
+
+def test_phone_member_page_folds_long_parts():
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=120)
+    at.session_state["pc_narrow"] = True
+    at.run()
+    at.switch_page("views/2_Member_Explorer.py")
+    at.query_params["member"] = "C001098"
+    at.run()
+    assert not at.exception, [e.value for e in at.exception]
+    labels = [e.label for e in at.expander]
+    assert "See Cruz's seat in the Senate" in labels and any(l.startswith("Show each type of vote") for l in labels)
+    assert any(l.startswith("See where Cruz sits") for l in labels)
+    record = html(at).split("Cruz&#x27;s voting record")[1].split("</table>")[0]
+    assert record.count("<tr") == 4  # the header and three votes; "Show 10 more" adds the rest

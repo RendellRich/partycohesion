@@ -133,7 +133,7 @@ def _metric_line(row, spec: dict) -> str:
     return spec["line"].format(value=spec["fmt"].format(value), n=n[spec["column"]], c=row.get("n_consistent"))
 
 
-def state_map(summary: pd.DataFrame, color_by: str = "Party mix", height: int = 470) -> go.Figure:
+def state_map(summary: pd.DataFrame, color_by: str = "Party mix", height: int = 470, phone: bool = False) -> go.Figure:
     """Each state shaded by color_by (a key of COLOR_BY), in the visitor's light or dark colors. Party mix runs from
     blue (all Democrats) through gray (even) to red (all Republicans); the averages use one purple, darker for more.
     customdata[0] is the state code, for click handling."""
@@ -142,8 +142,9 @@ def state_map(summary: pd.DataFrame, color_by: str = "Party mix", height: int = 
     light = mode() == "light"
     spec = COLOR_BY[color_by]
     on_map = summary[~summary["state"].isin(OFF_MAP)].copy()
+    # On phones the scale runs wider with short labels, so Plotly doesn't tilt them to fit
     tick = dict(tickfont=dict(color=t["muted"], size=12), outlinewidth=0, orientation="h", x=0.5, xanchor="center",
-                y=-0.02, yanchor="top", len=0.5, thickness=10)
+                y=-0.02, yanchor="top", len=0.8 if phone else 0.5, thickness=10, tickangle=0)
     hover = ("<b>%{customdata[1]}</b><br>%{customdata[2]} members of Congress<br>%{customdata[3]}<br>"
              "%{customdata[4]}<br>%{customdata[5]}<br><i>Click to see every member</i><extra></extra>")
     border = dict(line=dict(color=t["bg"], width=1.2))
@@ -156,7 +157,8 @@ def state_map(summary: pd.DataFrame, color_by: str = "Party mix", height: int = 
             colorscale=[[0, t["dem"]], [0.5, middle], [1, t["rep"]]],
             customdata=on_map[["state", "name", "members", "seats_line", "mix", "metric"]].values,
             hovertemplate=hover.replace("<br>%{customdata[5]}", ""), marker=border,
-            colorbar=dict(tickvals=[0, 0.5, 1], ticktext=["All Democrats", "Evenly split", "All Republicans"], **tick)))
+            colorbar=dict(tickvals=[0, 0.5, 1], ticktext=["Democrats", "Split", "Republicans"] if phone
+                          else ["All Democrats", "Evenly split", "All Republicans"], **tick)))
     else:
         col = spec["column"]
         on_map["metric"] = [_metric_line(r, spec) for _, r in on_map.iterrows()]
@@ -168,8 +170,11 @@ def state_map(summary: pd.DataFrame, color_by: str = "Party mix", height: int = 
             locations=have["state"], locationmode="USA-states", z=have[col], zmin=lo, zmax=hi, colorscale=ramp,
             customdata=have[["state", "name", "members", "seats_line", "mix", "metric"]].values,
             hovertemplate=hover, marker=border,
-            colorbar=dict(tickvals=[lo, hi], ticktext=[f"{spec['low']} ({spec['fmt'].format(lo)})",
-                                                       f"{spec['high']} ({spec['fmt'].format(hi)})"], **tick)))
+            colorbar=dict(tickvals=[lo, hi],
+                          ticktext=[spec["fmt"].format(lo), spec["fmt"].format(hi)] if phone else
+                          [f"{spec['low']} ({spec['fmt'].format(lo)})", f"{spec['high']} ({spec['fmt'].format(hi)})"],
+                          title=dict(text=color_by, side="top", font=dict(color=t["muted"], size=12)) if phone else None,
+                          **tick)))
         if len(none):
             fig.add_trace(go.Choropleth(
                 locations=none["state"], locationmode="USA-states", z=[0] * len(none), showscale=False,
@@ -199,7 +204,11 @@ def show_state_map(key: str, title: str | None = None, height: int = 470) -> Non
     color_by = st.segmented_control("Color by", list(COLOR_BY), default="Party mix", key=f"{key}_color") or "Party mix"
     spec = COLOR_BY[color_by]
     clicks = f"{key}_clicks"
-    event = show_chart(state_map(summary, color_by, height), title or spec["title"],
+    from theme import narrow
+    phone = narrow()
+    # A phone-width map is short and wide, so a tall figure only adds empty bands above and below it
+    event = show_chart(state_map(summary, color_by, min(height, 340) if phone else height, phone=phone),
+                       title or spec["title"],
                        f"states_{color_by.lower().replace(' ', '_')}",
                        key=f"{key}_{color_by}_{st.session_state.get(clicks, 0)}", on_select="rerun")
     st.caption(spec["caption"] + " Hover over a state for its senators and representatives, or click or tap it to "

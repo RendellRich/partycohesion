@@ -61,6 +61,11 @@ def load_details() -> pd.DataFrame:
 CAMPAIGN_MONEY = "https://campaign-money.streamlit.app/"
 
 
+def fold(label: str):
+    """On phones, a section's chart opens on a tap instead of adding a screen of scrolling; elsewhere it shows as is."""
+    return st.expander(label) if narrow() else st.container()
+
+
 def member_photo(bioguide: str) -> str:
     details = load_details()
     if bioguide not in details.index or not details.loc[bioguide, "photo_url"]:
@@ -406,24 +411,25 @@ if pick:
         room = room[room["bioguide_id"].isin(serving) | (room["icpsr"] == icpsr)]
     room["label"] = [f"{display_name(r.name)} ({r.party[0]}-{r.state_abbrev})" for r in room.itertuples()]
     if pd.notna(ideo) and room["nominate_dim1"].notna().all():
-        when = "this Congress" if int(member["congress"]) == newest else f"the {ordinal(member['congress'])} Congress"
-        seat_event = show_chart(seat_map(room, member["chamber"], highlight=icpsr, highlight_name=short, label=not narrow(),
-                                         count_label="serving now" if now else "members"),
-                                f"{display_name(member['name'])} in the {member['chamber']}, {ordinal(member['congress'])} Congress",
-                                f"seat_map_{short.lower().replace(' ', '_')}",
-                                key=f"me_seat_{icpsr}_{st.session_state.get('me_seat_clicks', 0)}",
-                                on_select=None if narrow() else "rerun")  # phones: a tap shows who, it doesn't navigate
-        who = (f"Every member serving in the {member['chamber']} now" if now
-               else f"Every member who served in the {member['chamber']} in {when}")
-        st.caption(f"{who}, one dot each, placed left to right "
-                   f"by Voteview ideology score. {short}'s seat is ringed. "
-                   + ("Tap any other dot to see who it is." if narrow() else "Click any other dot to open that member."))
-        clicked = seat_event.get("selection", {}).get("points", []) if seat_event and not narrow() else []
-        target = clicked[0].get("customdata", [None, None, ""])[2] if clicked else ""
-        if target and target != bioguide and target in label_of:
-            st.session_state["me_pending"] = label_of[target]
-            st.session_state["me_seat_clicks"] = st.session_state.get("me_seat_clicks", 0) + 1
-            st.rerun()
+        with fold(f"See {short}'s seat in the {member['chamber']}"):
+            when = "this Congress" if int(member["congress"]) == newest else f"the {ordinal(member['congress'])} Congress"
+            seat_event = show_chart(seat_map(room, member["chamber"], highlight=icpsr, highlight_name=short, label=not narrow(),
+                                             count_label="serving now" if now else "members"),
+                                    f"{display_name(member['name'])} in the {member['chamber']}, {ordinal(member['congress'])} Congress",
+                                    f"seat_map_{short.lower().replace(' ', '_')}",
+                                    key=f"me_seat_{icpsr}_{st.session_state.get('me_seat_clicks', 0)}",
+                                    on_select=None if narrow() else "rerun")  # phones: a tap shows who, it doesn't navigate
+            who = (f"Every member serving in the {member['chamber']} now" if now
+                   else f"Every member who served in the {member['chamber']} in {when}")
+            st.caption(f"{who}, one dot each, placed left to right "
+                       f"by Voteview ideology score. {short}'s seat is ringed. "
+                       + ("Tap any other dot to see who it is." if narrow() else "Click any other dot to open that member."))
+            clicked = seat_event.get("selection", {}).get("points", []) if seat_event and not narrow() else []
+            target = clicked[0].get("customdata", [None, None, ""])[2] if clicked else ""
+            if target and target != bioguide and target in label_of:
+                st.session_state["me_pending"] = label_of[target]
+                st.session_state["me_seat_clicks"] = st.session_state.get("me_seat_clicks", 0) + 1
+                st.rerun()
 
     # Same question, different president
     section("Same question, different president", "position-flips", "Position Flips")
@@ -447,7 +453,10 @@ if pick:
         table_rows.insert(0, flip_row("All types together", overall.iloc[0], alone=False))
     if table_rows:
         html_table(["Type of vote", "Own party's president", "Other party's president", "Shift", "Pattern"], table_rows,
-                   raw_cols=(4,), muted_cols=(1, 2), label="Same question, different president", stack=True)
+                   raw_cols=(4,), muted_cols=(1, 2), label="Same question, different president", stack=True,
+                   # Phones open on the pooled row; each type of vote is a tap away
+                   limit=1 if narrow() and len(table_rows) > 2 else None,
+                   more=f"Show each type of vote ({len(table_rows) - 1})")
         st.caption("The own-party and other-party shares count every vote. The shift compares only matched votes: the "
                    "same type of vote, cast when the member's party was in the same position in the chamber. The "
                    "Position Flips result at the top of the page pools all the types together, so it can show a "
@@ -471,7 +480,7 @@ if pick:
                    [[x.measure, fmt_date(x.date), x.vote, "No" if x.against else "Yes"]
                     + (["Yes" if x.counts else "No"] if show_all else [])
                     for x in shown.sort_values("date", ascending=False).itertuples()], muted_cols=(1,),
-                   label="Votes on their party's platform", stack=True, limit=5)
+                   label="Votes on their party's platform", stack=True, limit=3 if narrow() else 5)
         st.caption("A platform is the party's official policy document, not a personal promise, and members often give "
                    "reasons a roll call can't show. Procedural and related votes are shown but not counted.")
         st.page_link("views/11_Platform_Votes.py", label="See every topic and the rules")
@@ -489,7 +498,7 @@ if pick:
         html_table(["Topic", "Campaign", "Stance", "Campaign website text", "Vote", "Their vote", "Same direction"],
                    [[x.topic, str(x.campaign_year), x.stance, x.statement, x.vote_label, x.actual_vote,
                      x.same_direction] for x in mine_camp.itertuples()], muted_cols=(1,),
-                   label="Campaign statements and votes", stack=True, wide_cols=(3, 4), limit=5)
+                   label="Campaign statements and votes", stack=True, wide_cols=(3, 4), limit=3 if narrow() else 5)
         st.caption("Statements come from CampaignView's collection of House candidates' campaign websites. A roll call "
                    "can't show a member's reasons, and the bill voted on is rarely the campaign promise word for word.")
         st.page_link("views/13_Campaign_Statements.py", label="See every topic and how stances are coded")
@@ -508,7 +517,7 @@ if pick:
                      f"{x.first_vote} · {x.first_stage} · {fmt_date(x.first_date)}",
                      f"{x.final_vote} · {x.final_stage} · {fmt_date(x.final_date)}",
                      f"{x.party_first} then {x.party_final}"] for x in mine_vch.itertuples()], muted_cols=(0,),
-                   label="Same bill, different vote", stack=True, wide_cols=(1, 2, 3), limit=5)
+                   label="Same bill, different vote", stack=True, wide_cols=(1, 2, 3), limit=3 if narrow() else 5)
         st.caption("The bill's text often changes between votes, and a roll call can't show a member's reasons.")
         st.page_link("views/14_Same_Bill_Different_Vote.py", label="See every bill and how changes are counted")
 
@@ -636,8 +645,9 @@ if pick:
                            color_discrete_sequence=[PARTY_COLORS.get(member["party"], MUTED)])
         fig.add_vline(x=ideo, line_dash="dash", line_color=ACCENT, annotation_text=short, annotation_position="top")
         fig.update_layout(height=340, yaxis_title="Members")
-        show_chart(fig, f"{short} among {member['party']}s in the {member['chamber']}, {ordinal(member['congress'])} Congress",
-                   f"ideology_position_{short.lower().replace(' ', '_')}_{int(member['congress'])}")
+        with fold(f"See where {short} sits among {member['party']}s"):
+            show_chart(fig, f"{short} among {member['party']}s in the {member['chamber']}, {ordinal(member['congress'])} Congress",
+                       f"ideology_position_{short.lower().replace(' ', '_')}_{int(member['congress'])}")
     # Full voting record
     section("Voting record", "voting-record", "Every vote")
     st.markdown(f"Every roll call {short} was eligible for while in office, from {since} on. A vote is flagged when "
@@ -676,7 +686,7 @@ if pick:
             # Phones: cards with their own vote beside each roll call, a few at a time, instead of a grid whose
             # "Their vote" column sits off screen
             more_key = f"me_rec_more_{icpsr}"
-            n_show = st.session_state.get(more_key, 5)
+            n_show = st.session_state.get(more_key, 3)
             rows_html = []
             for i, x in enumerate(view.head(n_show).itertuples()):
                 link = remarks.iloc[i] if remarks is not None and isinstance(remarks.iloc[i], str) else ""
@@ -776,13 +786,12 @@ with st.expander("Browse all members in a Congress", expanded=not pick):
             "nominate_dim1": "Ideology Score", "cohesion_proxy": "Cohesion Proxy"}),
         width="stretch", height=420, hide_index=True,
     )
-
-st.markdown("---")
-st.caption("Click a column heading to sort. " + MISSED_NOTE)
-st.caption("Campaign statements count the clear positions a House member's own 2018, 2020 or 2022 campaign website "
-           "took on a topic in Campaign Statements and Votes; voted differently counts the ones where their later vote "
-           "went the other direction. Open a member's profile to read them.")
-st.caption("Party unity % is the share of party-line votes (a majority of Democrats opposed a majority of Republicans) "
-           "on which the member voted with their own party's majority, computed from Voteview roll-call records. "
-           "Ideology scores are DW-NOMINATE first-dimension estimates. The cohesion proxy reflects distance from the "
-           "party median within the same chamber and Congress.")
+    # The notes on the browse table's columns stay with the table, inside the panel
+    st.caption("Click a column heading to sort. " + MISSED_NOTE)
+    st.caption("Campaign statements count the clear positions a House member's own 2018, 2020 or 2022 campaign website "
+               "took on a topic in Campaign Statements and Votes; voted differently counts the ones where their later "
+               "vote went the other direction. Open a member's profile to read them.")
+    st.caption("Party unity % is the share of party-line votes (a majority of Democrats opposed a majority of "
+               "Republicans) on which the member voted with their own party's majority, computed from Voteview roll-call "
+               "records. Ideology scores are DW-NOMINATE first-dimension estimates. The cohesion proxy reflects distance "
+               "from the party median within the same chamber and Congress.")
