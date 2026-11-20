@@ -16,6 +16,7 @@ from state_map import show_state_map
 from flip_utils import add_chamber_control, flip_scores
 from platform_utils import all_member_platform_votes, load_platform, party_totals
 import find_members
+from theme import narrow
 from ui import card, display_name, early_congress, fmt_date, hero_panel, inject_css, section_heading
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -80,14 +81,19 @@ chamber = st.segmented_control("Chamber", ["House", "Senate"], default="House", 
 in_chamber = (current[current["chamber"] == chamber].sort_values("party_unity_pct")
               .drop_duplicates("icpsr", keep="last").copy())
 in_chamber["label"] = [f"{display_name(r.name)} ({r.party[0]}-{r.state_abbrev})" for r in in_chamber.itertuples()]
+# On phones the dots are a few pixels wide and a scroll can land as a tap, so a tap only shows who a dot is
+phone = narrow()
 event = show_chart(seat_map(in_chamber, chamber), f"The {chamber}, {ordinal(latest)} Congress",
                    f"seat_map_{chamber.lower()}",
-                   key=f"seat_map_{chamber}_{st.session_state.get('seat_clicks', 0)}", on_select="rerun")
+                   key=f"seat_map_{chamber}_{st.session_state.get('seat_clicks', 0)}",
+                   on_select=None if phone else "rerun")
 st.caption("One dot per member, placed left to right by their Voteview ideology score (lower scores lean liberal, "
-           "higher scores lean conservative). Hover over a dot for their record "
-           "with their party, or click or tap it to open their page. The count includes members who left office and their "
-           "replacements.")
-picked = (event or {}).get("selection", {}).get("points", []) if event else []
+           "higher scores lean conservative). "
+           + ("Tap a dot to see who it is and their record with their party; the lookup at the top opens a member's "
+              "page." if phone else "Hover over a dot for their record with their party, or click it to open their "
+              "page.")
+           + " The count includes members who left office and their replacements.")
+picked = event.get("selection", {}).get("points", []) if event and not phone else []
 if picked and picked[0].get("customdata") and picked[0]["customdata"][2]:
     st.session_state["seat_clicks"] = st.session_state.get("seat_clicks", 0) + 1  # a fresh chart next visit
     st.switch_page("views/2_Member_Explorer.py", query_params={"member": picked[0]["customdata"][2]})

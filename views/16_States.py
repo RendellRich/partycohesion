@@ -162,6 +162,13 @@ else:
         st.header("Delegate" if place and state != "PR" else "Resident Commissioner" if place else "House, by district")
         st.caption(typical("House", "House member") + (" Delegates can vote only on some House roll calls, so their "
                                                          "missed votes count only those." if place else ""))
+        # Big delegations (California has 52 seats) are a long scroll on a phone; a district picker narrows it to one
+        if len(house) > 10:
+            districts = list(dict.fromkeys(find_members.district_label(state, d) for d in house["district"]))
+            pick = st.selectbox("Go to a district", ["All districts"] + districts, key=f"st_district_{state}",
+                                help="Don't know your district? Enter your ZIP code above.")
+            if pick != "All districts":
+                house = house[[find_members.district_label(state, d) == pick for d in house["district"]]]
         member_table(house, f"House members from {name}")
     st.caption("Numbers are from each member's latest Congress in the data.")
 

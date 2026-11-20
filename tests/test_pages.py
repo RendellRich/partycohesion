@@ -450,3 +450,16 @@ def test_numbers_come_with_typical_values():
     at.run()
     caps = " ".join(c.value for c in at.caption)
     assert "Typical senator: party unity" in caps and "Typical House member: party unity" in caps
+
+
+def test_phone_seat_maps_show_who_without_navigating():
+    for page, params in (("views/0_Home.py", {}), ("views/2_Member_Explorer.py", {"member": "C001098"})):
+        at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=120)
+        at.session_state["pc_narrow"] = True
+        at.run()
+        at.switch_page(page)
+        for k, v in params.items():
+            at.query_params[k] = v
+        at.run()
+        assert not at.exception, [e.value for e in at.exception]
+        assert any("Tap " in c.value and "dot" in c.value for c in at.caption)

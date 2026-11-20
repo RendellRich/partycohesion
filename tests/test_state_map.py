@@ -103,3 +103,19 @@ def test_real_data_has_averages_for_every_state():
     states = real[~real["state"].isin(["DC", "PR", "GU", "VI", "AS", "MP"])]
     assert states["avg_unity"].notna().all() and states["avg_missed"].notna().all()
     assert states["avg_unity"].between(50, 100).all()
+
+
+def test_big_states_have_a_district_picker():
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=120)
+    at.run()
+    at.switch_page("views/16_States.py")
+    at.query_params["state"] = "CA"
+    at.run()
+    pick = at.selectbox(key="st_district_CA")
+    assert pick.options[0] == "All districts" and "CA-12" in pick.options
+    pick.set_value("CA-12").run()
+    text = " ".join(m.value for m in at.markdown)
+    seats = pd.read_csv(ROOT / "data" / "current_seats.csv")
+    ca_house = seats[(seats["state_abbrev"] == "CA") & (seats["chamber"] == "House")]
+    shown = [b for b in ca_house["bioguide_id"] if f"member={b}" in text]
+    assert len(shown) == 1
