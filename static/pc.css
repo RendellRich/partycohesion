@@ -67,11 +67,11 @@
 .pc-explain { border-left: 3px solid var(--pc-accent); background: var(--pc-surface); border-radius: 0 8px 8px 0; padding: 12px 16px;
                max-width: 72ch; color: var(--pc-body); font-size: 0.98rem; line-height: 1.55; margin: 0 0 18px 0; }
 .pc-explain-title { color: var(--pc-accent); font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
-.pc-share { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 4px 0; }
-.pc-share span { color: var(--pc-muted); font-size: 0.9rem; margin-right: 4px; }
-.pc-share a { border: 1px solid var(--pc-control); border-radius: 999px; padding: 4px 12px; font-size: 0.9rem; font-weight: 600;
+.pc-share, .pc-jumps { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 4px 0; }
+.pc-share span, .pc-jumps span { color: var(--pc-muted); font-size: 0.9rem; margin-right: 4px; }
+.pc-share a, .pc-jumps a { border: 1px solid var(--pc-control); border-radius: 999px; padding: 4px 12px; font-size: 0.9rem; font-weight: 600;
               color: var(--pc-text) !important; text-decoration: none; }
-.pc-share a:hover { border-color: var(--pc-accent); }
+.pc-share a:hover, .pc-jumps a:hover { border-color: var(--pc-accent); }
 .pc-person { display: grid; grid-template-columns: 112px 1fr; gap: 18px; align-items: start; margin: 6px 0 14px 0; }
 .pc-person img { width: 112px; border-radius: 8px; border: 1px solid var(--pc-border); }
 .pc-facts { color: var(--pc-muted); font-size: 0.95rem; line-height: 1.7; }
@@ -128,7 +128,7 @@
 .stApp [data-testid="stExpandSidebarButton"], .stApp [data-testid="stMainMenuButton"],
 .stApp [data-testid="stToolbarActionButton"] button { min-width: 44px; min-height: 44px; }
 .stApp [data-testid="stTooltipHoverTarget"] button { min-width: 44px; min-height: 44px; margin: -14px; }
-.pc-share a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; }
+.pc-share a, .pc-jumps a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; }
 .pc-table td a { display: inline-block; padding: 12px 0; margin: -12px 0; }
 .pc-link-target { display: inline-flex; align-items: center; min-height: 44px; }
 /* Field outlines at 3:1, and a clear focus ring on fields and chart buttons */

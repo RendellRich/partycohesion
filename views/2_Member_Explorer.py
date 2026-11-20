@@ -222,6 +222,10 @@ if pick:
     # The member's name is the page title, so a shared link opens straight onto them
     member_header(member["name"], member["party"], member["state_abbrev"], member["chamber"],
                   rows["congress"].min(), rows["congress"].max(), newest, as_title=True, left=left)
+    # "On this page" links right under the name, filled in at the end once we know which sections this member has.
+    # A member page runs to many phone screens, so the parts people look for are one tap away.
+    jumps = st.empty()
+    toc: list[tuple[str, str]] = []
     caucus = member.get("caucus")
     if member["party"] not in ("Democrat", "Republican") and pd.notna(caucus):
         st.caption(f"Caucuses with the {caucus}s, so party unity and Position Flips compare them with {caucus}s.")
@@ -288,6 +292,11 @@ if pick:
     ])
     member_facts(bioguide)
 
+    def section(title: str, anchor: str, jump: str | None = None) -> None:
+        st.header(title, anchor=anchor)
+        if jump:
+            toc.append((jump, anchor))
+
     # Their latest votes up front, since "how did they vote" is why most visitors come; the full record is below.
     # Final votes (passage, resolutions, nominations) answer that question; cloture, amendments and other procedural
     # roll calls stay in the full record. One row per bill, its latest final vote.
@@ -299,7 +308,7 @@ if pick:
         final = final[~final["bill_number"].fillna("").duplicated() | final["bill_number"].isna()]
         shown_votes = final.head(5) if len(final) else newest_first.head(5)  # delegates may have no final votes
         kind = "final votes" if len(final) else "votes"
-        st.header(f"Last {kind} before leaving office" if left else f"Recent {kind}")
+        section(f"Last {kind} before leaving office" if left else f"Recent {kind}", "recent-votes", "Recent votes")
 
         def vote_name(x) -> str:
             text = x.label if len(x.label) <= 160 else x.label[:157].rsplit(" ", 1)[0] + "…"
@@ -318,12 +327,6 @@ if pick:
                        "votes, like cloture, are in the full record.")
         st.markdown('<a class="pc-link-target" href="#voting-record">Search every vote in their record</a>',
                     unsafe_allow_html=True)
-
-    share_bar(f"{display_name(member['name'])} ({member['party'][0]}-{member['state_abbrev']}): voting record on "
-              "PartyCohesion", "Member_Explorer", {"member": bioguide} if bioguide else None)
-    member_picker("Find a member")
-    with st.expander("About this page"):
-        st.markdown(PAGE_INTRO + "\n\n" + PAGE_EXPLAINER)
 
     # Their seat in the chamber, in their most recent Congress
     room = (df[(df["congress"] == member["congress"]) & (df["chamber"] == member["chamber"])]
@@ -347,7 +350,7 @@ if pick:
             st.rerun()
 
     # Same question, different president
-    st.header("Same question, different president")
+    section("Same question, different president", "position-flips", "Position Flips")
     st.markdown("How often this member gave the president room on the same kinds of votes, under their own party's "
                 "presidents and under the other party's.")
     def flip_row(name: str, r: pd.Series, alone: bool) -> list[str]:
@@ -378,7 +381,7 @@ if pick:
         st.caption("This member cast no Yea or Nay votes on debt limit, funding, disaster aid or war powers bills in this data.")
 
     # Platform Votes
-    st.header("Votes on their party's platform")
+    section("Votes on their party's platform", "platform", "Platform")
     if plat_rows.empty:
         st.caption("No votes in this data on topics where the Democratic and Republican platforms take opposite, "
                    "specific positions.")
@@ -392,7 +395,7 @@ if pick:
                    [[x.measure, fmt_date(x.date), x.vote, "No" if x.against else "Yes"]
                     + (["Yes" if x.counts else "No"] if show_all else [])
                     for x in shown.sort_values("date", ascending=False).itertuples()], muted_cols=(1,),
-                   label="Votes on their party's platform", stack=True)
+                   label="Votes on their party's platform", stack=True, limit=5)
         st.caption("A platform is the party's official policy document, not a personal promise, and members often give "
                    "reasons a roll call can't show. Procedural and related votes are shown but not counted.")
         st.page_link("views/11_Platform_Votes.py", label="See every topic and the rules")
@@ -401,7 +404,7 @@ if pick:
     camp = load_campaign()
     mine_camp = camp[camp["icpsr"] == icpsr].sort_values(["campaign_year", "topic"], ascending=[False, True])
     if not mine_camp.empty:
-        st.header("Campaign statements and votes")
+        section("Campaign statements and votes", "campaign")
         n_diff = int((mine_camp["same_direction"] == "No").sum())
         n_same = int((mine_camp["same_direction"] == "Yes").sum())
         st.markdown(f"What {short}'s own campaign website said, next to their vote on the closest roll call after "
@@ -410,7 +413,7 @@ if pick:
         html_table(["Topic", "Campaign", "Stance", "Campaign website text", "Vote", "Their vote", "Same direction"],
                    [[x.topic, str(x.campaign_year), x.stance, x.statement, x.vote_label, x.actual_vote,
                      x.same_direction] for x in mine_camp.itertuples()], muted_cols=(1,),
-                   label="Campaign statements and votes", stack=True, wide_cols=(3, 4))
+                   label="Campaign statements and votes", stack=True, wide_cols=(3, 4), limit=5)
         st.caption("Statements come from CampaignView's collection of House candidates' campaign websites. A roll call "
                    "can't show a member's reasons, and the bill voted on is rarely the campaign promise word for word.")
         st.page_link("views/13_Campaign_Statements.py", label="See every topic and how stances are coded")
@@ -419,7 +422,7 @@ if pick:
     vch = load_vote_changes()
     mine_vch = vch[vch["icpsr"] == icpsr].sort_values("final_date", ascending=False)
     if not mine_vch.empty:
-        st.header("Same bill, different vote")
+        section("Same bill, different vote", "same-bill")
         n_apart = int(mine_vch["apart"].sum())
         st.markdown(f"Bills where {short} voted Yea at one stage and Nay at another, in the same chamber and Congress: "
                     f"**{len(mine_vch)}**." + (f" On **{n_apart}** of them, most of their party voted the same way both "
@@ -429,7 +432,7 @@ if pick:
                      f"{x.first_vote} · {x.first_stage} · {fmt_date(x.first_date)}",
                      f"{x.final_vote} · {x.final_stage} · {fmt_date(x.final_date)}",
                      f"{x.party_first} then {x.party_final}"] for x in mine_vch.itertuples()], muted_cols=(0,),
-                   label="Same bill, different vote", stack=True, wide_cols=(1, 2, 3))
+                   label="Same bill, different vote", stack=True, wide_cols=(1, 2, 3), limit=5)
         st.caption("The bill's text often changes between votes, and a roll call can't show a member's reasons.")
         st.page_link("views/14_Same_Bill_Different_Vote.py", label="See every bill and how changes are counted")
 
@@ -441,7 +444,7 @@ if pick:
     all_house = house_summary() if (mine_sp["chamber"] == "House").any() else None
     house_rows = all_house[all_house["icpsr"] == icpsr] if all_house is not None else mine_sp.iloc[0:0]
     if len(sen_pairs) or len(house_rows):
-        st.header("Same state, different vote")
+        section("Same state, different vote", "same-state")
         st.markdown(f"How often {short} cast the opposite vote from members of Congress from the same state, on roll "
                     "calls both voted on.")
         if len(sen_pairs):
@@ -455,7 +458,7 @@ if pick:
                                 f"{r.splits:,} of {r.both_voted:,}", f"{r.split_pct:.1f}%",
                                 f"{typical.get(r.congress, float('nan')):.1f}%"])
             html_table(["Congress", "Other senator", "Party", "Split on", "Share", "Typical same-party pair"],
-                       rows_sp, raw_cols=(2,), muted_cols=(5,), label="Splits with the other senator", stack=True)
+                       rows_sp, raw_cols=(2,), muted_cols=(5,), label="Splits with the other senator", stack=True, limit=5)
         if len(house_rows):
             typical_h = all_house[all_house["colleagues"] >= 2].groupby("congress")["avg_split"].median()
             html_table(["Congress", "Average split with their state's party", "Colleagues compared",
@@ -465,7 +468,7 @@ if pick:
                          f"{display_name(r.most_split_with)} ({r.most_split_pct:.1f}%)",
                          f"{typical_h.get(r.congress, float('nan')):.1f}%"]
                         for r in house_rows.sort_values("congress", ascending=False).itertuples()],
-                       muted_cols=(5,), label="Splits with House members of the same party", stack=True)
+                       muted_cols=(5,), label="Splits with House members of the same party", stack=True, limit=5)
         st.caption("Only Yea and Nay count. House comparisons are with members of the same party from the same "
                    f"state who shared at least {MIN_SHARED['House']} votes; senators are compared with their state's "
                    f"other senator when they shared at least {MIN_SHARED['Senate']} votes. A split is a fact about "
@@ -479,7 +482,7 @@ if pick:
     missed_all = load_missed()
     mine_missed = missed_all[missed_all["icpsr"] == icpsr].sort_values(["congress", "chamber"], ascending=[False, True])
     if not mine_missed.empty:
-        st.header("Missed votes")
+        section("Missed votes", "missed-votes", "Missed votes")
         tot_missed, tot_held = int(mine_missed["missed"].sum()), int(mine_missed["eligible"].sum())
         if delegate:
             # Compared with the other delegates, who could vote on the same roll calls, not with the whole House
@@ -498,12 +501,12 @@ if pick:
                    [[ordinal(int(x.congress)), x.chamber, f"{int(x.missed):,}", f"{int(x.eligible):,}",
                      f"{x.missed_pct:.1f}%", f"{medians.loc[(x.congress, x.chamber)]:.1f}%"]
                     for x in mine_missed.itertuples()], muted_cols=(3, 5), label="Missed votes by Congress",
-                   stack=True)
+                   stack=True, limit=5)
         st.caption((DELEGATE_NOTE + " " if delegate else "") + MISSED_NOTE)
 
     # Party unity over time
     if len(scored) > 1:
-        st.header("Party unity over time")
+        section("Party unity over time", "party-unity")
         compare_party = caucus if pd.notna(caucus) else member["party"]
         avg = (df[df["caucus"] == compare_party].groupby(["congress", "chamber"])["party_unity_pct"].mean()
                .reset_index().rename(columns={"party_unity_pct": "party_avg"}))
@@ -536,7 +539,7 @@ if pick:
         sup = sup.groupby(["president", "president_party"], sort=False).sum().reset_index()
         sup = sup[sup["votes"] > 0]
     if not sup.empty:
-        st.header("Voted with the president's stated position")
+        section("Voted with the president's stated position", "president-position")
         st.markdown("Bills where the White House published a position before the vote (2009 on). This shows whose "
                     "positions this member sided with. It is **not** a consistency score: agreeing more with one "
                     "party's presidents can simply reflect a member's views.")
@@ -549,7 +552,7 @@ if pick:
     peers = df[(df["congress"] == member["congress"]) & (df["chamber"] == member["chamber"])
                & (df["party"] == member["party"])]
     if len(peers) > 5 and pd.notna(ideo):
-        st.header("Where they sit in their party")
+        section("Where they sit in their party", "ideology")
         fig = px.histogram(peers, x="nominate_dim1", nbins=25, labels={"nominate_dim1": "Ideology score (DW-NOMINATE)"},
                            color_discrete_sequence=[PARTY_COLORS.get(member["party"], MUTED)])
         fig.add_vline(x=ideo, line_dash="dash", line_color=ACCENT, annotation_text=short, annotation_position="top")
@@ -557,7 +560,7 @@ if pick:
         show_chart(fig, f"{short} among {member['party']}s in the {member['chamber']}, {ordinal(member['congress'])} Congress",
                    f"ideology_position_{short.lower().replace(' ', '_')}_{int(member['congress'])}")
     # Full voting record
-    st.header("Voting record")
+    section("Voting record", "voting-record", "Every vote")
     st.markdown(f"Every roll call {short} was eligible for while in office, from 2007 on. A vote is flagged when "
                 f"{short} voted against the {party_adj(side)} majority.")
     if record.empty:
@@ -587,21 +590,44 @@ if pick:
             view = view[view["against_party"]]
         view = view.head(1000)
         remarks = floor_remarks.attach(view, bioguide, load_floor_remarks()) if bioguide else None
-        st.dataframe(pd.DataFrame({
-            "Date": view["date"],
-            "Chamber": view["chamber"],
-            "Bill": view["bill_number"].fillna(""),
-            "Vote": view["label"],
-            "Their vote": view["their_vote"],
-            f"{party_adj(side)} majority": view["party_position"].replace({"Tie": "Split evenly", "None": "None"}),
-            "Against party": view["against_party"].map({True: "Yes", False: ""}),
-            "Result": view["vote_result"],
-            "Their remarks": remarks if remarks is not None else None,
-            "Voteview": [voteview_url(c, ch, r) for c, ch, r in zip(view["congress"], view["chamber"], view["rollnumber"])],
-        }), width="stretch", hide_index=True, height=400,
-            column_config={"Vote": st.column_config.TextColumn(width="large"),
-                           "Their remarks": st.column_config.LinkColumn(display_text="Read"),
-                           "Voteview": st.column_config.LinkColumn(display_text="Open")})
+        majority = view["party_position"].replace({"Tie": "Split evenly", "None": "None"})
+        names = [(f"{bill_label(b)}: " if isinstance(b, str) and b and not b.startswith("PN")
+                  and not str(lab).startswith(b) else "") + str(lab) for b, lab in zip(view["bill_number"], view["label"])]
+        if narrow():
+            # Phones: cards with their own vote beside each roll call, a few at a time, instead of a grid whose
+            # "Their vote" column sits off screen
+            more_key = f"me_rec_more_{icpsr}"
+            n_show = st.session_state.get(more_key, 5)
+            rows_html = []
+            for i, x in enumerate(view.head(n_show).itertuples()):
+                link = remarks.iloc[i] if remarks is not None and isinstance(remarks.iloc[i], str) else ""
+                rows_html.append([escape(names[i]), fmt_date(x.date), escape(str(x.their_vote)),
+                                  escape(str(majority.iloc[i])), escape(str(x.vote_result)),
+                                  f'<a href="{escape(link)}" target="_blank" rel="noopener">Read</a>' if link else "None"])
+            html_table(["Vote", "Date", "Their vote", f"{party_adj(side)} majority", "Result", "Their remarks"], rows_html,
+                       raw_cols=(0, 2, 3, 4, 5), muted_cols=(1,), label=f"{short}'s voting record", stack=True,
+                       wide_cols=(0,))
+            if len(view) > n_show:
+                if st.button(f"Show 10 more (of {len(view):,})", key=f"{more_key}_btn"):
+                    st.session_state[more_key] = n_show + 10
+                    st.rerun()
+        else:
+            one_chamber = view["chamber"].nunique() <= 1
+            st.dataframe(pd.DataFrame({
+                "Date": pd.to_datetime(view["date"]),
+                **({} if one_chamber else {"Chamber": view["chamber"]}),
+                "Vote": names,
+                "Their vote": view["their_vote"],
+                f"{party_adj(side)} majority": majority,
+                "Against party": view["against_party"].map({True: "Yes", False: ""}),
+                "Result": view["vote_result"],
+                "Their remarks": remarks if remarks is not None else None,
+                "Voteview": [voteview_url(c, ch, r) for c, ch, r in zip(view["congress"], view["chamber"], view["rollnumber"])],
+            }), width="stretch", hide_index=True, height=400,
+                column_config={"Date": st.column_config.DateColumn(format="MMM D, YYYY"),
+                               "Vote": st.column_config.TextColumn(width="large"),
+                               "Their remarks": st.column_config.LinkColumn(display_text="Read"),
+                               "Voteview": st.column_config.LinkColumn(display_text="Open")})
         st.caption("Their remarks: where they spoke about that bill in the Congressional Record, within 30 days before "
                    "the vote or a week after. Available from 2007 on. Each link was checked against the Record's text: "
                    "a line explaining a missed vote or running the floor doesn't count. It shows where they spoke, not "
@@ -610,6 +636,16 @@ if pick:
         if not only_against and total_view > 1000:
             st.caption(f"Showing the 1,000 most recent of {total_view:,}. Search or pick a Congress to narrow it.")
         st.page_link("views/10_All_Votes.py", label="Search every vote and see who broke ranks")
+
+    if len(toc) >= 3:
+        jumps.markdown('<nav class="pc-jumps" aria-label="On this page"><span>On this page</span>' + "".join(
+            f'<a href="#{a}">{escape(t)}</a>' for t, a in toc) + "</nav>", unsafe_allow_html=True)
+    # Sharing and looking up someone else come after the record, so they don't split the member's page in two
+    share_bar(f"{display_name(member['name'])} ({member['party'][0]}-{member['state_abbrev']}): voting record on "
+              "PartyCohesion", "Member_Explorer", {"member": bioguide} if bioguide else None)
+    member_picker("Find a member")
+    with st.expander("About this page"):
+        st.markdown(PAGE_INTRO + "\n\n" + PAGE_EXPLAINER)
 else:
     if "member" in st.query_params:
         del st.query_params["member"]

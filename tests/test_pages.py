@@ -488,3 +488,26 @@ def test_democratic_as_the_adjective():
     text = html(at) + " ".join(c.value for c in at.caption)
     assert "Democratic platform" in text and "typical Democratic House member" in text
     assert "Democrat platform" not in text and "Democrat majority" not in text and "typical Democrat " not in text
+
+
+def test_member_page_jump_links_and_long_tables():
+    at = open_member("G000551")  # 37 platform votes
+    text = html(at)
+    assert 'class="pc-jumps"' in text and 'href="#voting-record"' in text and 'href="#platform"' in text
+    assert any(e.label.startswith("Show all ") for e in at.expander)
+    # Sharing and the member lookup come after the record
+    heads = [h.value for h in at.header]
+    assert heads[-1] == "Voting record"
+
+
+def test_phone_voting_record_shows_their_vote_in_cards():
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=120)
+    at.session_state["pc_narrow"] = True
+    at.run()
+    at.switch_page("views/2_Member_Explorer.py")
+    at.query_params["member"] = "C001098"
+    at.run()
+    assert not at.exception, [e.value for e in at.exception]
+    text = html(at)
+    assert 's voting record"' in text and 'data-label="Their remarks"' in text
+    assert any(b.label.startswith("Show 10 more") for b in at.button)
