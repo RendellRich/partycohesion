@@ -400,6 +400,11 @@ def last_name(name: str) -> str:
     return str(name).split(",")[0].strip()
 
 
+def page_title(text: str = "") -> None:
+    """The browser tab title, which screen readers announce on each page change: "Ted Cruz · PartyCohesion"."""
+    st.set_page_config(page_title=f"{text} · PartyCohesion" if text else "PartyCohesion")
+
+
 def congress_years(first: int, last: int, newest: int, left: int | None = None) -> str:
     """left is the year a member left office partway through the newest Congress, so they aren't shown as serving now."""
     start = 2 * int(first) + 1787
