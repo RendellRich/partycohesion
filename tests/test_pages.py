@@ -272,7 +272,7 @@ def test_home_more_findings_and_share():
     text = html(at)
     for label in ("Missed votes", "Cosponsored, then voted no", "Campaign statements", "pc-share"):
         assert label in text
-    assert any("partycohesion.streamlit.app" in c.value for c in at.code)
+    assert any(c.value == "https://rendellrich.github.io/partycohesion/s/" for c in at.code)
 
 
 def test_member_deep_link_details_and_share():
@@ -286,7 +286,7 @@ def test_member_deep_link_details_and_share():
     text = html(at)
     assert "pc-person" in text and "fitzpatrick.house.gov" in text and "Committees:" in text
     assert "campaign-money.streamlit.app/?member=F000466" in text  # funding link, a separate site
-    assert any("member=F000466" in c.value for c in at.code)
+    assert any("/s/member/F000466/" in c.value for c in at.code)
 
 
 def test_home_lookup_and_unity_chart():
