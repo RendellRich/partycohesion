@@ -66,8 +66,15 @@ CSS = f"""
 .pc-body {{ color: var(--pc-muted); font-size: 1rem; line-height: 1.5; }}
 .pc-metric {{ background: var(--pc-surface); border: 1px solid var(--pc-border); border-radius: 10px; padding: 14px 16px; height: 100%; }}
 .pc-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 4px 0 16px 0; }}
+/* Five cards sit three over two on wide screens, instead of four and one left alone */
+@media (min-width: 641px) {{
+  .pc-grid.pc-grid-5 {{ grid-template-columns: repeat(6, minmax(0, 1fr)); }}
+  .pc-grid-5 > * {{ grid-column: span 2; }}
+  .pc-grid-5 > :nth-child(n+4) {{ grid-column: span 3; }}
+  .pc-table .pc-badge, .pc-nowrap {{ white-space: nowrap; }}
+}}
 .pc-metric-label {{ color: var(--pc-muted); font-size: 0.85rem; font-weight: 600; }}
-.pc-metric-value {{ font-size: 2rem; line-height: 1.25; margin: 4px 0; }}
+.pc-metric-value {{ font-size: 2rem; font-weight: 700; line-height: 1.25; margin: 4px 0; }}
 .pc-metric-value.pc-long {{ font-size: 1.35rem; padding: 6px 0 5px 0; }}
 .pc-metric-note {{ color: var(--pc-muted); font-size: 0.85rem; }}
 .pc-name {{ display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 1.6rem; font-weight: 600; }}
@@ -290,7 +297,7 @@ def card(eyebrow: str, stat: str, body: str) -> None:
 
 
 def metric_html(label: str, value: str, note: str = "") -> str:
-    long = " pc-long" if len(value) > 12 else ""
+    long = " pc-long" if len(value) > 11 else ""
     return (f'<div class="pc-metric"><div class="pc-metric-label">{escape(label)}</div>'
             f'<div class="pc-metric-value{long}">{escape(value)}</div>'
             f'<div class="pc-metric-note">{escape(note)}</div></div>')
@@ -302,7 +309,8 @@ def metric_card(label: str, value: str, note: str = "") -> None:
 
 def metric_row(items: list[tuple[str, str, str]]) -> None:
     """Cards in a grid that wraps to fewer per row on narrow screens instead of squeezing the numbers."""
-    st.markdown('<div class="pc-grid">' + "".join(metric_html(*i) for i in items) + "</div>", unsafe_allow_html=True)
+    cls = "pc-grid pc-grid-5" if len(items) == 5 else "pc-grid"
+    st.markdown(f'<div class="{cls}">' + "".join(metric_html(*i) for i in items) + "</div>", unsafe_allow_html=True)
 
 
 def party_tag(party: str) -> str:
@@ -318,7 +326,8 @@ def pattern_badge(label: str) -> str:
 
 
 def html_table(header: list[str], rows: list[list[str]], raw_cols: tuple[int, ...] = (), muted_cols: tuple[int, ...] = (),
-               label: str = "Table", stack: bool = False, wide_cols: tuple[int, ...] = ()) -> None:
+               label: str = "Table", stack: bool = False, wide_cols: tuple[int, ...] = (),
+               nowrap_cols: tuple[int, ...] = ()) -> None:
     """Small table with design-system styling. Cells in raw_cols are trusted HTML (badges); others are escaped.
     stack shows each row as a small card on phones (first column as its title, the others as label and value pairs)
     instead of a table that scrolls sideways. In a stacked card, wide_cols (long text) sit under their label instead
@@ -331,7 +340,8 @@ def html_table(header: list[str], rows: list[list[str]], raw_cols: tuple[int, ..
     for r in rows:
         cells = []
         for i, c in enumerate(r):
-            classes = (["pc-muted"] if i in muted_cols else []) + (["pc-td-wide"] if stack and i in wide_cols else [])
+            classes = ((["pc-muted"] if i in muted_cols else []) + (["pc-td-wide"] if stack and i in wide_cols else [])
+                       + (["pc-nowrap"] if i in nowrap_cols else []))
             cls = f' class="{" ".join(classes)}"' if classes else ""
             lab = f' data-label="{escape(header[i])}"' if stack and i < len(header) else ""
             cells.append(f"<td{cls}{lab}{role('cell')}>{c if i in raw_cols else escape(str(c))}</td>")

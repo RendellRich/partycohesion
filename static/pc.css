@@ -30,8 +30,15 @@
 .pc-body { color: var(--pc-muted); font-size: 1rem; line-height: 1.5; }
 .pc-metric { background: var(--pc-surface); border: 1px solid var(--pc-border); border-radius: 10px; padding: 14px 16px; height: 100%; }
 .pc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 4px 0 16px 0; }
+/* Five cards sit three over two on wide screens, instead of four and one left alone */
+@media (min-width: 641px) {
+  .pc-grid.pc-grid-5 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .pc-grid-5 > * { grid-column: span 2; }
+  .pc-grid-5 > :nth-child(n+4) { grid-column: span 3; }
+  .pc-table .pc-badge, .pc-nowrap { white-space: nowrap; }
+}
 .pc-metric-label { color: var(--pc-muted); font-size: 0.85rem; font-weight: 600; }
-.pc-metric-value { font-size: 2rem; line-height: 1.25; margin: 4px 0; }
+.pc-metric-value { font-size: 2rem; font-weight: 700; line-height: 1.25; margin: 4px 0; }
 .pc-metric-value.pc-long { font-size: 1.35rem; padding: 6px 0 5px 0; }
 .pc-metric-note { color: var(--pc-muted); font-size: 0.85rem; }
 .pc-name { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 1.6rem; font-weight: 600; }
