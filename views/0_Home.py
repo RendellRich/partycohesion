@@ -17,7 +17,7 @@ from flip_utils import add_chamber_control, flip_scores
 from platform_utils import all_member_platform_votes, load_platform, party_totals
 import find_members
 from theme import narrow
-from ui import STATES, card, display_name, early_congress, fmt_date, hero_panel, inject_css, section_heading
+from ui import STATES, card, display_name, early_congress, fmt_date, hero_panel, inject_css, metric_row, section_heading
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -211,15 +211,15 @@ st.caption("A party-line vote is one where most Democrats and most Republicans v
            "axis starts at 80% so the change between Congresses is visible.")
 st.write("")
 
-m1, m2, m3, m4 = st.columns(4)
-m1.metric("Congress", ordinal(latest), help="House and Senate")
-m2.metric("Members scored", f"{current['party_unity_pct'].notna().sum():,}")
-m3.metric("Party-line votes", f"{n_unity:,}", help=f"so far in the {ordinal(latest)} Congress")
+# The same cards as the rest of the site (Streamlit's own metric cut "Data through Nov 18, …" short on desktop)
 try:
-    m4.metric("Data through", fmt_date(summary["latest_vote_date"].max()),
-              help="Refreshed automatically twice a week")
+    through = fmt_date(summary["latest_vote_date"].max())
 except Exception:
-    m4.metric("Data through", "—")
+    through = "None yet"
+metric_row([("Congress", ordinal(latest), "House and Senate"),
+            ("Members scored", f"{current['party_unity_pct'].notna().sum():,}", "with party unity rates"),
+            ("Party-line votes", f"{n_unity:,}", f"so far in the {ordinal(latest)} Congress"),
+            ("Data through", through, "refreshed automatically twice a week")])
 
 st.markdown("---")
 st.caption("Sources: Voteview roll-call records (Lewis, Poole, Rosenthal, Boche, Rudkin & Sonnet) and White House "

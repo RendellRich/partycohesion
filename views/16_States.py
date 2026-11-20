@@ -142,7 +142,7 @@ def member_table(group: pd.DataFrame, label: str) -> None:
              f"{r.missed_pct:.1f}%" if pd.notna(r.missed_pct) else "None"]
             for r in group.itertuples()]
     html_table(["Member", "Seat", "Party", "Party unity", "Position Flips", "Missed votes"], rows, raw_cols=(0, 2, 4),
-               label=label, stack=True)
+               label=label, stack=True, nowrap_cols=(0, 1, 3, 5))
 
 
 senators = shown[shown["chamber"] == "Senate"].sort_values("name")
