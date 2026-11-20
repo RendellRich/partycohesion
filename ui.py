@@ -89,6 +89,11 @@ CSS = f"""
 .pc-table th {{ color: var(--pc-muted); font-size: 0.85rem; font-weight: 600; text-align: left; padding: 12px 16px; }}
 .pc-table td {{ padding: 12px 16px; border-top: 1px solid var(--pc-border); }}
 .pc-muted, .pc-table td.pc-muted {{ color: var(--pc-muted); }}
+/* The share link box wraps instead of scrolling sideways: a scrolling box needs keyboard focus to read, and Streamlit
+   doesn't give it one (axe: scrollable-region-focusable) */
+.stApp [data-testid="stCode"] pre, .stApp [data-testid="stCode"] code {{ white-space: pre-wrap !important;
+  overflow-wrap: anywhere; }}
+.stApp [data-testid="stCode"] pre {{ overflow: visible !important; }}
 /* Expanders: the control gray outline (3:1 or better) instead of the faint divider color, on the 10px card corner */
 .stApp [data-testid="stExpander"] details {{ border-color: var(--pc-control); border-radius: 10px; }}
 .stApp [data-testid="stExpander"] summary {{ border-radius: 10px; }}

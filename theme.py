@@ -62,8 +62,29 @@ export default function(component) {
     const narrow = window.innerWidth < 640;
     if (narrow !== sentNarrow) { sentNarrow = narrow; setStateValue('narrow', narrow); }
   };
-  check();
-  const timer = setInterval(check, 400);
+  // Screen readers: each Plotly chart is announced as one image named by its title, instead of a run of tick
+  // labels and legend text. Plotly redraws its SVGs, so this is checked on the same timer.
+  const labelCharts = () => {
+    // Plotly's off-screen measuring SVG on <body> would otherwise read as an unnamed image
+    document.querySelectorAll('body > svg:not([aria-hidden])').forEach((s) => s.setAttribute('aria-hidden', 'true'));
+    document.querySelectorAll('[data-testid="stPlotlyChart"]').forEach((c) => {
+      const svgs = c.querySelectorAll('svg.main-svg');
+      if (!svgs.length) return;
+      const t = c.querySelector('.gtitle');
+      // A wrapped title is one tspan per line; join them with spaces
+      const lines = t ? [...t.querySelectorAll('tspan.line')].map((x) => x.textContent) : [];
+      const title = t ? (lines.length ? lines.join(' ') : t.textContent) : 'no title';
+      const label = 'Chart: ' + title.replace(/\\s+/g, ' ').trim();
+      if (svgs[0].getAttribute('aria-label') !== label) {
+        svgs[0].setAttribute('role', 'img');
+        svgs[0].setAttribute('aria-label', label);
+      }
+      for (let i = 1; i < svgs.length; i++) svgs[i].setAttribute('aria-hidden', 'true');
+    });
+  };
+  const tick = () => { check(); labelCharts(); };
+  tick();
+  const timer = setInterval(tick, 400);
   return () => clearInterval(timer);
 }
 """
