@@ -25,13 +25,23 @@ from ui import STATES, display_name  # noqa: E402
 OUT = ROOT / "docs" / "s"
 BASE = "https://rendellrich.github.io/partycohesion"
 SHARE = f"{BASE}/s"
-APP = "https://partycohesion.streamlit.app"
+# The app itself, without Streamlit Cloud's frame (its Fork button and hosting badge). The keep-awake workflow visits
+# every 6 hours, well inside the 12 hours after which Community Cloud puts an app to sleep.
+APP = "https://partycohesion.streamlit.app/~/+"
 DEFAULT_IMAGE = f"{BASE}/social/partycohesion-wide.png"
 SOURCE = "From the official congressional roll-call record (Voteview). No scorecards, no opinions."
 
 
+def image_size(url: str) -> tuple[int, int]:
+    """Pixel size of one of our own images under docs/, so og:image:width and height are exact."""
+    from PIL import Image
+    with Image.open(ROOT / "docs" / url.removeprefix(BASE + "/")) as im:
+        return im.size
+
+
 def page(title: str, description: str, share_url: str, target: str, image: str = DEFAULT_IMAGE) -> str:
     t, d, img = escape(title), escape(description), escape(image)
+    w, h = image_size(image)
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,13 +56,14 @@ def page(title: str, description: str, share_url: str, target: str, image: str =
 <meta property="og:description" content="{d}">
 <meta property="og:url" content="{escape(share_url)}">
 <meta property="og:image" content="{img}">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+<meta property="og:image:width" content="{w}">
+<meta property="og:image:height" content="{h}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{t}">
 <meta name="twitter:description" content="{d}">
 <meta name="twitter:image" content="{img}">
-<script>location.replace({target!r} + location.search);</script>
+<script>var q = location.search;
+location.replace({target!r} + (q && {target!r}.indexOf("?") > -1 ? "&" + q.slice(1) : q));</script>
 <style>body{{font:16px/1.5 system-ui,sans-serif;max-width:36rem;margin:3rem auto;padding:0 1rem;color:#1c2a4a}}
 a{{color:#7a5a10}}</style>
 </head>
@@ -98,7 +109,7 @@ def main() -> None:
     for url_path, title in nav_pages():
         rel = "" if url_path == "Home" else url_path
         head, desc = PAGE_TEXT.get(rel, (f"{title} · PartyCohesion", SOURCE))
-        write(rel, page(head, desc, f"{SHARE}/{rel}/" if rel else f"{SHARE}/", f"{APP}/{rel}".rstrip("/")))
+        write(rel, page(head, desc, f"{SHARE}/{rel}/" if rel else f"{SHARE}/", f"{APP}/{rel}"))
         n += 1
 
     # States: who represents each state, from the current seats
@@ -111,7 +122,9 @@ def main() -> None:
         write(f"state/{code}", page(
             f"{name}'s members of Congress and how they vote",
             f"{' and '.join(parts)}: party unity, Position Flips and missed votes. {SOURCE}",
-            f"{SHARE}/state/{code}/", f"{APP}/States?state={code}"))
+            f"{SHARE}/state/{code}/", f"{APP}/States?state={code}",
+            f"{BASE}/social/states/{code}.png" if (ROOT / "docs" / "social" / "states" / f"{code}.png").exists()
+            else DEFAULT_IMAGE))
         n += 1
 
     # Members: everyone in the data since 2007, under their latest party, state and chamber
