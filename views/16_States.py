@@ -47,6 +47,14 @@ page_title(f"{name} members of Congress")
 place = state in DELEGATE_PLACES
 row = state_summary(seats).set_index("state").loc[state]
 records = load_records()
+# A House seat with no one in it (between a death or resignation and the special election) still belongs on the page:
+# a visitor in that district otherwise sees no House member and can't tell why.
+vacant = [] if place else find_members.vacant_districts(state, seats, zips)
+vacant_line = ""
+if vacant:
+    labels = [find_members.district_label(state, d) for d in vacant]
+    vacant_line = (f" {labels[0]} is vacant." if len(labels) == 1
+                   else f" {', '.join(labels[:-1])} and {labels[-1]} are vacant.")
 delegation = seats[seats["state_abbrev"] == state].copy().join(records, on="bioguide_id")
 
 # The state's name is the page title, so a shared state link opens on it. Its outline, in its party-mix color from
@@ -62,7 +70,7 @@ if len(flip_scored) and not place:
     summary.append(f"Position Flips: {(flip_scored['label'] == 'Consistent').sum()} of {len(flip_scored)} members "
                    "with enough comparable votes were consistent.")
 st.markdown(f'<div class="pc-state-head">{outline}<div class="pc-body">{escape(row["seats_line"])}. '
-            f'{escape(row["mix"])}.' + (f'<br><span class="pc-muted">{escape(" ".join(summary))}</span>' if summary else "")
+            f'{escape(row["mix"])}.{escape(vacant_line)}' + (f'<br><span class="pc-muted">{escape(" ".join(summary))}</span>' if summary else "")
             + "</div></div>", unsafe_allow_html=True)
 
 # Find your own members: by ZIP code (for visitors who don't know who represents them) or by name. A ZIP code
@@ -76,19 +84,20 @@ zip_text = c1.text_input("Your ZIP code", placeholder="5 digits",
 query = c2.text_input("Or search by name", placeholder="e.g. Scott", key="st_query")
 
 shown = delegation
+shown_vacant = vacant
 mine_note = ""
 if zip_text.strip():
     z = find_members.clean_zip(zip_text)
     res = find_members.lookup_zip(z, seats, zips) if z else {"found": False}
     if not z:
-        st.markdown('<p role="alert">Enter a 5-digit ZIP code, like 34219.</p>', unsafe_allow_html=True)
+        c1.markdown('<p role="alert">Enter a 5-digit ZIP code, like 34219.</p>', unsafe_allow_html=True)
     elif not res["found"]:
-        st.markdown('<p role="alert">That ZIP code isn\'t in the Census Bureau\'s ZIP list. The House\'s '
+        c1.markdown('<p role="alert">That ZIP code isn\'t in the Census Bureau\'s ZIP list. The House\'s '
                     f'<a href="{find_members.OFFICIAL_LOOKUP}" target="_blank" rel="noopener">official lookup</a> '
                     "can find your district from your address.</p>", unsafe_allow_html=True)
     elif res["state"] != state:
         other = STATES.get(res["state"], res["state"])
-        st.markdown(f'<p role="alert">ZIP code {escape(z)} is in {escape(other)}. '
+        c1.markdown(f'<p role="alert">ZIP code {escape(z)} is in {escape(other)}. '
                     f'<a href="States?state={res["state"]}" target="_self">See {escape(other)}\'s members</a></p>',
                     unsafe_allow_html=True)
     else:
@@ -97,13 +106,20 @@ if zip_text.strip():
             ids |= set(d["member"]["bioguide_id"])
         shown = delegation[delegation["bioguide_id"].isin(ids)]
         several = len(res["districts"]) > 1
+        if res["lines_current"]:
+            shown_vacant = [int(d["district"]) for d in res["districts"] if d["member"].empty]
+        empty = [find_members.district_label(state, d) for d in shown_vacant]
         mine_note = (f"Your members for ZIP code {z}."
-                     + (" This ZIP code crosses district lines, so more than one House member is listed." if several
+                     + (" This ZIP code crosses district lines, so more than one House district is listed." if several
                         else "")
+                     + (f" Your House seat, {empty[0]}, is vacant right now, so no one votes for it until a special "
+                        "election fills it." if len(empty) == 1 and not several else
+                        f" {', '.join(empty)} {'is' if len(empty) == 1 else 'are'} vacant right now." if empty else "")
                      + ("" if res["lines_current"] else " New district lines aren't matched to ZIP codes yet, so every "
                         "House member from the state is listed."))
 if query.strip():
     shown = shown[shown["name"].str.contains(query.strip(), case=False, regex=False)]
+    shown_vacant = []
 if mine_note:
     st.markdown(f'<p role="status">{escape(mine_note)} Clear the ZIP code to see everyone from {escape(name)}.</p>',
                 unsafe_allow_html=True)
@@ -135,21 +151,31 @@ def typical(chamber: str, who: str) -> str:
     return f"Typical {who}: party unity {unity:.1f}%, missed votes {missed:.1f}%."
 
 
-def member_table(group: pd.DataFrame, label: str) -> None:
-    rows = [[member_cell(r), seat(r), party_tag(r.party),
-             f"{r.party_unity_pct:.1f}%" if pd.notna(r.party_unity_pct) else "None",
-             pattern_badge(r.label) if isinstance(r.label, str) else "None",
-             f"{r.missed_pct:.1f}%" if pd.notna(r.missed_pct) else "None"]
+NO_DATA = '<span class="pc-muted">No votes yet</span>'
+
+
+def member_table(group: pd.DataFrame, label: str, empty_seats: list[int] = ()) -> None:
+    """One row per member, plus a row for each vacant district in its place in district order"""
+    rows = [(int(r.district) if r.chamber == "House" else 0,
+             [member_cell(r), escape(seat(r)), party_tag(r.party),
+              f"{r.party_unity_pct:.1f}%" if pd.notna(r.party_unity_pct) else NO_DATA,
+              pattern_badge(r.label) if isinstance(r.label, str) else NO_DATA,
+              f"{r.missed_pct:.1f}%" if pd.notna(r.missed_pct) else NO_DATA])
             for r in group.itertuples()]
-    html_table(["Member", "Seat", "Party", "Party unity", "Position Flips", "Missed votes"], rows, raw_cols=(0, 2, 4),
-               label=label, stack=True, nowrap_cols=(0, 1, 3, 5))
+    none = '<span class="pc-muted">No votes</span>'
+    rows += [(d, ["Seat vacant", escape(find_members.district_label(state, d)), '<span class="pc-muted">No member</span>',
+                  none, none, none]) for d in empty_seats]
+    rows.sort(key=lambda dr: dr[0])
+    html_table(["Member", "Seat", "Party", "Party unity", "Position Flips", "Missed votes"], [r for _, r in rows],
+               raw_cols=(0, 1, 2, 3, 4, 5), label=label, stack=True, nowrap_cols=(0, 1, 3, 5))
 
 
 senators = shown[shown["chamber"] == "Senate"].sort_values("name")
 house = shown[shown["chamber"] == "House"].sort_values(["district", "name"])
-if shown.empty:
+if shown.empty and not shown_vacant:
     if zip_text.strip() or query.strip():
-        st.info("No members match. Try part of a last name, or clear the search.")
+        st.markdown('<p role="status">No members match. Try part of a last name, or clear the search.</p>',
+                    unsafe_allow_html=True)
 else:
     st.markdown('<p class="pc-muted">Party unity is the share of party-line votes where a member voted with their own '
                 "party. Missed votes is the share of roll calls they didn't vote on. Position Flips shows whether their "
@@ -159,18 +185,21 @@ else:
         st.header("Senators")
         st.caption(typical("Senate", "senator"))
         member_table(senators, f"Senators from {name}")
-    if len(house):
+    if len(house) or shown_vacant:
         st.header("Delegate" if place and state != "PR" else "Resident Commissioner" if place else "House, by district")
         st.caption(typical("House", "House member") + (" Delegates can vote only on some House roll calls, so their "
                                                          "missed votes count only those." if place else ""))
         # Big delegations (California has 52 seats) are a long scroll on a phone; a district picker narrows it to one
-        if len(house) > 10:
-            districts = list(dict.fromkeys(find_members.district_label(state, d) for d in house["district"]))
+        empty_seats = shown_vacant
+        if len(house) + len(empty_seats) > 10:
+            all_d = sorted(set(int(d) for d in house["district"]) | set(empty_seats))
+            districts = [find_members.district_label(state, d) for d in all_d]
             pick = st.selectbox("Go to a district", ["All districts"] + districts, key=f"st_district_{state}",
                                 help="Don't know your district? Enter your ZIP code above.")
             if pick != "All districts":
                 house = house[[find_members.district_label(state, d) == pick for d in house["district"]]]
-        member_table(house, f"House members from {name}")
+                empty_seats = [d for d in empty_seats if find_members.district_label(state, d) == pick]
+        member_table(house, f"House members from {name}", empty_seats)
     st.caption("Numbers are from each member's latest Congress in the data.")
 
 if not place:

@@ -341,6 +341,8 @@ def test_home_zip_opens_your_members_on_the_state_page():
     at = open_page("views/0_Home.py")
     at.text_input(key="home_zip").input("00000").run()
     assert "isn't in the Census Bureau's ZIP list" in html(at)
+    # The message sits in the ZIP field's column, so on a phone it's under that field, not under the name search
+    assert any("isn't in the Census Bureau's ZIP list" in m.value for m in at.columns[0].markdown)
     at.text_input(key="home_zip").set_value("34219").run()  # Parrish, Florida
     assert not at.exception, [e.value for e in at.exception]
     assert at.title[0].value == "Florida"

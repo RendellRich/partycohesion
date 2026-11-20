@@ -1,3 +1,4 @@
+import pytest
 """The per-state summary behind the map on Home, and the States page."""
 from pathlib import Path
 
@@ -52,7 +53,7 @@ def test_states_page_opens_from_a_link():
     assert at.title[0].value == "Florida" and "Member_Explorer?member=" in text
     assert [h.value for h in at.header][:2] == ["Senators", "House, by district"]
     at.text_input(key="st_query").set_value("zzzz").run()
-    assert any("No members match" in i.value for i in at.info)
+    assert "No members match" in " ".join(m.value for m in at.markdown)
 
 
 def test_states_zip_narrows_to_your_members():
@@ -119,3 +120,45 @@ def test_big_states_have_a_district_picker():
     ca_house = seats[(seats["state_abbrev"] == "CA") & (seats["chamber"] == "House")]
     shown = [b for b in ca_house["bioguide_id"] if f"member={b}" in text]
     assert len(shown) == 1
+
+
+def test_vacant_districts_are_the_zip_districts_with_no_member():
+    import datetime
+    import find_members
+    seats_ = pd.DataFrame({"state_abbrev": ["TX", "TX", "TX"], "chamber": ["Senate", "House", "House"],
+                           "district": [0, 1, 3]})
+    zips = pd.DataFrame({"zip": ["1", "2", "3"], "state_abbrev": ["TX"] * 3, "district": [1, 2, 3], "share": [1] * 3})
+    assert find_members.vacant_districts("TX", seats_, zips, today=datetime.date(2026, 6, 1)) == [2]
+    # Once the ZIP file's district lines are out of date, it can't say which seats are empty
+    assert find_members.vacant_districts("TX", seats_, zips, today=datetime.date(2027, 6, 1)) == []
+
+
+def test_a_vacant_seat_shows_on_the_state_page_and_for_its_zip_codes():
+    import find_members
+    seats_, zips = find_members.load()
+    vac = [(st_, d) for st_ in sorted(zips["state_abbrev"].unique())
+           for d in find_members.vacant_districts(st_, seats_, zips)]
+    if not vac:
+        pytest.skip("no House seat is vacant in the current data")
+    state, district = vac[0]
+    label = find_members.district_label(state, district)
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=120)
+    at.run()
+    at.switch_page("views/16_States.py")
+    at.query_params["state"] = state
+    at.run()
+    assert not at.exception, [e.value for e in at.exception]
+    text = " ".join(m.value for m in at.markdown)
+    assert f"{label} is vacant" in text or f"{label} and" in text or f"{label}," in text
+    assert "Seat vacant" in text
+    picks = [s_ for s_ in at.selectbox if s_.key == f"st_district_{state}"]
+    if picks:
+        assert label in picks[0].options
+        picks[0].set_value(label).run()
+        text = " ".join(m.value for m in at.markdown)
+        assert "Seat vacant" in text and "Member_Explorer?member=" in text  # senators still listed
+    # A ZIP code wholly inside the vacant district says so instead of showing no House member
+    whole = zips[(zips["state_abbrev"] == state) & (zips["district"] == district) & (zips["share"] >= 0.999)]
+    at.text_input(key="st_zip").set_value(whole["zip"].iloc[0]).run()
+    text = " ".join(m.value for m in at.markdown)
+    assert f"Your House seat, {label}, is vacant" in text and "Seat vacant" in text

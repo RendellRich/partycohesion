@@ -88,7 +88,7 @@ CSS = f"""
              border: 1px solid var(--pc-border); border-radius: 10px; overflow: hidden; margin-bottom: 0.5rem; }}
 .pc-table th {{ color: var(--pc-muted); font-size: 0.85rem; font-weight: 600; text-align: left; padding: 12px 16px; }}
 .pc-table td {{ padding: 12px 16px; border-top: 1px solid var(--pc-border); }}
-.pc-table td.pc-muted {{ color: var(--pc-muted); }}
+.pc-muted, .pc-table td.pc-muted {{ color: var(--pc-muted); }}
 .pc-table-wrap {{ overflow-x: auto; border-radius: 10px; margin-bottom: 0.5rem; }}
 .pc-table-wrap .pc-table {{ margin-bottom: 0; }}
 .pc-table-wrap:focus-visible {{ outline: 2px solid var(--pc-accent); outline-offset: 2px; }}
