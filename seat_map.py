@@ -24,7 +24,8 @@ def seat_positions(n: int, rows: int, inner: float = 0.45) -> pd.DataFrame:
     return out.sort_values(["angle", "r"], ascending=[False, True]).reset_index(drop=True)
 
 
-def seat_map(members: pd.DataFrame, chamber: str, highlight=None, highlight_name: str = "") -> go.Figure:
+def seat_map(members: pd.DataFrame, chamber: str, highlight=None, highlight_name: str = "",
+             label: bool = True) -> go.Figure:
     """members: one row per member with icpsr, name, party, state_abbrev, nominate_dim1, party_unity_pct, bioguide_id
     and label. With highlight (an icpsr), that member's seat is enlarged and ringed, the rest are dimmed, and
     highlight_name labels the seat."""
@@ -59,20 +60,23 @@ def seat_map(members: pd.DataFrame, chamber: str, highlight=None, highlight_name
         # the label goes up and toward the middle, anchored on its outer edge
         c, s_ = math.cos(me["angle"]), math.sin(me["angle"])
         edge = abs(c) > 0.6
-        fig.add_annotation(x=me["x"], y=me["y"], text=f"<b>{highlight_name}</b>", showarrow=True, arrowhead=0,
-                           arrowcolor=ACCENT, arrowwidth=2, ax=(10 if edge else 60) * c, ay=-60 * s_ - (45 if edge else 0),
-                           xanchor="right" if c > 0.6 else "left" if c < -0.6 else "center",
-                           font=dict(size=14, color=ACCENT), bgcolor=BG, borderpad=3)
-        top = 1.2
+        if label:  # phones leave it off: at that size the name tag can only sit on other seats or the totals
+            fig.add_annotation(x=me["x"], y=me["y"], text=f"<b>{highlight_name}</b>", showarrow=True, arrowhead=0,
+                               arrowcolor=ACCENT, arrowwidth=2, ax=(10 if edge else 60) * c,
+                               ay=-60 * s_ - (45 if edge else 0),
+                               xanchor="right" if c > 0.6 else "left" if c < -0.6 else "center",
+                               font=dict(size=14, color=ACCENT), bgcolor=BG, borderpad=3)
+        top = 1.2 if label else top
     fig.add_annotation(x=0, y=0.1, text=f"<b>{len(m)}</b>", showarrow=False, font=dict(size=38), yanchor="bottom")
     fig.add_annotation(x=0, y=0.08, text="members", showarrow=False, font=dict(size=14, color=MUTED), yanchor="top")
     fig.update_layout(height=430 if chamber == "House" else 380, margin=dict(l=10, r=10, t=80, b=60),
                       legend=dict(orientation="h", x=0.5, xanchor="center", y=-0.02, yanchor="top"),
                       clickmode="event+select", dragmode=False, hoverdistance=8)
-    fig.update_xaxes(visible=False, range=[-1.06, 1.06], fixedrange=True)
-    fig.update_yaxes(visible=False, range=[-0.08, top], fixedrange=True, scaleanchor="x", scaleratio=1)
-    fig.add_annotation(x=-1.0, y=-0.06, text="Lower score", showarrow=False, xanchor="left",
+    # Room past the outer seats for the larger ringed marker, and the score labels hang below the bottom row
+    fig.update_xaxes(visible=False, range=[-1.1, 1.1], fixedrange=True)
+    fig.update_yaxes(visible=False, range=[-0.14, top], fixedrange=True, scaleanchor="x", scaleratio=1)
+    fig.add_annotation(x=-1.0, y=-0.06, text="Lower score", showarrow=False, xanchor="left", yanchor="top",
                        font=dict(size=12, color=MUTED))
-    fig.add_annotation(x=1.0, y=-0.06, text="Higher score", showarrow=False, xanchor="right",
+    fig.add_annotation(x=1.0, y=-0.06, text="Higher score", showarrow=False, xanchor="right", yanchor="top",
                        font=dict(size=12, color=MUTED))
     return fig

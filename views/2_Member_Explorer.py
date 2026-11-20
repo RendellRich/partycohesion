@@ -351,7 +351,7 @@ if pick:
     room["label"] = [f"{display_name(r.name)} ({r.party[0]}-{r.state_abbrev})" for r in room.itertuples()]
     if pd.notna(ideo) and room["nominate_dim1"].notna().all():
         when = "this Congress" if int(member["congress"]) == newest else f"the {ordinal(member['congress'])} Congress"
-        seat_event = show_chart(seat_map(room, member["chamber"], highlight=icpsr, highlight_name=short),
+        seat_event = show_chart(seat_map(room, member["chamber"], highlight=icpsr, highlight_name=short, label=not narrow()),
                                 f"{display_name(member['name'])} in the {member['chamber']}, {ordinal(member['congress'])} Congress",
                                 f"seat_map_{short.lower().replace(' ', '_')}",
                                 key=f"me_seat_{icpsr}_{st.session_state.get('me_seat_clicks', 0)}",
