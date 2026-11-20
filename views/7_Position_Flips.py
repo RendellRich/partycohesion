@@ -134,10 +134,13 @@ if scored.empty:
     notice("No members in this selection have enough votes under both parties' presidents.")
 else:
     n_cons = int((scored["label"] == "Consistent").sum())
+    n_partly = int((scored["label"] == "Partly changed").sum())
     n_changed = int((scored["label"] == "Changed with the White House").sum())
+    # Every result gets a card, so the shares add up and match the "partly or fully changed" figure on Home
     metric_row([("Members scored", f"{len(scored):,}", f"{len(view) - len(scored):,} more lack {MIN_VOTES_EACH_SIDE}+ "
                  "votes under each party's president"),
                 ("Consistent", f"{n_cons / len(scored) * 100:.0f}%", f"{n_cons:,} of {len(scored):,} scored"),
+                ("Partly changed", f"{n_partly / len(scored) * 100:.0f}%", f"{n_partly:,} of {len(scored):,} scored"),
                 ("Changed with the White House", f"{n_changed / len(scored) * 100:.0f}%",
                  f"{n_changed:,} of {len(scored):,} scored")])
     left_out = view[view["label"] == "Not enough votes"]

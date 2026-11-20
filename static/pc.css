@@ -140,6 +140,13 @@
 /* Everything people tap is at least 44px */
 .stApp [data-testid="stPageLink-NavLink"], .stApp [data-testid="stSidebarNavLink"] { min-height: 44px; display: flex; align-items: center; }
 .stApp [data-testid="stButtonGroup"] button, .stApp [data-testid^="stBaseButton"] { min-height: 44px; }
+/* Unselected pills and secondary buttons sit on the page color, so their outline is the only thing showing their
+   shape: the control gray (3:1 or better in both themes) instead of the faint divider color */
+.stApp button[data-variant="pills"]:not([data-selected="true"]),
+.stApp [data-testid="stBaseButton-secondary"] { border-color: var(--pc-control); }
+.stApp button[data-variant="segmented_control"]:not([data-selected="true"]) {
+  border-top-color: var(--pc-control); border-bottom-color: var(--pc-control); border-left-color: var(--pc-control); }
+.stApp button[data-variant="segmented_control"]:last-child:not([data-selected="true"]) { border-right-color: var(--pc-control); }
 .stApp .react-aria-ComboBox [role="group"], .stApp [data-testid="stTextInputRootElement"] { min-height: 46px; }
 .stApp [data-testid="stTextInputRootElement"] input { min-height: 44px; height: 44px; }
 .stApp label:has(input[type="checkbox"]), .stApp label:has(input[type="radio"]) { min-height: 44px; align-items: center; }

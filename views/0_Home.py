@@ -86,10 +86,14 @@ chamber = st.segmented_control("Chamber", ["House", "Senate"], default="House", 
                                label_visibility="collapsed") or "House"
 in_chamber = (current[current["chamber"] == chamber].sort_values("party_unity_pct")
               .drop_duplicates("icpsr", keep="last").copy())
+# Only members serving now: the Congress's full list also has members who left and their replacements, which made
+# the House read 452 instead of its 435 seats plus delegates
+serving = set(find_members.load_cached()[0]["bioguide_id"])
+in_chamber = in_chamber[in_chamber["bioguide_id"].isin(serving)].drop_duplicates("bioguide_id", keep="last")
 in_chamber["label"] = [f"{display_name(r.name)} ({r.party[0]}-{r.state_abbrev})" for r in in_chamber.itertuples()]
 # On phones the dots are a few pixels wide and a scroll can land as a tap, so a tap only shows who a dot is
 phone = narrow()
-event = show_chart(seat_map(in_chamber, chamber), f"The {chamber}, {ordinal(latest)} Congress",
+event = show_chart(seat_map(in_chamber, chamber, count_label="serving now"), f"The {chamber} now, {ordinal(latest)} Congress",
                    f"seat_map_{chamber.lower()}",
                    key=f"seat_map_{chamber}_{st.session_state.get('seat_clicks', 0)}",
                    on_select=None if phone else "rerun")
@@ -98,7 +102,8 @@ st.caption("One dot per member, placed left to right by their Voteview ideology 
            + ("Tap a dot to see who it is and their record with their party; the lookup at the top opens a member's "
               "page." if phone else "Hover over a dot for their record with their party, or click it to open their "
               "page.")
-           + " The count includes members who left office and their replacements.")
+           + (" The House count includes the five delegates and the Resident Commissioner, who can vote only on "
+              "some roll calls. Vacant seats have no dot." if chamber == "House" else " Vacant seats have no dot."))
 picked = event.get("selection", {}).get("points", []) if event and not phone else []
 if picked and picked[0].get("customdata") and picked[0]["customdata"][2]:
     st.session_state["seat_clicks"] = st.session_state.get("seat_clicks", 0) + 1  # a fresh chart next visit
@@ -125,7 +130,8 @@ section_heading("What the record shows")
 c1, c2, c3 = st.columns(3, gap="medium")
 with c1:
     card("Position flips", f"{pct_changed:.0f}%",
-         f"of current members ({len(scored)} with enough comparable votes) gave the president noticeably more room on "
+         f"of current members ({len(scored)} with enough comparable votes) partly or fully changed: they gave the "
+         "president noticeably more room on "
          "debt limits, government funding, disaster aid and war powers when he was from their own party (a shift of "
          "25 points or more), comparing like with like.")
     st.page_link("views/7_Position_Flips.py", label="See every member")

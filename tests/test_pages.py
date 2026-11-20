@@ -526,3 +526,31 @@ def test_phone_voting_record_shows_their_vote_in_cards():
     text = html(at)
     assert 's voting record"' in text and 'data-label="Their remarks"' in text
     assert any(b.label.startswith("Show 10 more") for b in at.button)
+
+
+def test_look_up_another_member_from_a_member_page():
+    at = open_member("C001098")
+    at.button(key="me_another").click().run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert at.title[0].value == "Members" and "member" not in at.query_params
+    assert at.selectbox(key="me_member").value is None
+    # Picking someone from the lookup opens them, even before their address is set
+    at.selectbox(key="me_member").set_value("Ted Cruz (R-TX, Senate)").run()
+    assert at.title[0].value == "Ted Cruz" and at.query_params.get("member") == "C001098"
+
+
+def test_members_link_with_no_member_opens_the_lookup():
+    at = open_member("C001098")
+    del at.query_params["member"]  # what the sidebar's Members link does
+    at.run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert at.title[0].value == "Members"
+
+
+def test_recent_votes_use_short_titles_and_skip_procedural_resolutions():
+    at = open_member("C001098")
+    recent = html(at).split('class="pc-lately"')[1].split("</ul>")[0]
+    assert "en bloc consideration" not in recent and "Providing for consideration" not in recent
+    assert "Protect College Sports Act of 2026" in recent and "S. 4668, " in recent
+    delegate = open_member("R000600")
+    assert any("Delegates and the Resident Commissioner" in c.value for c in delegate.caption)
