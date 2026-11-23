@@ -430,6 +430,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 14226.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 14226.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 14226.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+14226.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 14230.0,110,Senate,354,Debt limit,Democrat,Nay,0,0
 14230.0,111,Senate,411,Debt limit,Democrat,Yea,1,1
 14230.0,112,Senate,123,Debt limit,Democrat,Nay,0,1
@@ -776,6 +777,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 14435.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 14435.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 14435.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+14435.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 14440.0,110,Senate,354,Debt limit,Democrat,Nay,0,0
 14440.0,111,Senate,411,Debt limit,Democrat,Yea,1,1
 14440.0,112,Senate,123,Debt limit,Democrat,Yea,1,1
@@ -1453,6 +1455,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 14858.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 14858.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 14858.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+14858.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 14863.0,112,House,377,Debt limit,Republican,Nay,0,0
 14863.0,112,House,686,Debt limit,Republican,Yea,1,0
 14863.0,112,House,702,Debt limit,Republican,Yea,0,0
@@ -1662,6 +1665,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 14871.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 14871.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 14871.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+14871.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 14873.0,112,House,377,Debt limit,Democrat,Nay,0,1
 14873.0,112,House,686,Debt limit,Democrat,Yea,1,1
 14873.0,112,House,702,Debt limit,Democrat,Nay,1,1
@@ -1891,6 +1895,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 14921.0,116,Senate,48,War powers limits,Republican,Nay,1,1
 14921.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 14921.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+14921.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 14922.0,110,Senate,354,Debt limit,Democrat,Yea,1,0
 14922.0,111,Senate,411,Debt limit,Democrat,Yea,1,1
 14922.0,112,Senate,123,Debt limit,Democrat,Yea,1,1
@@ -2228,6 +2233,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 15021.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 15021.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 15021.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+15021.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 15029.0,112,House,686,Debt limit,Democrat,Nay,0,1
 15029.0,112,House,702,Debt limit,Democrat,Nay,1,1
 15029.0,112,House,948,Debt limit,Democrat,Nay,1,1
@@ -4151,6 +4157,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 20101.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 20101.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 20101.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+20101.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 20102.0,112,House,377,Debt limit,Democrat,Nay,0,1
 20102.0,112,House,686,Debt limit,Democrat,Yea,1,1
 20102.0,112,House,702,Debt limit,Democrat,Nay,1,1
@@ -4297,6 +4304,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 20104.0,118,House,200,War powers limits,Democrat,Nay,1,1
 20104.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 20104.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+20104.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 20105.0,110,House,1807,Disaster aid,Democrat,Yea,1,0
 20105.0,110,House,1177,Full-year funding,Democrat,Nay,0,0
 20105.0,110,House,1807,Full-year funding,Democrat,Yea,1,0
@@ -5683,6 +5691,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 20146.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 20146.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 20146.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+20146.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 20147.0,112,House,377,Debt limit,Democrat,Yea,1,1
 20147.0,112,House,686,Debt limit,Democrat,Yea,1,1
 20147.0,112,House,702,Debt limit,Democrat,Nay,1,1
@@ -6787,6 +6796,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 20330.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 20330.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 20330.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+20330.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 20331.0,112,House,377,Debt limit,Republican,Nay,0,0
 20331.0,112,House,686,Debt limit,Republican,Yea,1,0
 20331.0,112,House,702,Debt limit,Republican,Yea,0,0
@@ -7554,6 +7564,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 20351.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 20351.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 20351.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+20351.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 20352.0,112,House,377,Debt limit,Republican,Nay,0,0
 20352.0,112,House,686,Debt limit,Republican,Yea,1,0
 20352.0,112,House,702,Debt limit,Republican,Yea,0,0
@@ -10834,6 +10845,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 20713.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 20713.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 20713.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+20713.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 20714.0,110,House,1807,Disaster aid,Republican,Nay,0,1
 20714.0,110,House,1177,Full-year funding,Republican,Yea,1,1
 20714.0,110,House,1807,Full-year funding,Republican,Nay,0,1
@@ -11800,6 +11812,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 20735.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 20735.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 20735.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+20735.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 20736.0,110,House,1807,Disaster aid,Democrat,Yea,1,0
 20736.0,110,House,1177,Full-year funding,Democrat,Nay,0,0
 20736.0,110,House,1807,Full-year funding,Democrat,Yea,1,0
@@ -12319,6 +12332,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 20750.0,116,House,800,War powers limits,Democrat,Yea,0,0
 20750.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 20750.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+20750.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 20751.0,110,House,1807,Disaster aid,Democrat,Yea,1,0
 20751.0,110,House,1177,Full-year funding,Democrat,Nay,0,0
 20751.0,110,House,1807,Full-year funding,Democrat,Yea,1,0
@@ -13794,6 +13808,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 20919.0,116,Senate,480,War powers limits,Republican,Yea,0,1
 20919.0,119,Senate,843,War powers limits,Republican,Yea,0,1
 20919.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+20919.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 20920.0,112,House,377,Debt limit,Democrat,Yea,1,1
 20920.0,112,House,686,Debt limit,Democrat,Nay,0,1
 20920.0,112,House,702,Debt limit,Democrat,Nay,1,1
@@ -13976,6 +13991,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 20923.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 20923.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 20923.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+20923.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 20924.0,112,House,377,Debt limit,Republican,Nay,0,0
 20924.0,112,House,686,Debt limit,Republican,Yea,1,0
 20924.0,112,House,702,Debt limit,Republican,Yea,0,0
@@ -14350,6 +14366,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 20930.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 20930.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 20930.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+20930.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 20931.0,111,House,85,Full-year funding,Democrat,Yea,1,1
 20931.0,111,House,947,Full-year funding,Democrat,Yea,1,1
 20931.0,111,House,108,Stopgap funding,Democrat,Yea,1,1
@@ -14440,6 +14457,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 20932.0,116,House,800,War powers limits,Democrat,Yea,0,0
 20932.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 20932.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+20932.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 20933.0,111,House,85,Full-year funding,Democrat,Yea,1,1
 20933.0,111,House,947,Full-year funding,Democrat,Yea,1,1
 20933.0,111,House,108,Stopgap funding,Democrat,Yea,1,1
@@ -15147,6 +15165,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 20953.0,114,House,368,War powers limits,Republican,Nay,1,0
 20953.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 20953.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+20953.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 20954.0,112,House,377,Debt limit,Democrat,Yea,1,1
 20954.0,112,House,686,Debt limit,Democrat,Yea,1,1
 20954.0,112,House,702,Debt limit,Democrat,Nay,1,1
@@ -17246,6 +17265,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21133.0,116,Senate,480,War powers limits,Republican,Yea,0,1
 21133.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 21133.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+21133.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 21134.0,112,House,377,Debt limit,Republican,Nay,0,0
 21134.0,112,House,686,Debt limit,Republican,Nay,0,0
 21134.0,112,House,702,Debt limit,Republican,Yea,0,0
@@ -18435,6 +18455,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21166.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 21166.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 21166.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+21166.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 21167.0,112,House,377,Debt limit,Republican,Nay,0,0
 21167.0,112,House,686,Debt limit,Republican,Yea,1,0
 21167.0,112,House,702,Debt limit,Republican,Yea,0,0
@@ -18762,6 +18783,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21173.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 21173.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 21173.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+21173.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 21174.0,112,House,686,Debt limit,Republican,Nay,0,0
 21174.0,112,House,702,Debt limit,Republican,Yea,0,0
 21174.0,112,House,948,Debt limit,Republican,Yea,0,0
@@ -20013,6 +20035,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21301.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 21301.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 21301.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+21301.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 21302.0,113,House,29,Debt limit,Republican,Yea,1,0
 21302.0,113,House,549,Debt limit,Republican,Nay,0,0
 21302.0,113,House,569,Debt limit,Republican,Yea,0,0
@@ -21230,6 +21253,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21325.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 21325.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 21325.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+21325.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 21326.0,113,House,29,Debt limit,Democrat,Yea,1,1
 21326.0,113,House,549,Debt limit,Democrat,Yea,1,1
 21326.0,113,House,569,Debt limit,Democrat,Nay,1,1
@@ -21820,6 +21844,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21338.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 21338.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 21338.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+21338.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 21339.0,113,House,29,Debt limit,Democrat,Yea,1,1
 21339.0,113,House,549,Debt limit,Democrat,Yea,1,1
 21339.0,113,House,569,Debt limit,Democrat,Nay,1,1
@@ -22439,6 +22464,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21350.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 21350.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 21350.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+21350.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 21351.0,113,House,29,Debt limit,Republican,Yea,1,0
 21351.0,113,House,549,Debt limit,Republican,Nay,0,0
 21351.0,113,House,569,Debt limit,Republican,Yea,0,0
@@ -24039,6 +24065,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21502.0,118,House,200,War powers limits,Democrat,Nay,1,1
 21502.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 21502.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+21502.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 21503.0,114,House,577,Debt limit,Republican,Nay,0,0
 21503.0,115,House,479,Debt limit,Republican,Nay,0,1
 21503.0,115,House,776,Debt limit,Republican,Yea,1,1
@@ -26843,6 +26870,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21702.0,118,House,200,War powers limits,Republican,Nay,1,0
 21702.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 21702.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+21702.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 21703.0,115,House,479,Debt limit,Democrat,Yea,1,0
 21703.0,115,House,776,Debt limit,Democrat,Nay,0,0
 21703.0,116,House,510,Debt limit,Democrat,Yea,1,0
@@ -27088,6 +27116,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21706.0,118,House,200,War powers limits,Democrat,Yea,0,1
 21706.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 21706.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+21706.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 21707.0,115,House,479,Debt limit,Democrat,Yea,1,0
 21707.0,115,House,776,Debt limit,Democrat,Nay,0,0
 21707.0,116,House,510,Debt limit,Democrat,Yea,1,0
@@ -27178,6 +27207,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21708.0,116,House,800,War powers limits,Republican,Nay,1,1
 21708.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 21708.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+21708.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 21709.0,115,House,479,Debt limit,Democrat,Yea,1,0
 21709.0,115,House,776,Debt limit,Democrat,Yea,1,0
 21709.0,116,House,510,Debt limit,Democrat,Yea,1,0
@@ -28391,6 +28421,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21734.0,116,House,800,War powers limits,Republican,Nay,1,1
 21734.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 21734.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+21734.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 21735.0,115,House,479,Debt limit,Republican,Yea,1,1
 21735.0,115,House,776,Debt limit,Republican,Yea,1,1
 21735.0,116,House,510,Debt limit,Republican,Nay,0,1
@@ -28781,6 +28812,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21743.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 21743.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 21743.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+21743.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 21744.0,115,House,776,Debt limit,Republican,Yea,1,1
 21744.0,116,House,510,Debt limit,Republican,Yea,1,1
 21744.0,117,House,309,Debt limit,Republican,Nay,0,0
@@ -29354,6 +29386,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21755.0,118,House,200,War powers limits,Republican,Nay,1,0
 21755.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 21755.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+21755.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 21756.0,116,House,510,Debt limit,Democrat,Yea,1,0
 21756.0,117,House,309,Debt limit,Democrat,Yea,1,1
 21756.0,117,House,448,Debt limit,Democrat,Yea,1,1
@@ -31214,6 +31247,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21937.0,118,House,200,War powers limits,Democrat,Nay,1,1
 21937.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 21937.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+21937.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 21938.0,116,House,510,Debt limit,Democrat,Yea,1,0
 21938.0,117,House,309,Debt limit,Democrat,Yea,1,1
 21938.0,117,House,448,Debt limit,Democrat,Yea,1,1
@@ -32278,6 +32312,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 21965.0,118,House,200,War powers limits,Democrat,Nay,1,1
 21965.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 21965.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+21965.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 21966.0,116,House,510,Debt limit,Democrat,Nay,0,0
 21966.0,117,House,309,Debt limit,Democrat,Yea,1,1
 21966.0,117,House,448,Debt limit,Democrat,Yea,1,1
@@ -38782,6 +38817,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 29142.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 29142.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 29142.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+29142.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 29143.0,112,House,377,Debt limit,Republican,Nay,0,0
 29143.0,112,House,686,Debt limit,Republican,Yea,1,0
 29143.0,112,House,702,Debt limit,Republican,Yea,0,0
@@ -38911,6 +38947,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 29147.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 29147.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 29147.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+29147.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 29149.0,112,House,377,Debt limit,Democrat,Yea,1,1
 29149.0,112,House,686,Debt limit,Democrat,Nay,0,1
 29149.0,112,House,702,Debt limit,Democrat,Nay,1,1
@@ -39816,6 +39853,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 29345.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 29345.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 29345.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+29345.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 29346.0,112,House,377,Debt limit,Democrat,Yea,1,1
 29346.0,112,House,686,Debt limit,Democrat,Yea,1,1
 29346.0,112,House,702,Debt limit,Democrat,Nay,1,1
@@ -41192,6 +41230,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 29534.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 29534.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 29534.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+29534.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 29537.0,110,Senate,354,Debt limit,Republican,Nay,0,1
 29537.0,111,Senate,411,Debt limit,Republican,Nay,0,0
 29537.0,110,Senate,650,Disaster aid,Republican,Nay,0,1
@@ -42834,6 +42873,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 29722.0,116,Senate,480,War powers limits,Republican,Yea,0,1
 29722.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 29722.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+29722.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 29728.0,110,House,1807,Disaster aid,Democrat,Yea,1,0
 29728.0,110,House,1177,Full-year funding,Democrat,Nay,0,0
 29728.0,110,House,1807,Full-year funding,Democrat,Yea,1,0
@@ -43475,6 +43515,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 29754.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 29754.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 29754.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+29754.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 29759.0,112,House,377,Debt limit,Republican,Nay,0,0
 29759.0,112,House,686,Debt limit,Republican,Yea,1,0
 29759.0,112,House,702,Debt limit,Republican,Yea,0,0
@@ -45466,6 +45507,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 29940.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 29940.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 29940.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+29940.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 29942.0,112,House,377,Debt limit,Democrat,Nay,0,1
 29942.0,112,House,702,Debt limit,Democrat,Nay,1,1
 29942.0,112,House,948,Debt limit,Democrat,Nay,1,1
@@ -46166,6 +46208,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 39310.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 39310.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 39310.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+39310.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 39316.0,110,House,1807,Disaster aid,Republican,Yea,1,1
 39316.0,110,House,1177,Full-year funding,Republican,Yea,1,1
 39316.0,110,House,1807,Full-year funding,Republican,Yea,1,1
@@ -46263,6 +46306,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 40300.0,116,Senate,480,War powers limits,Republican,Yea,0,1
 40300.0,119,Senate,843,War powers limits,Republican,Yea,0,1
 40300.0,119,Senate,903,War powers limits,Republican,Yea,0,1
+40300.0,119,Senate,928,War powers limits,Republican,Yea,0,1
 40301.0,110,Senate,354,Debt limit,Democrat,Nay,0,0
 40301.0,111,Senate,411,Debt limit,Democrat,Yea,1,1
 40301.0,112,Senate,123,Debt limit,Democrat,Yea,1,1
@@ -46423,6 +46467,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 40305.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 40305.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 40305.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+40305.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 40500.0,110,Senate,354,Debt limit,Democrat,Nay,0,0
 40500.0,110,Senate,650,Disaster aid,Democrat,Yea,1,0
 40500.0,110,Senate,441,Full-year funding,Democrat,Yea,1,0
@@ -46508,6 +46553,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 40700.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 40700.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 40700.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+40700.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 40701.0,110,Senate,354,Debt limit,Democrat,Nay,0,0
 40701.0,111,Senate,411,Debt limit,Democrat,Yea,1,1
 40701.0,112,Senate,123,Debt limit,Democrat,Yea,1,1
@@ -46751,6 +46797,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 40704.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 40704.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 40704.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+40704.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 40705.0,110,Senate,354,Debt limit,Republican,Yea,1,1
 40705.0,111,Senate,411,Debt limit,Republican,Nay,0,0
 40705.0,112,Senate,123,Debt limit,Republican,Yea,1,0
@@ -46876,6 +46923,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 40707.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 40707.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 40707.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+40707.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 40900.0,111,Senate,411,Debt limit,Democrat,Yea,1,1
 40900.0,112,Senate,123,Debt limit,Democrat,Yea,1,1
 40900.0,113,Senate,11,Debt limit,Democrat,Yea,1,1
@@ -46967,6 +47015,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 40902.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 40902.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 40902.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+40902.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 40903.0,111,Senate,411,Debt limit,Democrat,Yea,1,1
 40903.0,111,Senate,374,Full-year funding,Democrat,Yea,1,1
 40903.0,111,Senate,644,Stopgap funding,Democrat,Yea,1,1
@@ -47086,6 +47135,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 40906.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 40906.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 40906.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+40906.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 40907.0,111,Senate,411,Debt limit,Democrat,Yea,1,1
 40907.0,112,Senate,123,Debt limit,Democrat,Yea,1,1
 40907.0,113,Senate,11,Debt limit,Democrat,Yea,1,1
@@ -47174,6 +47224,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 40908.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 40908.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 40908.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+40908.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 40909.0,111,Senate,411,Debt limit,Democrat,Yea,1,1
 40909.0,112,Senate,123,Debt limit,Democrat,Yea,1,1
 40909.0,113,Senate,11,Debt limit,Democrat,Yea,1,1
@@ -47242,6 +47293,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 40909.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 40909.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 40909.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+40909.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 40910.0,111,Senate,411,Debt limit,Democrat,Yea,1,1
 40910.0,112,Senate,123,Debt limit,Democrat,Yea,1,1
 40910.0,113,Senate,11,Debt limit,Democrat,Yea,1,1
@@ -47310,6 +47362,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 40910.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 40910.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 40910.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+40910.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 40911.0,111,Senate,411,Debt limit,Republican,Nay,0,0
 40911.0,111,Senate,374,Full-year funding,Republican,Nay,0,0
 40911.0,111,Senate,644,Stopgap funding,Republican,Nay,0,0
@@ -47440,6 +47493,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 40916.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 40916.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 40916.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+40916.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 41101.0,112,Senate,123,Debt limit,Democrat,Yea,1,1
 41101.0,113,Senate,11,Debt limit,Democrat,Yea,1,1
 41101.0,113,Senate,219,Debt limit,Democrat,Yea,1,1
@@ -47505,6 +47559,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41101.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 41101.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 41101.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+41101.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 41102.0,112,Senate,123,Debt limit,Republican,Nay,0,0
 41102.0,113,Senate,11,Debt limit,Republican,Nay,0,0
 41102.0,113,Senate,219,Debt limit,Republican,Nay,0,0
@@ -47617,6 +47672,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41104.0,116,Senate,480,War powers limits,Republican,Yea,0,1
 41104.0,119,Senate,843,War powers limits,Republican,Yea,0,1
 41104.0,119,Senate,903,War powers limits,Republican,Yea,0,1
+41104.0,119,Senate,928,War powers limits,Republican,Yea,0,1
 41106.0,112,Senate,123,Debt limit,Republican,Nay,0,0
 41106.0,113,Senate,11,Debt limit,Republican,Yea,1,0
 41106.0,113,Senate,219,Debt limit,Republican,Yea,1,0
@@ -47702,6 +47758,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41107.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 41107.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 41107.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+41107.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 41110.0,112,Senate,123,Debt limit,Republican,Nay,0,0
 41110.0,113,Senate,11,Debt limit,Republican,Nay,0,0
 41110.0,113,Senate,219,Debt limit,Republican,Nay,0,0
@@ -47767,6 +47824,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41110.0,116,Senate,480,War powers limits,Republican,Yea,0,1
 41110.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 41110.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+41110.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 41111.0,112,Senate,123,Debt limit,Republican,Nay,0,0
 41111.0,113,Senate,11,Debt limit,Republican,Nay,0,0
 41111.0,113,Senate,219,Debt limit,Republican,Nay,0,0
@@ -47832,6 +47890,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41111.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 41111.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 41111.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+41111.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 41112.0,113,Senate,11,Debt limit,Democrat,Yea,1,1
 41112.0,113,Senate,219,Debt limit,Democrat,Yea,1,1
 41112.0,113,Senate,325,Debt limit,Democrat,Yea,1,1
@@ -47890,6 +47949,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41112.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 41112.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 41112.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+41112.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 41300.0,113,Senate,11,Debt limit,Democrat,Yea,1,1
 41300.0,113,Senate,219,Debt limit,Democrat,Yea,1,1
 41300.0,113,Senate,325,Debt limit,Democrat,Yea,1,1
@@ -47947,6 +48007,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41300.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 41300.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 41300.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+41300.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 41301.0,113,Senate,11,Debt limit,Democrat,Yea,1,1
 41301.0,113,Senate,219,Debt limit,Democrat,Yea,1,1
 41301.0,113,Senate,325,Debt limit,Democrat,Yea,1,1
@@ -48001,6 +48062,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41301.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 41301.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 41301.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+41301.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 41302.0,113,Senate,11,Debt limit,Republican,Nay,0,0
 41302.0,113,Senate,219,Debt limit,Republican,Yea,1,0
 41302.0,113,Senate,325,Debt limit,Republican,Nay,0,0
@@ -48059,6 +48121,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41302.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 41302.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 41302.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+41302.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 41303.0,113,Senate,11,Debt limit,Democrat,Yea,1,1
 41303.0,113,Senate,219,Debt limit,Democrat,Yea,1,1
 41303.0,113,Senate,325,Debt limit,Democrat,Yea,1,1
@@ -48141,6 +48204,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41304.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 41304.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 41304.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+41304.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 41305.0,113,Senate,11,Debt limit,Democrat,Yea,1,1
 41305.0,113,Senate,219,Debt limit,Democrat,Yea,1,1
 41305.0,113,Senate,325,Debt limit,Democrat,Yea,1,1
@@ -48199,6 +48263,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41305.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 41305.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 41305.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+41305.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 41306.0,113,Senate,44,Full-year funding,Democrat,Yea,1,1
 41307.0,113,Senate,219,Debt limit,Republican,Yea,1,0
 41307.0,113,Senate,209,Stopgap funding,Republican,Nay,0,0
@@ -48251,6 +48316,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41308.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 41308.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 41308.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+41308.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 41309.0,113,Senate,325,Debt limit,Democrat,Yea,1,1
 41309.0,113,Senate,645,Full-year funding,Democrat,Yea,1,1
 41309.0,113,Senate,561,Stopgap funding,Democrat,Yea,1,1
@@ -48299,6 +48365,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41500.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 41500.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 41500.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+41500.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 41501.0,114,Senate,294,Debt limit,Republican,Nay,0,0
 41501.0,115,Senate,192,Debt limit,Republican,Yea,1,1
 41501.0,115,Senate,356,Debt limit,Republican,Yea,1,1
@@ -48369,6 +48436,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41502.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 41502.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 41502.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+41502.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 41503.0,114,Senate,294,Debt limit,Republican,Nay,0,0
 41503.0,115,Senate,192,Debt limit,Republican,Nay,0,1
 41503.0,115,Senate,356,Debt limit,Republican,Nay,0,1
@@ -48444,6 +48512,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41504.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 41504.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 41504.0,119,Senate,903,War powers limits,Republican,Yea,0,1
+41504.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 41505.0,114,Senate,294,Debt limit,Republican,Yea,1,0
 41505.0,115,Senate,192,Debt limit,Republican,Yea,1,1
 41505.0,115,Senate,356,Debt limit,Republican,Yea,1,1
@@ -48489,6 +48558,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41505.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 41505.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 41505.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+41505.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 41700.0,115,Senate,192,Debt limit,Democrat,Yea,1,0
 41700.0,115,Senate,356,Debt limit,Democrat,Yea,1,0
 41700.0,116,Senate,262,Debt limit,Democrat,Yea,1,0
@@ -48534,6 +48604,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41700.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 41700.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 41700.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+41700.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 41701.0,115,Senate,192,Debt limit,Democrat,Yea,1,0
 41701.0,115,Senate,356,Debt limit,Democrat,Nay,0,0
 41701.0,115,Senate,192,Disaster aid,Democrat,Yea,1,0
@@ -48596,6 +48667,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41702.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 41702.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 41702.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+41702.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 41703.0,115,Senate,192,Debt limit,Republican,Yea,1,1
 41703.0,115,Senate,356,Debt limit,Republican,Nay,0,1
 41703.0,116,Senate,262,Debt limit,Republican,Nay,0,1
@@ -48641,6 +48713,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41703.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 41703.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 41703.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+41703.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 41704.0,115,Senate,192,Debt limit,Republican,Yea,1,1
 41704.0,115,Senate,192,Disaster aid,Republican,Yea,1,1
 41704.0,115,Senate,248,Disaster aid,Republican,Nay,0,1
@@ -48702,6 +48775,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41706.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 41706.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 41706.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+41706.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 41707.0,116,Senate,262,Debt limit,Republican,Yea,1,1
 41707.0,117,Senate,412,Debt limit,Republican,Nay,0,0
 41707.0,117,Senate,498,Debt limit,Republican,Nay,0,0
@@ -48739,6 +48813,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41707.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 41707.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 41707.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+41707.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 41900.0,116,Senate,262,Debt limit,Republican,Nay,0,1
 41900.0,117,Senate,412,Debt limit,Republican,Nay,0,0
 41900.0,117,Senate,498,Debt limit,Republican,Nay,0,0
@@ -48798,6 +48873,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41901.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 41901.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 41901.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+41901.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 41902.0,116,Senate,262,Debt limit,Republican,Nay,0,1
 41902.0,117,Senate,412,Debt limit,Republican,Nay,0,0
 41902.0,117,Senate,498,Debt limit,Republican,Nay,0,0
@@ -48853,6 +48929,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41903.0,116,Senate,480,War powers limits,Republican,Nay,1,1
 41903.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 41903.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+41903.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 41904.0,116,Senate,717,Full-year funding,Republican,Yea,1,1
 41904.0,116,Senate,625,Stopgap funding,Republican,Nay,0,1
 41904.0,116,Senate,480,War powers limits,Republican,Nay,1,1
@@ -48880,6 +48957,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 41905.0,119,Senate,887,Stopgap funding,Democrat,Yea,1,0
 41905.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 41905.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+41905.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 42100.0,117,Senate,412,Debt limit,Republican,Nay,0,0
 42100.0,117,Senate,498,Debt limit,Republican,Nay,0,0
 42100.0,117,Senate,397,Disaster aid,Republican,Nay,0,0
@@ -48902,6 +48980,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42100.0,119,Senate,887,Stopgap funding,Republican,Yea,1,1
 42100.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 42100.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+42100.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 42101.0,117,Senate,412,Debt limit,Democrat,Yea,1,1
 42101.0,117,Senate,498,Debt limit,Democrat,Yea,1,1
 42101.0,118,Senate,146,Debt limit,Democrat,Yea,1,1
@@ -48926,6 +49005,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42101.0,119,Senate,887,Stopgap funding,Democrat,Yea,1,0
 42101.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 42101.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+42101.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 42102.0,117,Senate,412,Debt limit,Republican,Nay,0,0
 42102.0,117,Senate,498,Debt limit,Republican,Nay,0,0
 42102.0,118,Senate,146,Debt limit,Republican,Nay,0,0
@@ -48950,6 +49030,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42102.0,119,Senate,887,Stopgap funding,Republican,Yea,1,1
 42102.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 42102.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+42102.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 42103.0,117,Senate,412,Debt limit,Democrat,Yea,1,1
 42103.0,117,Senate,498,Debt limit,Democrat,Yea,1,1
 42103.0,118,Senate,146,Debt limit,Democrat,Yea,1,1
@@ -48974,6 +49055,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42103.0,119,Senate,887,Stopgap funding,Democrat,Yea,1,0
 42103.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 42103.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+42103.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 42104.0,117,Senate,412,Debt limit,Democrat,Yea,1,1
 42104.0,117,Senate,498,Debt limit,Democrat,Yea,1,1
 42104.0,118,Senate,146,Debt limit,Democrat,Yea,1,1
@@ -48998,6 +49080,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42104.0,119,Senate,887,Stopgap funding,Democrat,Yea,1,0
 42104.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 42104.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+42104.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 42105.0,117,Senate,412,Debt limit,Democrat,Yea,1,1
 42105.0,117,Senate,498,Debt limit,Democrat,Yea,1,1
 42105.0,118,Senate,146,Debt limit,Democrat,Yea,1,1
@@ -49022,6 +49105,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42105.0,119,Senate,887,Stopgap funding,Democrat,Yea,1,0
 42105.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 42105.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+42105.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 42300.0,118,Senate,146,Debt limit,Republican,Nay,0,0
 42300.0,118,Senate,691,Disaster aid,Republican,Yea,1,0
 42300.0,118,Senate,436,Full-year funding,Republican,Yea,1,0
@@ -49037,6 +49121,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42300.0,119,Senate,887,Stopgap funding,Republican,Yea,1,1
 42300.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 42300.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+42300.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 42301.0,118,Senate,146,Debt limit,Democrat,Nay,0,1
 42301.0,118,Senate,691,Disaster aid,Democrat,Yea,1,1
 42301.0,118,Senate,436,Full-year funding,Democrat,Yea,1,1
@@ -49053,6 +49138,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42301.0,119,Senate,887,Stopgap funding,Democrat,Yea,1,0
 42301.0,119,Senate,843,War powers limits,Democrat,Nay,1,0
 42301.0,119,Senate,903,War powers limits,Democrat,Nay,1,0
+42301.0,119,Senate,928,War powers limits,Democrat,Nay,1,0
 42302.0,118,Senate,146,Debt limit,Republican,Nay,0,0
 42302.0,118,Senate,691,Disaster aid,Republican,Yea,1,0
 42302.0,118,Senate,436,Full-year funding,Republican,Nay,0,0
@@ -49069,6 +49155,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42302.0,119,Senate,887,Stopgap funding,Republican,Yea,1,1
 42302.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 42302.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+42302.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 42303.0,118,Senate,146,Debt limit,Republican,Nay,0,0
 42303.0,118,Senate,691,Disaster aid,Republican,Nay,0,0
 42303.0,118,Senate,436,Full-year funding,Republican,Nay,0,0
@@ -49085,6 +49172,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42303.0,119,Senate,887,Stopgap funding,Republican,Yea,1,1
 42303.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 42303.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+42303.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 42304.0,118,Senate,146,Debt limit,Republican,Nay,0,0
 42304.0,118,Senate,436,Full-year funding,Republican,Nay,0,0
 42304.0,118,Senate,466,Full-year funding,Republican,Nay,0,0
@@ -49103,6 +49191,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42500.0,119,Senate,618,Stopgap funding,Democrat,Nay,0,0
 42500.0,119,Senate,887,Stopgap funding,Democrat,Yea,1,0
 42500.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
+42500.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 42501.0,119,Senate,133,Full-year funding,Republican,Yea,1,1
 42501.0,119,Senate,618,Full-year funding,Republican,Yea,1,1
 42501.0,119,Senate,670,Full-year funding,Republican,Yea,1,1
@@ -49110,6 +49199,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42501.0,119,Senate,618,Stopgap funding,Republican,Yea,1,1
 42501.0,119,Senate,887,Stopgap funding,Republican,Yea,1,1
 42501.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+42501.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 42502.0,119,Senate,133,Full-year funding,Republican,Yea,1,1
 42502.0,119,Senate,618,Full-year funding,Republican,Yea,1,1
 42502.0,119,Senate,670,Full-year funding,Republican,Yea,1,1
@@ -49118,6 +49208,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42502.0,119,Senate,887,Stopgap funding,Republican,Yea,1,1
 42502.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 42502.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+42502.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 42503.0,119,Senate,133,Full-year funding,Republican,Yea,1,1
 42503.0,119,Senate,618,Full-year funding,Republican,Yea,1,1
 42503.0,119,Senate,670,Full-year funding,Republican,Yea,1,1
@@ -49126,6 +49217,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42503.0,119,Senate,887,Stopgap funding,Republican,Yea,1,1
 42503.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 42503.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+42503.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 42504.0,119,Senate,133,Full-year funding,Republican,Yea,1,1
 42504.0,119,Senate,618,Full-year funding,Republican,Yea,1,1
 42504.0,119,Senate,670,Full-year funding,Republican,Yea,1,1
@@ -49134,6 +49226,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42504.0,119,Senate,887,Stopgap funding,Republican,Yea,1,1
 42504.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 42504.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+42504.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 42505.0,119,Senate,133,Full-year funding,Republican,Yea,1,1
 42505.0,119,Senate,618,Full-year funding,Republican,Yea,1,1
 42505.0,119,Senate,670,Full-year funding,Republican,Yea,1,1
@@ -49142,6 +49235,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42505.0,119,Senate,887,Stopgap funding,Republican,Yea,1,1
 42505.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 42505.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+42505.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 42506.0,119,Senate,133,Full-year funding,Republican,Yea,1,1
 42506.0,119,Senate,618,Full-year funding,Republican,Yea,1,1
 42506.0,119,Senate,679,Full-year funding,Republican,Yea,1,1
@@ -49149,10 +49243,13 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 42506.0,119,Senate,887,Stopgap funding,Republican,Yea,1,1
 42506.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 42506.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+42506.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 42507.0,119,Senate,887,Stopgap funding,Republican,Yea,1,1
 42507.0,119,Senate,843,War powers limits,Republican,Nay,1,1
 42507.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+42507.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 42508.0,119,Senate,903,War powers limits,Republican,Nay,1,1
+42508.0,119,Senate,928,War powers limits,Republican,Nay,1,1
 49300.0,110,Senate,354,Debt limit,Democrat,Yea,1,0
 49300.0,111,Senate,411,Debt limit,Democrat,Yea,1,1
 49300.0,112,Senate,123,Debt limit,Democrat,Yea,1,1
@@ -49300,6 +49397,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 49308.0,116,Senate,480,War powers limits,Democrat,Yea,0,0
 49308.0,119,Senate,843,War powers limits,Democrat,Yea,0,0
 49308.0,119,Senate,903,War powers limits,Democrat,Yea,0,0
+49308.0,119,Senate,928,War powers limits,Democrat,Yea,0,0
 49309.0,110,Senate,354,Debt limit,Democrat,Yea,1,0
 49309.0,111,Senate,411,Debt limit,Democrat,Yea,1,1
 49309.0,110,Senate,650,Disaster aid,Democrat,Nay,0,0
@@ -49439,6 +49537,7 @@ icpsr,congress,chamber,rollnumber,category,party,vote,friendly,own_president
 49703.0,116,Senate,480,War powers limits,Republican,Yea,0,1
 49703.0,119,Senate,843,War powers limits,Republican,Yea,0,1
 49703.0,119,Senate,903,War powers limits,Republican,Yea,0,1
+49703.0,119,Senate,928,War powers limits,Republican,Yea,0,1
 49704.0,110,Senate,354,Debt limit,Republican,Yea,1,1
 49704.0,110,Senate,650,Disaster aid,Republican,Yea,1,1
 49704.0,110,Senate,441,Full-year funding,Republican,Nay,0,1
