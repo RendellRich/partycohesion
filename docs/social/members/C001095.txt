@@ -1,0 +1,13 @@
+Member spotlight: Tom Cotton (R-AR), Senate.
+In the current Congress (votes through Nov 20, 2026), Tom Cotton voted with the Republican majority on 849 of 851 party-line votes (99.8%). The Senate Republican average is 98.6%.
+
+Votes apart from most Senate Republicans (2 in all) included:
+- Tabling H.R. 7148, Consolidated Appropriations Act, 2026 (Jan 30, 2026): voted Yea; most Republicans voted Nay.
+  From the vote record: To strike all earmarks
+- Taking up S.Con.Res. 22, A concurrent resolution setting forth the congressional budget for the United States Government for fiscal year 2026 and setting forth... (Sep 16, 2025): voted Nay; most Republicans voted Yea.
+
+Missed 1.6% of roll calls this Congress. Roll call records don't give reasons for absences.
+
+Full voting record: https://partycohesion.streamlit.app/Member_Explorer?member=C001095
+Look up how your own members vote: https://partycohesion.streamlit.app
+Members are featured in a fixed random rotation, not chosen by hand. Data: Voteview, Congressional Record.

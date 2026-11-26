@@ -248,3 +248,9 @@
   time: "19:05"
   expires_after_days: 3
   networks: [facebook]
+
+- id: spotlight-119-C001095
+  card: member/C001095
+  post_on: 2026-12-09
+  time: "11:45"
+  expires_after_days: 1
